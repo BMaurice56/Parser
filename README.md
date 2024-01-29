@@ -6,3 +6,6 @@ et d'en extraire les différentes informations de celui-ci comme :
 - Auteurs
 - Paragraphes
 - Bibliographies
+
+Option utile pour pdftotext : 
+- -raw pour garder la structure dans l'ordre du contenue
