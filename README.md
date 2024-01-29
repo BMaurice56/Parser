@@ -13,7 +13,9 @@ Option utile pour pdftotext :
 
 
 Pdf2txt:
+
   -Pdf lecture vertical commande : pdf2txt -V fichierPdf.pdf fichierTxt.txt
+  
   -Pdf lecture normal commande : pdf2txt -A fichierPdf.pdf fichierTxt.txt
   
 Pdf2txt va affciher chaque schéma à la fin de la page de la page où est le schéma (après le numéro de la page)
