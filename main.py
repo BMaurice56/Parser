@@ -1,4 +1,6 @@
 import os
+import sys
+
 import PyPDF2
 
 
@@ -106,7 +108,7 @@ def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
 
 
 if __name__ == '__main__':
-    file = "/home/benoit/Documents/cours/Parser/Corpus_2022/Boudin-Torres-2006.pdf"
+    file = sys.argv[1]
 
     checkPDFFile(file)
 
