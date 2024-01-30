@@ -54,10 +54,10 @@ def getAbstract(reader: PyPDF2.PdfReader) -> str:
     :param reader: Objet de lecture
     :return: String contenue
     """
-    numeroPage = 0
+    numero_page = 0
     number_of_pages = len(reader.pages)
 
-    while numeroPage < number_of_pages:
+    while numero_page < number_of_pages:
         page = reader.pages[0]
 
         # Récupération du texte
@@ -71,7 +71,7 @@ def getAbstract(reader: PyPDF2.PdfReader) -> str:
         if pos_abstract != -1 and pos_introduction != -1:
             return content[pos_abstract + len("Abstract") + 1:pos_introduction - 2]
 
-        numeroPage += 1
+        numero_page += 1
 
 
 def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
@@ -84,15 +84,15 @@ def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
     len_max = 45
 
     print("Titre :")
-    print(f"    {getTitle(pdfReader)}")
+    print(f"    {getTitle(reader)}")
 
     print("\nAuteurs :")
-    for auteur in getAuthor(pdfReader):
+    for auteur in getAuthor(reader):
         print(f"    {auteur}")
 
     print("\nAbstract :")
 
-    abstract = getAbstract(pdfReader)
+    abstract = getAbstract(reader)
     pos_backslash = abstract.find("\n")
 
     if len(abstract) < len_max:
@@ -109,10 +109,6 @@ if __name__ == '__main__':
     file = "/home/benoit/Documents/cours/Parser/Corpus_2022/Boudin-Torres-2006.pdf"
 
     checkPDFFile(file)
-
-    # createTxtFileFromPdf(file)
-
-    # print(openTXTFile())
 
     pdfFileObj = open(file, 'rb')
 
