@@ -1,6 +1,5 @@
 import os
-
-nomFichierTexte = "fichier.txt"
+import PyPDF2
 
 
 def checkPDFFile(nomFichier: str) -> None:
@@ -14,30 +13,18 @@ def checkPDFFile(nomFichier: str) -> None:
         raise FileExistsError(f"{nomFichier} n'est pas un fichier .pdf")
 
 
-def createTxtFileFromPdf(nomFichier: str) -> None:
-    """
-    Crée le fichier texte depuis le fichier pdf
-    nomFichier : nom du fichier
-
-    Nom du fichier de sortie → fichier.txt
-    """
-    checkPDFFile(nomFichier)
-
-    if os.system(f"pdftotext -raw {nomFichier} {nomFichierTexte}") != 0:
-        raise OSError("Impossible de transformer le fichier pdf en texte")
-
-
-def openTXTFile() -> str:
-    """
-    Ouvre le fichier txt et renvoie son contenu sans caractère inconnu
-    :return: Contenu du fichier
-    """
-    with open(nomFichierTexte, "f") as f:
-        content = f.read()
-
-    return content
-
-
 if __name__ == '__main__':
     file = "/home/benoit/Documents/cours/Parser/Corpus_2022/Boudin-Torres-2006.pdf"
-    createTxtFileFromPdf(file)
+
+    checkPDFFile(file)
+
+    # createTxtFileFromPdf(file)
+
+    # print(openTXTFile())
+
+    pdfFileObj = open(file, 'rb')
+
+    # creating a pdf reader object
+    pdfReader = PyPDF2.PdfReader(pdfFileObj)
+
+    print(pdfReader.metadata)
