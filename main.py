@@ -18,35 +18,37 @@ def checkPDFFile(nomFichier: str) -> None:
         raise FileExistsError(f"{nomFichier} n'est pas un fichier .pdf")
 
 
-def getAuthor(reader: PyPDF2.PdfReader) -> list:
+def getAuthor(reader: PyPDF2.PdfReader) -> list | None:
     """
     Renvoi la liste des auteurs
 
     :param reader: Objet de lecture
     :return: List des auteurs
     """
+    auteurs = reader.metadata.author
 
-    auteurs = reader.metadata["/Author"].__str__().split(";")
+    if auteurs is not None:
+        auteurs = auteurs.split(";")
 
-    # Enlève les espaces au début et à la fin
-    for i in range(len(auteurs)):
-        if auteurs[i][0] == " ":
-            auteurs[i] = auteurs[i][1:]
+        # Enlève les espaces au début et à la fin
+        for i in range(len(auteurs)):
+            if auteurs[i][0] == " ":
+                auteurs[i] = auteurs[i][1:]
 
-        if auteurs[i][-1] == " ":
-            auteurs[i] = auteurs[i][:-1]
+            if auteurs[i][-1] == " ":
+                auteurs[i] = auteurs[i][:-1]
 
     return auteurs
 
 
-def getTitle(reader: PyPDF2.PdfReader) -> str:
+def getTitle(reader: PyPDF2.PdfReader) -> str | None:
     """
     Renvoie le titre du pdf
 
     :param reader: Objet de lecture
     :return: Titre
     """
-    return reader.metadata["/Title"].__str__()
+    return reader.metadata.title
 
 
 def getAbstract(reader: PyPDF2.PdfReader) -> str:
@@ -59,6 +61,7 @@ def getAbstract(reader: PyPDF2.PdfReader) -> str:
     numero_page = 0
     number_of_pages = len(reader.pages)
 
+    # Recherche l'abstract dans le fichier
     while numero_page < number_of_pages:
         page = reader.pages[0]
 
@@ -73,7 +76,43 @@ def getAbstract(reader: PyPDF2.PdfReader) -> str:
         if pos_abstract != -1 and pos_introduction != -1:
             return content[pos_abstract + len("Abstract") + 1:pos_introduction - 2]
 
-        numero_page += 1
+        # Sinon absence du mot abstract
+        elif pos_abstract == -1 and pos_introduction != -1:
+
+            dernier_point = content[:pos_introduction].rfind(".")
+
+            i = 0
+            for i in range(dernier_point, 1, -1):
+                if ord(content[i]) < 20:
+                    if ord(content[i - 1]) != 45:
+                        break
+
+            return content[i + 1:dernier_point]
+
+
+def getIntroduction(reader: PyPDF2.PdfReader) -> str | None:
+    """
+
+    :param reader:
+    :return:
+    """
+    numero_page = 0
+    number_of_pages = len(reader.pages)
+
+    # Recherche l'abstract dans le fichier
+    while numero_page < number_of_pages:
+        page = reader.pages[0]
+
+        # Récupération du texte
+        content = page.extract_text()
+
+        # Position du mot clef
+        pos_introduction = content.find("Introduction")
+
+        if pos_introduction != -1:
+            return content[pos_introduction + len("Introduction") + 1:pos_introduction + 200]
+
+    return None
 
 
 def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
@@ -83,7 +122,7 @@ def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
     :param reader: Objet de lecture
     :return: None
     """
-    len_max = 45
+    len_max = 50
 
     print("Titre :")
     print(f"    {getTitle(reader)}")
@@ -105,6 +144,20 @@ def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
 
     else:
         print(f"    {abstract[:abstract[:len_max].rfind(' ')]} ...")
+
+    print("\nIntroduction :")
+    intro = getIntroduction(reader)
+
+    pos_backslash = intro.find("\n")
+
+    if len(intro) < len_max:
+        print(f"    {intro}")
+
+    elif pos_backslash < len_max:
+        print(f"    {intro[:pos_backslash]} ...")
+
+    else:
+        print(f"    {intro[:intro[:len_max].rfind(' ')]} ...")
 
 
 if __name__ == '__main__':
