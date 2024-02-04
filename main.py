@@ -51,19 +51,19 @@ def getTitle(reader: PyPDF2.PdfReader) -> str | None:
     return reader.metadata.title
 
 
-def getAbstract(reader: PyPDF2.PdfReader) -> str:
+def getAbstract(reader: PyPDF2.PdfReader) -> str | None:
     """
     Renvoie l'abstract du pdf
 
     :param reader: Objet de lecture
-    :return: String contenue
+    :return: String ou None si non trouvé
     """
     numero_page = 0
     number_of_pages = len(reader.pages)
 
     # Recherche l'abstract dans le fichier
     while numero_page < number_of_pages:
-        page = reader.pages[0]
+        page = reader.pages[numero_page]
 
         # Récupération du texte
         content = page.extract_text()
@@ -89,19 +89,22 @@ def getAbstract(reader: PyPDF2.PdfReader) -> str:
 
             return content[i + 1:dernier_point]
 
+        numero_page += 1
+
 
 def getIntroduction(reader: PyPDF2.PdfReader) -> str | None:
     """
+    Renvoi l'introduction du pdf
 
-    :param reader:
-    :return:
+    :param reader: Objet de lecture
+    :return: String ou None si non trouvé
     """
     numero_page = 0
     number_of_pages = len(reader.pages)
 
     # Recherche l'abstract dans le fichier
     while numero_page < number_of_pages:
-        page = reader.pages[0]
+        page = reader.pages[numero_page]
 
         # Récupération du texte
         content = page.extract_text()
@@ -112,7 +115,49 @@ def getIntroduction(reader: PyPDF2.PdfReader) -> str | None:
         if pos_introduction != -1:
             return content[pos_introduction + len("Introduction") + 1:pos_introduction + 200]
 
+        numero_page += 1
+
     return None
+
+
+def getCorps(reader: PyPDF2.PdfReader) -> str | None:
+    """
+    Renvoie le corps du pdf
+
+    :param reader: Objet de lecture
+    :return: String ou None si non trouvé
+    """
+    numero_page = 0
+    number_of_pages = len(reader.pages)
+
+    # Recherche l'abstract dans le fichier
+    while numero_page < number_of_pages:
+        page = reader.pages[numero_page]
+
+        # Récupération du texte
+        content = page.extract_text()
+
+        # Position des mots clefs
+        pos_2 = content.find("2")
+
+        # Tant qu'on trouve un 2
+        while pos_2 != -1:
+            # Si on trouve le 2 du nom du chapitre, alors on peut récupérer le corps
+            if pos_2 != -1 and content[pos_2 - 1] == "\n" and content[pos_2 + 1] == " ":
+
+                # Recherche du deuxième \n du début du corps
+                pos_backslash = pos_2 + 1
+
+                for i in range(len(content[pos_backslash:])):
+                    # Si on le trouve, on renvoie les 200 premiers caractères du corps
+                    if content[pos_backslash + i] == "\n":
+                        pos_backslash = pos_backslash + i + 1
+                        return content[pos_backslash:pos_backslash + 200]
+
+            content = content[pos_2 + 1:]
+            pos_2 = content.find("2")
+
+        numero_page += 1
 
 
 def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
@@ -158,6 +203,20 @@ def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
 
     else:
         print(f"    {intro[:intro[:len_max].rfind(' ')]} ...")
+
+    print("\nCorps :")
+    corps = getCorps(reader)
+
+    pos_backslash = corps.find("\n")
+
+    if len(corps) < len_max:
+        print(f"    {corps}")
+
+    elif pos_backslash < len_max:
+        print(f"    {corps[:pos_backslash]} ...")
+
+    else:
+        print(f"    {corps[:corps[:len_max].rfind(' ')]} ...")
 
 
 if __name__ == '__main__':
