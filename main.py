@@ -43,11 +43,12 @@ def getAuthor(reader: PyPDF2.PdfReader) -> list | None:
 
         # Enlève les espaces au début et à la fin
         for i in range(len(auteurs)):
-            if auteurs[i][0] == " ":
-                auteurs[i] = auteurs[i][1:]
+            if len(auteurs[i]) > 1:
+                if auteurs[i][0] == " ":
+                    auteurs[i] = auteurs[i][1:]
 
-            if auteurs[i][-1] == " ":
-                auteurs[i] = auteurs[i][:-1]
+                if auteurs[i][-1] == " ":
+                    auteurs[i] = auteurs[i][:-1]
 
     return auteurs
 
@@ -121,22 +122,32 @@ def writeValueInFile(nameFile: str, pathDir: str, reader: PyPDF2.PdfReader) -> N
         f.write(f"    {getTitle(reader)}\n\n")
 
         f.write("Auteurs :\n")
-        for auteur in getAuthor(reader):
-            f.write(f"    {auteur}\n")
+        auteurs = getAuthor(reader)
+
+        if auteurs is not None:
+            for auteur in auteurs:
+                f.write(f"    {auteur}\n")
+
+        else:
+            f.write("Pas d'auteurs\n")
 
         f.write("\nAbstract :\n")
 
         abstract = getAbstract(reader)
-        pos_backslash = abstract.find("\n")
+        if abstract is not None:
+            pos_backslash = abstract.find("\n")
 
-        if len(abstract) < len_max:
-            f.write(f"    {abstract}\n")
+            if len(abstract) < len_max:
+                f.write(f"    {abstract}\n")
 
-        elif pos_backslash < len_max:
-            f.write(f"    {abstract[:pos_backslash]} ...\n")
+            elif pos_backslash < len_max:
+                f.write(f"    {abstract[:pos_backslash]} ...\n")
+
+            else:
+                f.write(f"    {abstract[:abstract[:len_max].rfind(' ')]} ...\n")
 
         else:
-            f.write(f"    {abstract[:abstract[:len_max].rfind(' ')]} ...\n")
+            f.write("Pas d'abstract\n")
 
 
 if __name__ == '__main__':
@@ -160,9 +171,8 @@ if __name__ == '__main__':
 
         for element in os.listdir(path):
             if isPDFFile(path + element):
-                print(element)
-            else:
-                print("autre fichier")
+                writeValueInFile(element, nomDossier, openPDF(path + element))
+
     else:
         pdfReader = openPDF(path)
 
