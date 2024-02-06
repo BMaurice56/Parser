@@ -60,7 +60,13 @@ def getTitle(reader: PyPDF2.PdfReader) -> str | None:
     :param reader: Objet de lecture
     :return: Titre
     """
-    return reader.metadata.title
+    titre = reader.metadata.title
+
+    if titre is None:
+        content = reader.pages[0].extract_text()
+        return content[:content.find("\n")]
+
+    return titre
 
 
 def getAbstract(reader: PyPDF2.PdfReader) -> str | None:
@@ -174,8 +180,12 @@ if __name__ == '__main__':
                 writeValueInFile(element, nomDossier, openPDF(path + element))
 
     else:
-        pdfReader = openPDF(path)
+        try:
+            pdfReader = openPDF(path)
 
-        last_slash = path.rfind("/")
+            last_slash = path.rfind("/")
 
-        writeValueInFile(path[last_slash + 1:], path[:last_slash + 1], pdfReader)
+            writeValueInFile(path[last_slash + 1:], path[:last_slash + 1], pdfReader)
+            
+        except IOError:
+            print("Impossible d'ouvrir le fichier pdf")
