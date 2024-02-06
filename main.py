@@ -103,131 +103,40 @@ def getAbstract(reader: PyPDF2.PdfReader) -> str | None:
         numero_page += 1
 
 
-def getIntroduction(reader: PyPDF2.PdfReader) -> str | None:
+def writeValueInFile(nameFile: str, pathDir: str, reader: PyPDF2.PdfReader) -> None:
     """
-    Renvoi l'introduction du pdf
+    Écrit dans un fichier txt l'analyse du pdf
 
+    :param nameFile: Nom du fichier
+    :param pathDir: Chemin
     :param reader: Objet de lecture
-    :return: String ou None si non trouvé
-    """
-    numero_page = 0
-    number_of_pages = len(reader.pages)
-
-    # Recherche l'abstract dans le fichier
-    while numero_page < number_of_pages:
-        page = reader.pages[numero_page]
-
-        # Récupération du texte
-        content = page.extract_text()
-
-        # Position du mot clef
-        pos_introduction = content.find("Introduction")
-
-        if pos_introduction != -1:
-            return content[pos_introduction + len("Introduction") + 1:pos_introduction + 200]
-
-        numero_page += 1
-
-    return None
-
-
-def getCorps(reader: PyPDF2.PdfReader) -> str | None:
-    """
-    Renvoie le corps du pdf
-
-    :param reader: Objet de lecture
-    :return: String ou None si non trouvé
-    """
-    numero_page = 0
-    number_of_pages = len(reader.pages)
-
-    # Recherche l'abstract dans le fichier
-    while numero_page < number_of_pages:
-        page = reader.pages[numero_page]
-
-        # Récupération du texte
-        content = page.extract_text()
-
-        # Position des mots clefs
-        pos_2 = content.find("2")
-
-        # Tant qu'on trouve un 2
-        while pos_2 != -1:
-            # Si on trouve le 2 du nom du chapitre, alors on peut récupérer le corps
-            if pos_2 != -1 and content[pos_2 - 1] == "\n" and content[pos_2 + 1] == " ":
-
-                # Recherche du deuxième \n du début du corps
-                pos_backslash = pos_2 + 1
-
-                for i in range(len(content[pos_backslash:])):
-                    # Si on le trouve, on renvoie les 200 premiers caractères du corps
-                    if content[pos_backslash + i] == "\n":
-                        pos_backslash = pos_backslash + i + 1
-                        return content[pos_backslash:pos_backslash + 200]
-
-            content = content[pos_2 + 1:]
-            pos_2 = content.find("2")
-
-        numero_page += 1
-
-
-def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
-    """
-    Affiche les différentes informations à l'écran
-
-    :param reader: Objet de lecture
-    :return: None
+    :return:
     """
     len_max = 50
+    file = f"{pathDir}{nameFile[:-4]}.txt"
 
-    print("Titre :")
-    print(f"    {getTitle(reader)}")
+    with open(file, "w") as f:
+        f.write(f"Nom du fichier pdf : {nameFile}\n")
+        f.write("\nTitre :\n")
+        f.write(f"    {getTitle(reader)}\n\n")
 
-    print("\nAuteurs :")
-    for auteur in getAuthor(reader):
-        print(f"    {auteur}")
+        f.write("Auteurs :\n")
+        for auteur in getAuthor(reader):
+            f.write(f"    {auteur}\n")
 
-    print("\nAbstract :")
+        f.write("\nAbstract :\n")
 
-    abstract = getAbstract(reader)
-    pos_backslash = abstract.find("\n")
+        abstract = getAbstract(reader)
+        pos_backslash = abstract.find("\n")
 
-    if len(abstract) < len_max:
-        print(f"    {abstract}")
+        if len(abstract) < len_max:
+            f.write(f"    {abstract}\n")
 
-    elif pos_backslash < len_max:
-        print(f"    {abstract[:pos_backslash]} ...")
+        elif pos_backslash < len_max:
+            f.write(f"    {abstract[:pos_backslash]} ...\n")
 
-    else:
-        print(f"    {abstract[:abstract[:len_max].rfind(' ')]} ...")
-
-    print("\nIntroduction :")
-    intro = getIntroduction(reader)
-
-    pos_backslash = intro.find("\n")
-
-    if len(intro) < len_max:
-        print(f"    {intro}")
-
-    elif pos_backslash < len_max:
-        print(f"    {intro[:pos_backslash]} ...")
-
-    else:
-        print(f"    {intro[:intro[:len_max].rfind(' ')]} ...")
-
-    print("\nCorps :")
-    corps = getCorps(reader)
-
-    pos_backslash = corps.find("\n")
-
-    if len(corps) < len_max:
-        print(f"    {corps}")
-
-    elif pos_backslash < len_max:
-        print(f"    {corps[:pos_backslash]} ...")
-
-    else:
-        print(f"    {corps[:corps[:len_max].rfind(' ')]} ...")
+        else:
+            f.write(f"    {abstract[:abstract[:len_max].rfind(' ')]} ...\n")
 
 
 if __name__ == '__main__':
@@ -257,4 +166,6 @@ if __name__ == '__main__':
     else:
         pdfReader = openPDF(path)
 
-        affichageValeurs(pdfReader)
+        last_slash = path.rfind("/")
+
+        writeValueInFile(path[last_slash + 1:], path[:last_slash + 1], pdfReader)
