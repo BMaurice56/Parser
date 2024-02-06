@@ -243,10 +243,11 @@ if __name__ == '__main__':
         nomDossier = path + "analyse_pdf/"
 
         # Si existence du dossier → on le supprime
-        if os.path.exists(path + nomDossier):
-            os.rmdir(path + nomDossier)
+        if os.path.exists(nomDossier):
+            os.rmdir(nomDossier)
 
-        os.makedirs(path + nomDossier)
+        # Création du dossier
+        os.makedirs(nomDossier)
 
         for element in os.listdir(path):
             if isPDFFile(path + element):
