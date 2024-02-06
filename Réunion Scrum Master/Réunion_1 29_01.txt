@@ -1,0 +1,18 @@
+Prise de note de la réunion du 29 Janvier :
+
+Collaborateur (M. Kessler) à mettre dans le GitHub.
+
+Au niveau du temps de travail, l'objectif est de terminer le projet en 6 semaines. Il faut démontrer qu'il faut plus de temps.
+
+1er rapport à rendre : Etude veille possibilité technique/Choix stratégique au niveau du groupe.
+Il y aura des choix techniques à faire (logiciel, etc...).
+Le rapport de veille technologique et des choix stratégiques est à rendre pour le DIMANCHE 4 FEVRIER à 23H.
+Il doit faire 2 pages maximum.
+Il faut, si possible : 
+	- Dire qu'on a les compétences pour faire tel ou tel chose,
+	- Dire ce que l'on a testé.
+
+Le Sprint numéro 2 commencera la semaine prochaine.
+Il y aura un retour de Sprint à faire à chaque fois.
+
+Il y a des sites web qui font la conversion d'un fichier ".pdf" en ".txt", M. Kessler nous laissera du temps pour les tester.
