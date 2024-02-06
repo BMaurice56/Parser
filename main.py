@@ -1,21 +1,32 @@
-import os
-import sys
-
 import PyPDF2
+import time
+import sys
+import os
 
 
-def checkPDFFile(nomFichier: str) -> None:
+def isPDFFile(nomFichier: str) -> bool:
     """
     Vérifie si le nom de fichier fourni est bien un pdf
 
     :param nomFichier: Nom du fichier
-    :return: None
+    :return: True ou False
     """
-    if not os.path.exists(nomFichier):
-        raise FileNotFoundError("Le fichier n'existe pas ")
+    if not os.path.isfile(nomFichier) or nomFichier[-4:] != ".pdf":
+        return False
 
-    if not os.path.isfile(nomFichier) or (nomFichier[-4:] != ".pdf"):
-        raise FileExistsError(f"{nomFichier} n'est pas un fichier .pdf")
+    return True
+
+
+def openPDF(nomFichier: str) -> PyPDF2.PdfReader:
+    """
+    Ouvre le pdf et renvoi l'objet de lecture
+
+    :param nomFichier: Nom du fichier
+    :return: Objet de lecture du pdf
+    """
+    pdfFileObj = open(nomFichier, 'rb')
+
+    return PyPDF2.PdfReader(pdfFileObj)
 
 
 def getAuthor(reader: PyPDF2.PdfReader) -> list | None:
@@ -220,13 +231,29 @@ def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
 
 
 if __name__ == '__main__':
-    file = sys.argv[1]
+    path = sys.argv[1]
 
-    checkPDFFile(file)
+    # Check si dossier ou fichier
+    if os.path.isdir(path):
+        # Check si / à la fin
+        if path[-1] != "/":
+            path += "/"
 
-    pdfFileObj = open(file, 'rb')
+        # Chemin du dossier de sortie
+        nomDossier = path + "analyse_pdf/"
 
-    # creating a pdf reader object
-    pdfReader = PyPDF2.PdfReader(pdfFileObj)
+        # Si existence du dossier → on le supprime
+        if os.path.exists(path + nomDossier):
+            os.rmdir(path + nomDossier)
 
-    affichageValeurs(pdfReader)
+        os.makedirs(path + nomDossier)
+
+        for element in os.listdir(path):
+            if isPDFFile(path + element):
+                print(element)
+            else:
+                print("autre fichier")
+    else:
+        pdfReader = openPDF(path)
+
+        affichageValeurs(pdfReader)
