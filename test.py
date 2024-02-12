@@ -1,6 +1,8 @@
 import os
 import unittest
 
+import re
+
 def isTXT(nomFichier : str) ->bool:
     if not os.path.isfile(nomFichier) or nomFichier[-4:] != ".txt":
         return False
@@ -17,11 +19,9 @@ def isTXTFiles(path: str) -> bool:
             return False
     return True
 
-
-import re
-
 def extract_information(path):
     text = read_text_file(path)
+
     result = {}
 
     # Extraction du nom du fichier pdf
@@ -35,13 +35,21 @@ def extract_information(path):
         result['Titre'] = title_match.group(1).strip()
 
     # Extraction des auteurs
-    authors_match = re.search(r'Auteurs :\s+(.+)', text)
+    i_t = text.find("Auteurs :") + 10
 
-    if authors_match:
-        authors_text = authors_match.group(1)
-        print(authors_text)
-        authors_list = [author.strip() for author in authors_text.split('\n') if author.strip()]
-        result['Auteurs'] = authors_list
+    if i_t >= 0:
+        auteurs_t = ""
+        while i_t < len(text) - 1 and text[i_t:i_t + 2] != '\n\n':
+            auteurs_t += text[i_t]
+            i_t += 1
+
+        words = auteurs_t.split('\n')
+        filtered_words = [word.strip() for word in words if word.strip() != '']
+        auteurs = ' '.join(filtered_words)
+        result['Auteurs'] = auteurs
+
+
+
 
     # Extraction de l'abstract
     abstract_match = re.search(r'Abstract :\s+(.+)', text)
@@ -61,12 +69,8 @@ def read_text_file(file_path):
 
 information = extract_information("/home/arthur/Documents/L3/semestre_4/Parser/Corpus_2022/analyse_pdf/Boudin-Torres-2006.txt")
 
-
-# Affichage des résultats
 for key, value in information.items():
     print(f"{key} :\n    {value}")
-
-
 
 
 class TestDictionaryComparison(unittest.TestCase):
@@ -74,10 +78,10 @@ class TestDictionaryComparison(unittest.TestCase):
     def test_Boudin(self):
         titre = "A Scalable MMR Approach to Sentence Scoring for Multi-Document Update Summarization"
         Nom = "Boudin-Torres-2006.pdf"
-
+        auteur = "Florian Boudin ; Marc El-Beze ; Juan-Manuel Torres-Moreno"
         result = extract_information("/home/arthur/Documents/L3/semestre_4/Parser/Corpus_2022/analyse_pdf/Boudin-Torres-2006.txt")
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre :": titre , "Auteurs :": 3,"Abstract :":"We present S MMR , a scalable sentence ..."}
+        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre , "Auteurs": auteur,"Abstract":"We present S MMR , a scalable sentence ..."}
         self.assertEqual(result, dict2)
 
     def test_dictionaries_not_equal(self):
