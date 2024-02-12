@@ -9,6 +9,7 @@ class Parser:
     nomFichier = ""
     directoryTxtFile = ""
     pdfReader = PyPDF2.PdfReader
+    titre = ""
 
     def __init__(self, path: str, nomFichier: str, directoryTxtFile: str = None):
         self.pathToFile = path
@@ -45,53 +46,78 @@ class Parser:
 
         return PyPDF2.PdfReader(pdfFileObj)
 
-    def getAuthor(self) -> list | str:
+    def getAuthor(self, minimum_y=600, maximum_y=750) -> str | list:
         """
         Renvoi la liste des auteurs
 
         :return: List des auteurs
         """
-        auteurs = self.pdfReader.metadata.author
 
-        # Soit les auteurs sont dans les méta données
-        if auteurs is not None and len(auteurs) > 0:
-            auteurs = auteurs.split(";")
+        metadata = self.pdfReader.metadata.author
 
-            # Enlève les espaces au début et à la fin
-            for i in range(len(auteurs)):
-                if len(auteurs[i]) > 1:
-                    if auteurs[i][0] == " ":
-                        auteurs[i] = auteurs[i][1:]
+        if metadata is not None and metadata != "" and "@" not in metadata:
+            return metadata
 
-                    if auteurs[i][-1] == " ":
-                        auteurs[i] = auteurs[i][:-1]
+        page = self.pdfReader.pages[0]
 
-            return auteurs
+        parts = []
 
-        else:
-            content = self.pdfReader.pages[0].extract_text()
+        def visitor_body(text, cm, tm, fontDict, fontSize):
+            if text != "" and text != " " and text != "\n":
+                # print(f"texte : {text}")
+                # print(f"cm : {cm}")
+                # print(f"tm : {tm}")
+                # print(f"fontDict : {fontDict}")
+                # print(f"fontSize : {fontSize}")
+                y = tm[5]
+                if minimum_y < y < maximum_y:
+                    parts.append(text)
 
-            # On enlève le titre
-            content = content[content.find("\n") + 1:]
+        page.extract_text(visitor_text=visitor_body)
 
-            # On ne garde que la ligne des auteurs
-            content = content[:content.find("\n")]
+        if len(page) == 0:
+            parts = self.getAuthor(minimum_y - 100, maximum_y + 50)
 
-            return content
+        return parts
 
-    def getTitle(self) -> str | None:
+    def getTitle(self, minimum_y=600) -> str | None:
         """
         Renvoie le titre du pdf
 
         :return: Titre
         """
-        titre = self.pdfReader.metadata.title
+        # Vérifie les métadonnées
+        self.titre = self.pdfReader.metadata.title
 
-        if titre is None:
-            content = self.pdfReader.pages[0].extract_text()
-            return content[:content.find("\n")]
+        if self.titre is None:
+            self.titre = ""
 
-        return titre
+            page = self.pdfReader.pages[0]
+
+            parts = []
+
+            def visitor_body(text, cm, tm, fontDict, fontSize):
+                if text != "" and text != " " and text != "\n":
+                    y = tm[5]
+                    if minimum_y < y < 750:
+                        parts.append(text)
+
+            # Extraction des premières lignes
+            page.extract_text(visitor_text=visitor_body)
+
+            if len(parts) > 0:
+                i = 0
+                while parts[i][-1] == "\n":
+                    self.titre += parts[0]
+                    i += 1
+
+                self.titre += parts[i]
+            else:
+                self.titre = self.getTitle(minimum_y - 25)
+
+            return self.titre
+
+        return self.titre
 
     def getAbstract(self) -> str | None:
         """
@@ -151,13 +177,7 @@ class Parser:
             f.write(f"    {self.getTitle()}\n\n")
 
             f.write("Auteurs :\n")
-            auteurs = self.getAuthor()
-
-            if type(auteurs) is str:
-                f.write(f"    {auteurs}\n")
-            else:
-                for auteur in auteurs:
-                    f.write(f"    {auteur}\n")
+            f.write(f"    {self.getAuthor()}\n")
 
             f.write("\nAbstract :\n")
 
@@ -200,10 +220,8 @@ if __name__ == '__main__':
                     shutil.rmtree(nomDossier)
 
                 except Exception:
-                    message = """
-                    Impossible de supprimer le dossier analyse_pdf
-                    Ce dossier est nécessaire pour la bonne exécution du programme
-                    """
+                    message = ("\nImpossible de supprimer le dossier analyse_pdf\nCe dossier est nécessaire pour la "
+                               "bonne exécution du programme")
 
                     raise Exception(message)
 
