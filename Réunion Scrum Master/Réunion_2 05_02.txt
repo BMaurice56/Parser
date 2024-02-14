@@ -1,0 +1,12 @@
+Prise de note de la réunion du 5 Février :
+
+Nous aurons 2 semaines pour le Sprint 2.
+Les images, formules et tableaux ne seront pas à prendre en compte ("à jeter").
+
+Il ne faut pas se baser sur les fichiers ".txt" actuelles.
+La vraie version on l'aura plus tard et elle sera en ligne.
+
+Le répertoire ".zip" contenant les sources du Sprint 2 est à rendre pour le DIMANCHE 18 FEVRIER à 23H.
+
+Il y aura un rapport à rendre à la fin du projet contenant les résultats finaux, les méthodes utilisées, pourquoi ces méthodes ont été
+utilisées, etc... . Ce rapport reprendra donc les artéfacts.
