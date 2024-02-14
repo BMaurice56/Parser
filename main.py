@@ -56,10 +56,7 @@ class Parser:
 
         :return: List des auteurs
         """
-        metadata = self.pdfReader.metadata.author
-
-        if metadata is not None and metadata != "" and "@" not in metadata:
-            return metadata
+        self.auteurs = ""
 
         page = self.pdfReader.pages[0].extract_text()
 
@@ -72,20 +69,22 @@ class Parser:
         self.auteurs = page[pos_titre + len(self.titre): pos_abstract]
 
         if "Abstract" in self.auteurs.strip():
-            self.auteurs = self.auteurs[:self.auteurs.find("Abstract") - 1]
+            self.auteurs = self.auteurs[:self.auteurs.find("Abstract") - 1].strip()
+
+        for string in ["/natural", "/flat"]:
+            if string in self.auteurs:
+                self.auteurs = self.auteurs.replace(string, " ")
 
         return self.auteurs
 
-    def old_getAuthor(self, minimum_y=530, maximum_y=720, last_char=150) -> str:
+    def getTitle(self, minimum_y=650) -> str | None:
         """
-        Renvoi la liste des auteurs
+        Renvoie le titre du pdf
 
-        :return: List des auteurs
+        :param minimum_y position minimal en y
+        :return: Titre
         """
-        metadata = self.pdfReader.metadata.author
-
-        if metadata is not None and metadata != "" and "@" not in metadata:
-            return metadata
+        self.titre = ""
 
         page = self.pdfReader.pages[0]
 
@@ -93,117 +92,27 @@ class Parser:
 
         def visitor_body(text, cm, tm, fontDict, fontSize):
             if text != "" and text != " " and text != "\n":
-
                 y = tm[5]
-
-                # Permet de vérifier si la valeur n'est pas trop basse
-                if "/LastChar" in fontDict:
-                    if self.previous_number_last_char != fontDict["/LastChar"]:
-                        if self.numbers_last_char < 0:
-                            self.numbers_last_char = -float("inf")
-                        else:
-                            self.numbers_last_char = 0
-
-                        self.previous_number_last_char = fontDict["/LastChar"]
-                    else:
-                        self.numbers_last_char += 1
-
-                    if self.numbers_last_char > 15:
-                        raise Exception()
-
-                if minimum_y < y < maximum_y and fontDict["/LastChar"] <= last_char:
+                if minimum_y < y < 750:
                     parts.append(text)
 
-        try:
-            page.extract_text(visitor_text=visitor_body)
+        # Extraction des premières lignes
+        page.extract_text(visitor_text=visitor_body)
 
-        except:
-            parts.clear()
-            last_char = self.previous_number_last_char
-            self.numbers_last_char = -float("inf")
-            page = self.pdfReader.pages[0]
+        if len(parts) > 0:
+            i = 0
+            while parts[i][-1] == "\n":
+                self.titre += parts[0]
+                i += 1
 
-            page.extract_text(visitor_text=visitor_body)
+            self.titre += parts[i]
 
-        # content = page.extract_text()
-
-        # print(content)
-        print(parts)
-
-        # Récupère le titre
-        if self.titre == "" or self.titre is None:
-            self.titre = self.getTitle()
-
-        # Si le titre est présent dans le texte récupéré, on l'enlève
-        for elt in parts:
-            if elt.strip() in self.titre.strip() or "@" in elt:
-                # Si des éléments se trouvent devant le titre, on les enlève
-                indice = parts.index(elt)
-                if indice != 0:
-                    for i in range(indice):
-                        parts.pop(0)
-
-                parts.remove(elt)
-
-        print(parts)
-        # Si aucun élément n'a été récupérer, on augmente la fenêtre
-        if len(parts) == 0:
-            self.auteurs = self.old_getAuthor(minimum_y - 10, maximum_y + 10, last_char + 20)
-
-        else:
-            for elt2 in parts:
-                if "∗" in elt2:
-                    break
-                if "\n" in elt2:
-                    elt2 = elt2[:-1]
-                self.auteurs += elt2 + " ; "
-
-            self.auteurs = self.auteurs[:-2]
-
-        return self.auteurs
-
-    def getTitle(self, minimum_y=600) -> str | None:
-        """
-        Renvoie le titre du pdf
-
-        :param minimum_y position minimal en y
-        :return: Titre
-        """
-        # Vérifie les métadonnées
-        self.titre = self.pdfReader.metadata.title
-
-        if self.titre is None or "/" in self.titre:
-            self.titre = ""
-
-            page = self.pdfReader.pages[0]
-
-            parts = []
-
-            def visitor_body(text, cm, tm, fontDict, fontSize):
-                if text != "" and text != " " and text != "\n":
-                    y = tm[5]
-                    if minimum_y < y < 700:
-                        parts.append(text)
-
-            # Extraction des premières lignes
-            page.extract_text(visitor_text=visitor_body)
-
-            if len(parts) > 0:
-                i = 0
-                while parts[i][-1] == "\n":
-                    self.titre += parts[0]
-                    i += 1
-
-                self.titre += parts[i]
-
-                # Si on n'a pas récupéré la deuxième ligne du titre, on augmente la fenêtre
-                if self.titre[-1] == "\n":
-                    self.titre = self.getTitle(minimum_y - 10)
-
-            else:
+            # Si on n'a pas récupéré la deuxième ligne du titre, on augmente la fenêtre
+            if self.titre[-1] == "\n":
                 self.titre = self.getTitle(minimum_y - 10)
 
-            return self.titre
+        else:
+            self.titre = self.getTitle(minimum_y - 10)
 
         return self.titre
 
@@ -213,6 +122,8 @@ class Parser:
 
         :return: String
         """
+        self.abstract = ""
+
         numero_page = 0
         number_of_pages = len(self.pdfReader.pages)
 
@@ -222,15 +133,16 @@ class Parser:
 
             # Récupération du texte
             content = page.extract_text()
+            content_copy = content[:].lower()
 
             # Position des mots clefs
-            pos_abstract = content.find("Abstract")
-            pos_introduction = content.find("Introduction")
+            pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
+            pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
 
             # Si trouvé, alors on peut renvoyer l'abstract
             if pos_abstract != -1 and pos_introduction != -1:
                 swift = 1
-                if content[pos_abstract + len("Abstract") + swift] in [" ", "\n"]:
+                if content[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
                     swift += 1
 
                 self.abstract = content[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
