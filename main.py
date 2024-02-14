@@ -1,232 +1,251 @@
-import os
-import sys
-
 import PyPDF2
+import shutil
+import sys
+import os
 
 
-def checkPDFFile(nomFichier: str) -> None:
-    """
-    Vérifie si le nom de fichier fourni est bien un pdf
+class Parser:
+    pdfReader = PyPDF2.PdfReader
+    pathToFile = ""
+    nomFichier = ""
+    directoryTxtFile = ""
+    titre = ""
+    auteurs = ""
+    abstract = ""
+    numbers_last_char = previous_number_last_char = 0
 
-    :param nomFichier: Nom du fichier
-    :return: None
-    """
-    if not os.path.exists(nomFichier):
-        raise FileNotFoundError("Le fichier n'existe pas ")
+    def __init__(self, path: str, nomFichier: str, directoryTxtFile: str = None):
+        self.pathToFile = path
+        self.nomFichier = nomFichier
 
-    if not os.path.isfile(nomFichier) or (nomFichier[-4:] != ".pdf"):
-        raise FileExistsError(f"{nomFichier} n'est pas un fichier .pdf")
+        if not self.isPDFFile(path + nomFichier):
+            print(f"Nom du fichier : {nomFichier}")
+            raise FileNotFoundError("Le fichier fourni n'est pas un pdf")
 
+        self.pdfReader = self.openPDF()
 
-def getAuthor(reader: PyPDF2.PdfReader) -> list | None:
-    """
-    Renvoi la liste des auteurs
+        if directoryTxtFile is not None:
+            self.directoryTxtFile = directoryTxtFile
 
-    :param reader: Objet de lecture
-    :return: List des auteurs
-    """
-    auteurs = reader.metadata.author
+    @staticmethod
+    def isPDFFile(nomFichier: str) -> bool:
+        """
+        Vérifie si le nom de fichier fourni est bien un pdf
 
-    if auteurs is not None:
-        auteurs = auteurs.split(";")
+        :param nomFichier: Nom du fichier
+        :return: True ou False
+        """
+        if not os.path.isfile(nomFichier) or nomFichier[-4:] != ".pdf":
+            return False
 
-        # Enlève les espaces au début et à la fin
-        for i in range(len(auteurs)):
-            if auteurs[i][0] == " ":
-                auteurs[i] = auteurs[i][1:]
+        return True
 
-            if auteurs[i][-1] == " ":
-                auteurs[i] = auteurs[i][:-1]
+    def openPDF(self) -> PyPDF2.PdfReader:
+        """
+        Ouvre le pdf et renvoi l'objet de lecture
 
-    return auteurs
+        :return: Objet de lecture du pdf
+        """
+        pdfFileObj = open(self.pathToFile + self.nomFichier, 'rb')
 
+        return PyPDF2.PdfReader(pdfFileObj)
 
-def getTitle(reader: PyPDF2.PdfReader) -> str | None:
-    """
-    Renvoie le titre du pdf
+    def getAuthor(self) -> str:
+        """
+        Renvoi la liste des auteurs
 
-    :param reader: Objet de lecture
-    :return: Titre
-    """
-    return reader.metadata.title
+        :return: List des auteurs
+        """
+        self.auteurs = ""
 
+        page = self.pdfReader.pages[0].extract_text()
 
-def getAbstract(reader: PyPDF2.PdfReader) -> str | None:
-    """
-    Renvoie l'abstract du pdf
+        self.getTitle()
+        self.getAbstract()
 
-    :param reader: Objet de lecture
-    :return: String ou None si non trouvé
-    """
-    numero_page = 0
-    number_of_pages = len(reader.pages)
+        pos_titre = page.find(self.titre)
+        pos_abstract = page.find(self.abstract)
 
-    # Recherche l'abstract dans le fichier
-    while numero_page < number_of_pages:
-        page = reader.pages[numero_page]
+        self.auteurs = page[pos_titre + len(self.titre): pos_abstract]
 
-        # Récupération du texte
-        content = page.extract_text()
+        if "Abstract" in self.auteurs.strip():
+            self.auteurs = self.auteurs[:self.auteurs.find("Abstract") - 1].strip()
 
-        # Position des mots clefs
-        pos_abstract = content.find("Abstract")
-        pos_introduction = content.find("Introduction")
+        for string in ["/natural", "/flat"]:
+            if string in self.auteurs:
+                self.auteurs = self.auteurs.replace(string, " ")
 
-        # Si trouvé, alors on peut renvoyer l'abstract
-        if pos_abstract != -1 and pos_introduction != -1:
-            return content[pos_abstract + len("Abstract") + 1:pos_introduction - 2]
+        return self.auteurs
 
-        # Sinon absence du mot abstract
-        elif pos_abstract == -1 and pos_introduction != -1:
+    def getTitle(self, minimum_y=650) -> str | None:
+        """
+        Renvoie le titre du pdf
 
-            dernier_point = content[:pos_introduction].rfind(".")
+        :param minimum_y position minimal en y
+        :return: Titre
+        """
+        self.titre = ""
 
+        page = self.pdfReader.pages[0]
+
+        parts = []
+
+        def visitor_body(text, cm, tm, fontDict, fontSize):
+            if text != "" and text != " " and text != "\n":
+                y = tm[5]
+                if minimum_y < y < 750:
+                    parts.append(text)
+
+        # Extraction des premières lignes
+        page.extract_text(visitor_text=visitor_body)
+
+        if len(parts) > 0:
             i = 0
-            for i in range(dernier_point, 1, -1):
-                if ord(content[i]) < 20:
-                    if ord(content[i - 1]) != 45:
-                        break
+            while parts[i][-1] == "\n":
+                self.titre += parts[0]
+                i += 1
 
-            return content[i + 1:dernier_point]
+            self.titre += parts[i]
 
-        numero_page += 1
+            # Si on n'a pas récupéré la deuxième ligne du titre, on augmente la fenêtre
+            if self.titre[-1] == "\n":
+                self.titre = self.getTitle(minimum_y - 10)
 
+        else:
+            self.titre = self.getTitle(minimum_y - 10)
 
-def getIntroduction(reader: PyPDF2.PdfReader) -> str | None:
-    """
-    Renvoi l'introduction du pdf
+        return self.titre
 
-    :param reader: Objet de lecture
-    :return: String ou None si non trouvé
-    """
-    numero_page = 0
-    number_of_pages = len(reader.pages)
+    def getAbstract(self) -> str:
+        """
+        Renvoie l'abstract du pdf
 
-    # Recherche l'abstract dans le fichier
-    while numero_page < number_of_pages:
-        page = reader.pages[numero_page]
+        :return: String
+        """
+        self.abstract = ""
 
-        # Récupération du texte
-        content = page.extract_text()
+        numero_page = 0
+        number_of_pages = len(self.pdfReader.pages)
 
-        # Position du mot clef
-        pos_introduction = content.find("Introduction")
+        # Recherche l'abstract dans le fichier
+        while numero_page < number_of_pages:
+            page = self.pdfReader.pages[numero_page]
 
-        if pos_introduction != -1:
-            return content[pos_introduction + len("Introduction") + 1:pos_introduction + 200]
+            # Récupération du texte
+            content = page.extract_text()
+            content_copy = content[:].lower()
 
-        numero_page += 1
+            # Position des mots clefs
+            pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
+            pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
 
-    return None
+            # Si trouvé, alors on peut renvoyer l'abstract
+            if pos_abstract != -1 and pos_introduction != -1:
+                swift = 1
+                if content[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
+                    swift += 1
 
+                self.abstract = content[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
+                break
 
-def getCorps(reader: PyPDF2.PdfReader) -> str | None:
-    """
-    Renvoie le corps du pdf
+            # Sinon absence du mot abstract
+            elif pos_abstract == -1 and pos_introduction != -1:
+                dernier_point = content[:pos_introduction - 2].rfind(".")
 
-    :param reader: Objet de lecture
-    :return: String ou None si non trouvé
-    """
-    numero_page = 0
-    number_of_pages = len(reader.pages)
+                i = 0
 
-    # Recherche l'abstract dans le fichier
-    while numero_page < number_of_pages:
-        page = reader.pages[numero_page]
+                for i in range(dernier_point, 1, -1):
+                    if ord(content[i]) < 20:
+                        if ord(content[i - 1]) != 45:
+                            break
 
-        # Récupération du texte
-        content = page.extract_text()
+                self.abstract = content[i + 1:dernier_point]
+                break
 
-        # Position des mots clefs
-        pos_2 = content.find("2")
+            numero_page += 1
 
-        # Tant qu'on trouve un 2
-        while pos_2 != -1:
-            # Si on trouve le 2 du nom du chapitre, alors on peut récupérer le corps
-            if pos_2 != -1 and content[pos_2 - 1] == "\n" and content[pos_2 + 1] == " ":
+        return self.abstract
 
-                # Recherche du deuxième \n du début du corps
-                pos_backslash = pos_2 + 1
+    def writeValueInFile(self) -> None:
+        """
+        Écrit dans un fichier txt l'analyse du pdf
 
-                for i in range(len(content[pos_backslash:])):
-                    # Si on le trouve, on renvoie les 200 premiers caractères du corps
-                    if content[pos_backslash + i] == "\n":
-                        pos_backslash = pos_backslash + i + 1
-                        return content[pos_backslash:pos_backslash + 200]
+        :return: None
+        """
+        len_max = 50
+        if self.directoryTxtFile == "":
+            file = f"{self.pathToFile}{self.nomFichier[:-4]}.txt"
 
-            content = content[pos_2 + 1:]
-            pos_2 = content.find("2")
+        else:
+            file = f"{self.directoryTxtFile}{self.nomFichier[:-4]}.txt"
 
-        numero_page += 1
+        with open(file, "w") as f:
+            f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
+            f.write("\nTitre :\n")
+            f.write(f"    {self.getTitle()}\n\n")
 
+            f.write("Auteurs :\n")
+            f.write(f"    {self.getAuthor()}\n")
 
-def affichageValeurs(reader: PyPDF2.PdfReader) -> None:
-    """
-    Affiche les différentes informations à l'écran
+            f.write("\nAbstract :\n")
 
-    :param reader: Objet de lecture
-    :return: None
-    """
-    len_max = 50
+            abstract = self.getAbstract()
+            if abstract is not None:
+                pos_backslash = abstract.find("\n")
 
-    print("Titre :")
-    print(f"    {getTitle(reader)}")
+                if len(abstract) < len_max:
+                    f.write(f"    {abstract}\n")
 
-    print("\nAuteurs :")
-    for auteur in getAuthor(reader):
-        print(f"    {auteur}")
+                elif pos_backslash < len_max:
+                    f.write(f"    {abstract[:pos_backslash]} ...\n")
 
-    print("\nAbstract :")
+                else:
+                    f.write(f"    {abstract[:abstract[:len_max].rfind(' ')]} ...\n")
 
-    abstract = getAbstract(reader)
-    pos_backslash = abstract.find("\n")
-
-    if len(abstract) < len_max:
-        print(f"    {abstract}")
-
-    elif pos_backslash < len_max:
-        print(f"    {abstract[:pos_backslash]} ...")
-
-    else:
-        print(f"    {abstract[:abstract[:len_max].rfind(' ')]} ...")
-
-    print("\nIntroduction :")
-    intro = getIntroduction(reader)
-
-    pos_backslash = intro.find("\n")
-
-    if len(intro) < len_max:
-        print(f"    {intro}")
-
-    elif pos_backslash < len_max:
-        print(f"    {intro[:pos_backslash]} ...")
-
-    else:
-        print(f"    {intro[:intro[:len_max].rfind(' ')]} ...")
-
-    print("\nCorps :")
-    corps = getCorps(reader)
-
-    pos_backslash = corps.find("\n")
-
-    if len(corps) < len_max:
-        print(f"    {corps}")
-
-    elif pos_backslash < len_max:
-        print(f"    {corps[:pos_backslash]} ...")
-
-    else:
-        print(f"    {corps[:corps[:len_max].rfind(' ')]} ...")
+            else:
+                f.write("Pas d'abstract\n")
 
 
 if __name__ == '__main__':
-    file = sys.argv[1]
+    pathToFile = sys.argv[1]
 
-    checkPDFFile(file)
+    # Check si dossier ou fichier
+    if os.path.isdir(pathToFile):
+        # Check si / à la fin
+        if pathToFile[-1] != "/":
+            pathToFile += "/"
 
-    pdfFileObj = open(file, 'rb')
+        # Chemin du dossier de sortie
+        nomDossier = pathToFile + "analyse_pdf/"
 
-    # creating a pdf reader object
-    pdfReader = PyPDF2.PdfReader(pdfFileObj)
+        # Si existence du dossier → on le supprime
+        if os.path.exists(nomDossier):
+            try:
+                os.rmdir(nomDossier)
 
-    affichageValeurs(pdfReader)
+            except OSError:
+                try:
+                    shutil.rmtree(nomDossier)
+
+                except Exception:
+                    message = ("\nImpossible de supprimer le dossier analyse_pdf\nCe dossier est nécessaire pour la "
+                               "bonne exécution du programme")
+
+                    raise Exception(message)
+
+        # Création du dossier
+        os.makedirs(nomDossier)
+
+        for element in os.listdir(pathToFile):
+            if Parser.isPDFFile(pathToFile + element):
+                Parser(pathToFile, element, nomDossier).writeValueInFile()
+
+    else:
+        last_slash = pathToFile.rfind("/")
+
+        chemin = pathToFile[:last_slash + 1]
+        nom = pathToFile[last_slash + 1:]
+
+        parser = Parser(chemin, nom)
+
+        parser.writeValueInFile()
