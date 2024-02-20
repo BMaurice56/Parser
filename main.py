@@ -1,6 +1,5 @@
 # from bs4 import BeautifulSoup
 import traceback
-
 import PyPDF2
 import shutil
 import sys
@@ -55,9 +54,20 @@ class Parser:
 
         return PyPDF2.PdfReader(pdfFileObj)
 
+    def sortPreviousOrder(self, liste: list, dico_ordre: dict) -> None:
+        """
+        Remet les éléments dans la liste dans l'ordre du dictionnaire
+
+        :param liste: Liste contenant les éléments de base
+        :param dico_ordre: Contient l'ordre des éléments
+        :return: None
+        """
+        for x, y in dico_ordre.items():
+            liste[x] = y
+
     def getAuthor(self) -> None:
         """
-        Renvoi la liste des auteurs
+        Renvoi la liste des auteurs (Nom, mail)
 
         :return: List des auteurs
         """
@@ -75,13 +85,6 @@ class Parser:
         # On garde que la section correspondant aux auteurs
         self.auteurs = page[pos_titre + len(self.titre): pos_abstract]
 
-        # Récupération des emails
-        self.emails = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", page)
-
-        # Pour chaque mail, on enlève les retours à la ligne
-        for i in range(len(self.emails)):
-            self.emails[i] = self.emails[i].replace("\n", "")
-
         # Enlèvement des mots clefs
         if "Abstract" in self.auteurs.strip():
             self.auteurs = self.auteurs[:self.auteurs.find("Abstract") - 1].strip()
@@ -93,6 +96,44 @@ class Parser:
 
         # Stock temporairement les auteurs
         auteurs = []
+
+        # Récupération des emails
+        self.emails = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", page)
+        emails2 = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", page)
+
+        # Dictionnaire qui permet de retrouver l'ordre après tri
+        position_emails = dict((x, y) for x, y in enumerate(self.emails, 0))
+        position_emails2 = dict((x, y) for x, y in enumerate(emails2, 0))
+
+        # Tri les listes pour pouvoir les comparer
+        self.emails.sort()
+        emails2.sort()
+
+        if self.emails and self.emails != emails2:
+            if len(self.emails) < len(emails2):
+                self.sortPreviousOrder(self.emails, position_emails2)
+
+            elif len(self.emails) > len(emails2):
+                self.sortPreviousOrder(self.emails, position_emails)
+
+            else:
+                i = 0
+                for mail, mail2 in zip(self.emails, emails2):
+                    if mail != mail2:
+                        if mail[-5:] == ".univ" or mail[-6:] == ".univ-" or len(mail) < len(mail2):
+                            self.emails[i] = mail2
+                            position_emails[i] = mail2
+
+                    i += 1
+
+                self.sortPreviousOrder(self.emails, position_emails)
+
+        else:
+            self.sortPreviousOrder(self.emails, position_emails)
+
+        # Pour chaque mail, on enlève les retours à la ligne
+        for i in range(len(self.emails)):
+            self.emails[i] = self.emails[i].replace("\n", "")
 
         # S'il y a 1 seul mail, on récupère le seul auteur
         if len(self.emails) <= 1:
@@ -113,7 +154,7 @@ class Parser:
                 auteurs.append(result[0].split("\n")[0].strip())
 
                 pos_mail = self.auteurs.find(mail)
-                self.auteurs = self.auteurs[pos_mail + len(mail):]
+                self.auteurs = self.auteurs[pos_mail + len(mail):].strip()
 
         # On ne garde que les informations pertinentes
         self.auteurs = []
@@ -121,7 +162,7 @@ class Parser:
             if len(auteurs[i]) > 0 and auteurs[i][-1] == ",":
                 auteurs[i] = auteurs[i][:-1].strip()
 
-            if auteurs[i] != "":
+            if auteurs[i] not in ["", "."] and "@" not in auteurs[i]:
                 self.auteurs.append(auteurs[i])
 
         # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé
@@ -141,7 +182,7 @@ class Parser:
             self.auteurs[i] = self.auteurs[i].replace("`e", "è")
             self.auteurs[i] = self.auteurs[i].replace("`e", "è")
 
-        print(self.nomFichier, self.auteurs, self.emails)
+        # print(self.nomFichier, self.auteurs, self.emails)
 
     def getTitle(self, minimum_y=650, maximum_y=750) -> None:
         """
@@ -171,8 +212,8 @@ class Parser:
             if "letter" not in value and "communicated by" not in value:
                 parts_sort.append(elt)
 
-        print("parts : ", parts_sort)
-        print(self.titre)
+        # print("parts : ", parts_sort)
+        # print(self.titre)
 
         taille_parts = len(parts_sort)
 
