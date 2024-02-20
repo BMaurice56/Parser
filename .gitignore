@@ -1,2 +1,4 @@
-Corpus_2022/*.txt
-Corpus_2022/analyse_pdf/*.txt
+Corpus_2/*
+Corpus_2/analyse_pdf/*
+Corpus_2022/*
+Corpus_2022/analyse_pdf/*
