@@ -2,6 +2,7 @@ import PyPDF2
 import shutil
 import sys
 import os
+import re
 
 
 class Parser:
@@ -64,17 +65,60 @@ class Parser:
         self.getTitle()
         self.getAbstract()
 
+        # Position des éléments dans le texte
         pos_titre = page.find(self.titre)
         pos_abstract = page.find(self.abstract)
 
+        # On garde que la section correspondant aux auteurs
         self.auteurs = page[pos_titre + len(self.titre): pos_abstract]
 
+        # Récupération des emails
+        self.emails = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\-+_]+\.[a-z]+", self.auteurs)
+
+        # Enlèvement des mots clefs
         if "Abstract" in self.auteurs.strip():
             self.auteurs = self.auteurs[:self.auteurs.find("Abstract") - 1].strip()
 
+        # Enlèvement des caractères spéciaux
         for string in ["/natural", "/flat"]:
             if string in self.auteurs:
                 self.auteurs = self.auteurs.replace(string, " ")
+
+        auteurs = []
+
+        if len(self.emails) <= 1:
+            auteurs.append(self.auteurs.split("\n")[0])
+
+        else:
+            for mail in self.emails:
+                result = self.auteurs.split(mail)
+                auteurs.append(result[0].split("\n")[0].strip())
+
+                pos_mail = self.auteurs.find(mail)
+                self.auteurs = self.auteurs[pos_mail + len(mail):]
+
+        self.auteurs = []
+        for i in range(len(auteurs)):
+            if len(auteurs[i]) > 0 and auteurs[i][-1] == ",":
+                auteurs[i] = auteurs[i][:-1].strip()
+
+            if auteurs[i] != "":
+                self.auteurs.append(auteurs[i])
+
+        if not self.auteurs:
+            auteurs = page[pos_titre + len(self.titre): pos_abstract].split("\n")
+            for aut in auteurs:
+                if aut == "":
+                    auteurs.remove(aut)
+
+            self.auteurs.append(auteurs[0].strip())
+
+        for i in range(len(self.auteurs)):
+            self.auteurs[i] = self.auteurs[i].replace("´e", "é").strip()
+            self.auteurs[i] = self.auteurs[i].replace("`e", "è")
+
+        # print(self.auteurs)
+        # print(self.emails)
 
     def getTitle(self, minimum_y=650) -> None:
         """
