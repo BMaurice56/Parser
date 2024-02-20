@@ -10,7 +10,8 @@ class Parser:
     nomFichier = ""
     directoryTxtFile = ""
     titre = ""
-    auteurs = ""
+    auteurs = []
+    emails = []
     abstract = ""
     numbers_last_char = previous_number_last_char = 0
 
@@ -50,7 +51,7 @@ class Parser:
 
         return PyPDF2.PdfReader(pdfFileObj)
 
-    def getAuthor(self) -> str:
+    def getAuthor(self) -> None:
         """
         Renvoi la liste des auteurs
 
@@ -75,9 +76,7 @@ class Parser:
             if string in self.auteurs:
                 self.auteurs = self.auteurs.replace(string, " ")
 
-        return self.auteurs
-
-    def getTitle(self, minimum_y=650) -> str | None:
+    def getTitle(self, minimum_y=650) -> None:
         """
         Renvoie le titre du pdf
 
@@ -109,14 +108,12 @@ class Parser:
 
             # Si on n'a pas récupéré la deuxième ligne du titre, on augmente la fenêtre
             if self.titre[-1] == "\n":
-                self.titre = self.getTitle(minimum_y - 10)
+                self.getTitle(minimum_y - 10)
 
         else:
-            self.titre = self.getTitle(minimum_y - 10)
+            self.getTitle(minimum_y - 10)
 
-        return self.titre
-
-    def getAbstract(self) -> str:
+    def getAbstract(self) -> None:
         """
         Renvoie l'abstract du pdf
 
@@ -164,9 +161,7 @@ class Parser:
 
             numero_page += 1
 
-        return self.abstract
-
-    def writeValueInFile(self) -> None:
+    def writeValueInFile(self, typeOutputFile: str) -> None:
         """
         Écrit dans un fichier txt l'analyse du pdf
 
@@ -180,72 +175,79 @@ class Parser:
             file = f"{self.directoryTxtFile}{self.nomFichier[:-4]}.txt"
 
         with open(file, "w") as f:
-            f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
-            f.write("\nTitre :\n")
-            f.write(f"    {self.getTitle()}\n\n")
+            if typeOutputFile == "-t":
+                self.getTitle()
+                self.getAbstract()
+                self.getAuthor()
 
-            f.write("Auteurs :\n")
-            f.write(f"    {self.getAuthor()}\n")
+                f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
+                f.write("\nTitre :\n")
+                f.write(f"    {self.titre}\n\n")
 
-            f.write("\nAbstract :\n")
+                f.write("Auteurs :\n")
+                for aut in self.auteurs:
+                    f.write(f"    {aut}\n")
 
-            abstract = self.getAbstract()
-            if abstract is not None:
-                pos_backslash = abstract.find("\n")
+                f.write("\nAbstract :\n")
 
-                if len(abstract) < len_max:
-                    f.write(f"    {abstract}\n")
-
-                elif pos_backslash < len_max:
-                    f.write(f"    {abstract[:pos_backslash]} ...\n")
-
-                else:
-                    f.write(f"    {abstract[:abstract[:len_max].rfind(' ')]} ...\n")
-
-            else:
-                f.write("Pas d'abstract\n")
+                f.write(f"    {self.abstract}\n")
 
 
 if __name__ == '__main__':
-    pathToFile = sys.argv[1]
+    try:
+        if len(sys.argv) != 3:
+            raise Exception("Erreur nombre argument")
 
-    # Check si dossier ou fichier
-    if os.path.isdir(pathToFile):
-        # Check si / à la fin
-        if pathToFile[-1] != "/":
-            pathToFile += "/"
+        argv = sys.argv[1]
+        pathToFile = sys.argv[2]
 
-        # Chemin du dossier de sortie
-        nomDossier = pathToFile + "analyse_pdf/"
+        if argv != "-t" and argv != "-x":
+            raise Exception("Erreur argument rentré")
 
-        # Si existence du dossier → on le supprime
-        if os.path.exists(nomDossier):
-            try:
-                os.rmdir(nomDossier)
+        # Check si dossier ou fichier
+        if os.path.isdir(pathToFile):
+            # Check si / à la fin
+            if pathToFile[-1] != "/":
+                pathToFile += "/"
 
-            except OSError:
+            # Chemin du dossier de sortie
+            nomDossier = pathToFile + "analyse_pdf/"
+
+            # Si existence du dossier → on le supprime
+            if os.path.exists(nomDossier):
                 try:
-                    shutil.rmtree(nomDossier)
+                    os.rmdir(nomDossier)
 
-                except Exception:
-                    message = ("\nImpossible de supprimer le dossier analyse_pdf\nCe dossier est nécessaire pour la "
-                               "bonne exécution du programme")
+                except OSError:
+                    try:
+                        shutil.rmtree(nomDossier)
 
-                    raise Exception(message)
+                    except Exception:
+                        message = (
+                            "\nImpossible de supprimer le dossier analyse_pdf\nCe dossier est nécessaire pour la "
+                            "bonne exécution du programme")
 
-        # Création du dossier
-        os.makedirs(nomDossier)
+                        raise Exception(message)
 
-        for element in os.listdir(pathToFile):
-            if Parser.isPDFFile(pathToFile + element):
-                Parser(pathToFile, element, nomDossier).writeValueInFile()
+            # Création du dossier
+            os.makedirs(nomDossier)
 
-    else:
-        last_slash = pathToFile.rfind("/")
+            for element in os.listdir(pathToFile):
+                if Parser.isPDFFile(pathToFile + element):
+                    Parser(pathToFile, element, nomDossier).writeValueInFile(argv)
 
-        chemin = pathToFile[:last_slash + 1]
-        nom = pathToFile[last_slash + 1:]
+        else:
+            last_slash = pathToFile.rfind("/")
 
-        parser = Parser(chemin, nom)
+            chemin = pathToFile[:last_slash + 1]
+            nom = pathToFile[last_slash + 1:]
 
-        parser.writeValueInFile()
+            parser = Parser(chemin, nom)
+
+            parser.writeValueInFile(argv)
+
+    except Exception as e:
+        print(e.__str__())
+        print("main.py -outputfile [/path/to/the/file.pdf, /path/to/the/dir/]")
+        print("outputfile : -t text")
+        print("             -x xml")
