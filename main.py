@@ -54,7 +54,8 @@ class Parser:
 
         return PyPDF2.PdfReader(pdfFileObj)
 
-    def sortPreviousOrder(self, liste: list, dico_ordre: dict) -> None:
+    @staticmethod
+    def retrievePreviousOrder(liste: list, dico_ordre: dict) -> None:
         """
         Remet les éléments dans la liste dans l'ordre du dictionnaire
 
@@ -111,10 +112,10 @@ class Parser:
 
         if self.emails and self.emails != emails2:
             if len(self.emails) < len(emails2):
-                self.sortPreviousOrder(self.emails, position_emails2)
+                self.retrievePreviousOrder(self.emails, position_emails2)
 
             elif len(self.emails) > len(emails2):
-                self.sortPreviousOrder(self.emails, position_emails)
+                self.retrievePreviousOrder(self.emails, position_emails)
 
             else:
                 i = 0
@@ -126,10 +127,10 @@ class Parser:
 
                     i += 1
 
-                self.sortPreviousOrder(self.emails, position_emails)
+                self.retrievePreviousOrder(self.emails, position_emails)
 
         else:
-            self.sortPreviousOrder(self.emails, position_emails)
+            self.retrievePreviousOrder(self.emails, position_emails)
 
         # Pour chaque mail, on enlève les retours à la ligne
         for i in range(len(self.emails)):
