@@ -1,4 +1,5 @@
 # from bs4 import BeautifulSoup
+import Levenshtein
 import traceback
 import PyPDF2
 import shutil
@@ -121,6 +122,14 @@ class Parser:
                 self.auteurs[i] = self.auteurs[i].replace(key, value)
 
     def findEmails(self, texte: str) -> list:
+        """
+        Trouve les mails dans le texte donné
+
+        :param texte: texte contenant des mails
+        :return: Liste des mails
+        """
+        self.emails = []
+
         # Récupération des emails
         emails = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)]
         emails2 = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
@@ -203,6 +212,7 @@ class Parser:
         """
         separate_element = [",", " and "]
 
+        # On sépare les auteurs selon les séparateurs connus
         for split in separate_element:
             for auth in self.auteurs:
                 if split in auth:
@@ -211,6 +221,114 @@ class Parser:
                     self.auteurs.remove(auth)
                     self.auteurs += auteurs_separer
         ######################################################################
+
+        # On enlève les espaces de début et de fin
+        for i in range(len(self.auteurs)):
+            self.auteurs[i] = self.auteurs[i].strip()
+        ######################################################################
+
+    def makePairMailName(self, callGetAuthor: bool = True) -> None:
+        """
+        Effectue la paire mail et nom des auteurs
+
+        :return: None
+        """
+        # Appelle la fonction au besoin
+        if callGetAuthor:
+            self.getAuthor()
+        ######################################################################
+
+        self.dico_nom_mail = {}
+        taille_auteurs = len(self.auteurs)
+        taille_mails = len(self.emails)
+        levenshtein_distance = []
+        dico_nom_mail_distance = {}
+
+        # On enlève les caractères de retour à la ligne
+        for i in range(len(self.auteurs)):
+            if "\n" in self.auteurs[i]:
+                self.auteurs[i] = self.auteurs[i].replace("\n", "")
+        ######################################################################
+
+        # Si les tailles sont équivalentes, on associe les mails aux noms
+        if taille_auteurs == taille_mails:
+            # D'abord, on calcule les distances
+            for nom in self.auteurs:
+                for mail in self.emails:
+                    levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail)])
+            ######################################################################
+
+            # Puis, on ne garde que les distances les plus faibles
+            for nom, mail, distance in levenshtein_distance:
+                distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
+                if distance_in_dict[1] >= distance:
+                    dico_nom_mail_distance[nom] = [mail, distance]
+            ######################################################################
+
+            # Enfin, on passe les noms et mails dans le dictionnaire final
+            for key, value in dico_nom_mail_distance.items():
+                self.dico_nom_mail[key] = value[0]
+            ######################################################################
+
+        elif taille_auteurs > taille_mails:
+            for nom in self.auteurs:
+                self.dico_nom_mail[nom] = "Pas d'adresse mail"
+
+            return
+
+        else:
+            # On enlève les lettres uniques
+            auteurs = self.auteurs[0]
+            for i in range(1, len(auteurs) - 1):
+                if auteurs[i - 1] == " " and auteurs[i + 1] == " ":
+                    auteurs = auteurs[:i] + auteurs[i + 1:]
+            ######################################################################
+
+            auteurs = auteurs.replace("  ", " ")
+            noms = auteurs.split()
+            liste_noms = []
+
+            # On assemble les noms ensemble
+            i = 0
+            for nom in noms:
+                if i == 0:
+                    liste_noms.append(nom)
+
+                elif i == 1:
+                    # Si nom longueur de deux → particule
+                    if len(nom) == 2:
+                        i -= 1
+
+                    liste_noms[-1] += f" {nom}"
+
+                elif i >= 2:
+                    liste_noms.append(nom)
+                    i = 0
+
+                i += 1
+            ######################################################################
+
+            # Si on a plus de noms que de mails, on assemble les derniers noms
+            if len(liste_noms) > taille_mails:
+                difference = len(liste_noms) - taille_mails
+
+                for i in range(difference):
+                    value = liste_noms.pop()
+
+                    liste_noms[-1] = liste_noms[-1] + " " + value
+            ######################################################################
+
+            # On repasse les noms dans l'attribut de la classe
+            self.auteurs = liste_noms
+            ######################################################################
+
+            # Puis, on rappelle la fonction comme on a le même nombre de mails et de noms
+            self.makePairMailName(False)
+            ######################################################################
+
+        # print(levenshtein_distance)
+        # print(dico_nom_mail_distance)
+        print(self.dico_nom_mail)
 
     def getAuthor(self) -> None:
         """
@@ -305,7 +423,14 @@ class Parser:
             self.auteurs.append(auteurs[0].strip())
         ######################################################################
 
+        # On sépare les auteurs
         self.separateAuthors()
+        ######################################################################
+
+        # On enlève les caractères vides
+        if "" in self.auteurs:
+            self.auteurs.remove("")
+        ######################################################################
 
     def getTitle(self, minimum_y=650, maximum_y=750) -> None:
         """
@@ -460,6 +585,7 @@ class Parser:
             self.getAbstract()
             self.getAuthor()
             self.replaceAccent()
+            self.makePairMailName(False)
 
             if typeOutputFile == "-t":
                 f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
@@ -520,19 +646,19 @@ if __name__ == '__main__':
             for element in os.listdir(pathToFile):
                 if Parser.isPDFFile(pathToFile + element):
                     Parser(pathToFile, element, nomDossier).writeValueInFile(argv)
-                    print(f"Analyse efféctué sur : {element}")
+                    # print(f"Analyse efféctué sur : {element}") TODO
 
         else:
             last_slash = pathToFile.rfind("/")
 
-            chemin = pathToFile[:last_slash + 1]
-            nom = pathToFile[last_slash + 1:]
+            chemin_fichier = pathToFile[:last_slash + 1]
+            nom_fichier = pathToFile[last_slash + 1:]
 
-            parser = Parser(chemin, nom)
+            parser = Parser(chemin_fichier, nom_fichier)
 
             parser.writeValueInFile(argv)
 
-            print(f"Analyse efféctué sur : {nom}")
+            print(f"Analyse efféctué sur : {nom_fichier}")
 
     except Exception as e:
         print(traceback.format_exc())
