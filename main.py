@@ -1,4 +1,4 @@
-# from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
 import Levenshtein
 import traceback
 import PyPDF2
@@ -326,10 +326,6 @@ class Parser:
             self.makePairMailName(False)
             ######################################################################
 
-        # print(levenshtein_distance)
-        # print(dico_nom_mail_distance)
-        print(self.dico_nom_mail)
-
     def getAuthor(self) -> None:
         """
         Renvoi la liste des auteurs (Nom, mail)
@@ -575,12 +571,18 @@ class Parser:
         :return: None
         """
         if self.directoryTxtFile == "":
-            file = f"{self.pathToFile}{self.nomFichier[:-4]}.txt"
+            file = f"{self.pathToFile}{self.nomFichier[:-4]}"
 
         else:
-            file = f"{self.directoryTxtFile}{self.nomFichier[:-4]}.txt"
+            file = f"{self.directoryTxtFile}{self.nomFichier[:-4]}"
 
-        with open(file, "w") as f:
+        if typeOutputFile == "-t":
+            file += ".txt"
+
+        elif typeOutputFile == "-x":
+            file += ".xml"
+
+        with open(file, "w", encoding="utf-8") as f:
             self.getTitle()
             self.getAbstract()
             self.getAuthor()
@@ -593,15 +595,58 @@ class Parser:
                 f.write(f"    {self.titre}\n\n")
 
                 f.write("Auteurs :\n")
-                for aut in self.auteurs:
-                    f.write(f"    {aut}\n")
-
-                for mail in self.emails:
-                    f.write(f"    {mail}\n")
+                for key, value in self.dico_nom_mail.items():
+                    f.write(f"    {key} : {value}\n")
 
                 f.write("\nAbstract :\n")
-
                 f.write(f"    {self.abstract}\n")
+
+            elif typeOutputFile == "-x":
+                tree = ET.Element("chess")
+
+                # Ajout du tag article
+                article = ET.SubElement(tree, "article")
+                ######################################################################
+
+                # Ajout du preamble
+                preamble = ET.SubElement(article, 'preamble')
+                preamble.text = self.nomFichier
+
+                # Ajout du titre
+                titre = ET.SubElement(article, 'titre')
+                titre.text = self.titre
+                ######################################################################
+
+                # Ajout du tag auteurs
+                auteurs = ET.SubElement(article, 'auteurs')
+                ######################################################################
+
+                # Ajout de chaque auteur avec son nom et mail
+                for key, value in self.dico_nom_mail.items():
+                    auteur = ET.SubElement(auteurs, 'auteur')
+
+                    nom = ET.SubElement(auteur, 'name')
+                    nom.text = key
+
+                    mail = ET.SubElement(auteur, 'mail')
+                    mail.text = value
+                ######################################################################
+
+                # Ajout de l'abstract
+                abstract = ET.SubElement(article, 'abstract')
+                abstract.text = self.abstract
+                ######################################################################
+
+                # Ajout de l'indentation
+                ET.indent(tree)
+                ######################################################################
+
+                # Écrire dans le fichier XML
+                f.write(ET.tostring(tree, encoding="utf-8").decode("utf-8"))
+                ######################################################################
+
+            else:
+                raise Exception("Erreur type de fichier sortie")
 
 
 if __name__ == '__main__':
@@ -646,7 +691,7 @@ if __name__ == '__main__':
             for element in os.listdir(pathToFile):
                 if Parser.isPDFFile(pathToFile + element):
                     Parser(pathToFile, element, nomDossier).writeValueInFile(argv)
-                    # print(f"Analyse efféctué sur : {element}") TODO
+                    print(f"Analyse efféctué sur : {element}")
 
         else:
             last_slash = pathToFile.rfind("/")
