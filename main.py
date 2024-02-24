@@ -77,21 +77,21 @@ class Parser:
             " `e": 'è',
             " ´a": 'á',
             " `a": 'à',
-            " ^e": 'ê',
+            " ˆe": 'ê',
             " ´i": 'í',
             " `i": 'ì',
-            " ^i": 'î',
+            " ˆi": 'î',
             " ~n": 'ñ',
             " ´o": 'ó',
             " `o": 'ò',
             " ^o": 'ô',
             " ´u": 'ú',
             " `u": 'ù',
-            " ^u": 'û',
+            " ˆu": 'û',
             " ¨u": 'ü',
             " ´y": 'ý',
             " `y": 'ỳ',
-            " ^y": 'ŷ',
+            " ˆy": 'ŷ',
             "´e": 'é',
             "`e": 'è',
             "´a": 'á',
@@ -99,7 +99,7 @@ class Parser:
             "^e": 'ê',
             "´i": 'í',
             "`i": 'ì',
-            "^i": 'î',
+            "ˆi": 'î',
             "~n": 'ñ',
             "´o": 'ó',
             "`o": 'ò',
@@ -111,6 +111,9 @@ class Parser:
             "´y": 'ý',
             "`y": 'ỳ',
             "^y": 'ŷ',
+            "c ¸": "ç",
+            "c¸": "ç",
+            " ˆı": "î"
         }
 
         for key, value in dictionnaire_lettre.items():
@@ -239,8 +242,6 @@ class Parser:
                     auteurs.remove(aut)
 
             self.auteurs.append(auteurs[0].strip())
-
-        self.replaceAccent()
 
     def getTitle(self, minimum_y=650, maximum_y=750) -> None:
         """
@@ -390,11 +391,12 @@ class Parser:
             file = f"{self.directoryTxtFile}{self.nomFichier[:-4]}.txt"
 
         with open(file, "w") as f:
-            if typeOutputFile == "-t":
-                self.getTitle()
-                self.getAbstract()
-                self.getAuthor()
+            self.getTitle()
+            self.getAbstract()
+            self.getAuthor()
+            self.replaceAccent()
 
+            if typeOutputFile == "-t":
                 f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
                 f.write("\nTitre :\n")
                 f.write(f"    {self.titre}\n\n")
@@ -453,6 +455,8 @@ if __name__ == '__main__':
             for element in os.listdir(pathToFile):
                 if Parser.isPDFFile(pathToFile + element):
                     Parser(pathToFile, element, nomDossier).writeValueInFile(argv)
+                    print(f"Analyse efféctué sur : {element}")
+
 
         else:
             last_slash = pathToFile.rfind("/")
@@ -463,6 +467,8 @@ if __name__ == '__main__':
             parser = Parser(chemin, nom)
 
             parser.writeValueInFile(argv)
+
+            print(f"Analyse efféctué sur : {nom}")
 
     except Exception as e:
         print(traceback.format_exc())
