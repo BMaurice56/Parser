@@ -175,24 +175,30 @@ class Parser:
         # Position des éléments dans le texte
         pos_titre = page.find(self.titre)
         pos_abstract = page.find(self.abstract)
+        ######################################################################
 
         # On garde que la section correspondant aux auteurs
         section_auteurs = page[pos_titre + len(self.titre): pos_abstract]
+        print(section_auteurs)
+        ######################################################################
 
         # Enlèvement des mots clefs
         if "Abstract" in section_auteurs.strip():
             section_auteurs = section_auteurs[:section_auteurs.find("Abstract") - 1].strip()
+        ######################################################################
 
         # Enlèvement des caractères spéciaux
         for string in ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)", "  "]:
             if string in section_auteurs:
                 section_auteurs = section_auteurs.replace(string, " ")
+        ######################################################################
 
         # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
         self.emails = self.findEmails(section_auteurs)
 
         if not self.emails:
             self.emails = self.findEmails(page)
+        ######################################################################
 
         # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
         pos_asterisk = section_auteurs.find("∗")
@@ -200,6 +206,7 @@ class Parser:
         if pos_asterisk != -1:
             self.auteurs = [section_auteurs[:pos_asterisk]]
             return
+        ######################################################################
 
         # Stock temporairement les auteurs
         auteurs = []
@@ -232,6 +239,7 @@ class Parser:
 
             if auteurs[i] not in ["", "."] and "@" not in auteurs[i]:
                 self.auteurs.append(auteurs[i])
+        ######################################################################
 
         # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé
         # On parcourt le texte en enlevant les caractères vides et on garde le seul auteur
@@ -242,6 +250,18 @@ class Parser:
                     auteurs.remove(aut)
 
             self.auteurs.append(auteurs[0].strip())
+        ######################################################################
+
+        # S'il y a plusieurs auteurs avec un " and ", on les sépare
+        for auth in self.auteurs:
+            if " and " in auth.strip():
+                auteurs_separes = auth.split(" and ")
+
+                for i in range(len(auteurs_separes)):
+                    auteurs_separes[i] = auteurs_separes[i].strip()
+                self.auteurs.remove(auth)
+                self.auteurs += auteurs_separes
+        ######################################################################
 
     def getTitle(self, minimum_y=650, maximum_y=750) -> None:
         """
@@ -284,6 +304,7 @@ class Parser:
                 self.titre += parties_tries[0]
 
             return
+            ######################################################################
 
         elif taille_parties == 2:
             for elt in parties_tries:
