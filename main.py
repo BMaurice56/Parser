@@ -122,21 +122,26 @@ class Parser:
 
     def findEmails(self, texte: str) -> list:
         # Récupération des emails
-        emails = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)
-        emails2 = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)
+        emails = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)]
+        emails2 = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
+        emails3 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
+        emails4 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+\n@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
+        ######################################################################
 
         # Dictionnaire qui permet de retrouver l'ordre après tri
         position_emails = dict((x, y) for x, y in enumerate(emails, 0))
         position_emails2 = dict((x, y) for x, y in enumerate(emails2, 0))
+        ######################################################################
 
         # Tri les listes pour pouvoir les comparer
         emails.sort()
         emails2.sort()
+        ######################################################################
 
         if emails and emails != emails2:
             if len(emails) < len(emails2):
                 self.retrievePreviousOrder(emails, position_emails2)
-            elif len(self.emails) > len(emails2):
+            elif len(emails) > len(emails2):
                 self.retrievePreviousOrder(emails, position_emails)
             else:
                 i = 0
@@ -153,11 +158,59 @@ class Parser:
         else:
             self.retrievePreviousOrder(emails, position_emails)
 
+        # S'il y a des mails dans la troisième regex, on regarde s'il y a plusieurs mails
+        if len(emails3) != 0:
+            if "," in emails3[0]:
+                emails = []
+                emails3_separer = emails3[0].split(",")
+                dernier_mail, nom_domaine = emails3_separer[-1].split("@")
+
+                for elt in emails3_separer[:-1]:
+                    emails.append(f"{elt.strip()}@{nom_domaine}")
+
+                emails.append(f"{dernier_mail}@{nom_domaine}")
+        ######################################################################
+
+        # S'il y a des mails dans la quatrième regex, on regarde s'il y a plusieurs mails
+        if len(emails4) != 0:
+            if "," in emails4[0]:
+                emails = []
+                emails4_separer = emails4[0].split(",")
+                dernier_mail, nom_domaine = emails4_separer[-1].split("@")
+
+                for elt in emails4_separer[:-1]:
+                    emails.append(f"{elt.strip()}@{nom_domaine}")
+
+                emails.append(f"{dernier_mail}@{nom_domaine}")
+        ######################################################################
+
         # Pour chaque mail, on enlève les retours à la ligne
         for i in range(len(emails)):
             emails[i] = emails[i].replace("\n", "")
+            emails[i] = emails[i].replace("(", "")
+            emails[i] = emails[i].replace("{", "")
+            emails[i] = emails[i].replace(")", "")
+            emails[i] = emails[i].replace("}", "")
+        ######################################################################
 
         return emails
+
+    def separateAuthors(self) -> None:
+        """
+        Séparer les auteurs selon certains marqueurs
+
+        :return: None
+        """
+        separate_element = [",", " and "]
+
+        for split in separate_element:
+            for auth in self.auteurs:
+                if split in auth:
+                    auteurs_separer = auth.split(split)
+
+                    self.auteurs.remove(auth)
+                    self.auteurs += auteurs_separer
+        ######################################################################
 
     def getAuthor(self) -> None:
         """
@@ -179,7 +232,6 @@ class Parser:
 
         # On garde que la section correspondant aux auteurs
         section_auteurs = page[pos_titre + len(self.titre): pos_abstract]
-        print(section_auteurs)
         ######################################################################
 
         # Enlèvement des mots clefs
@@ -214,7 +266,6 @@ class Parser:
         # S'il y a 1 seul mail, on récupère le seul auteur
         if len(self.emails) <= 1:
             auteurs.append(section_auteurs.split("\n")[0])
-
         else:
             """
             En général, les articles sont sous la forme :
@@ -226,11 +277,13 @@ class Parser:
             Et enfin on garde le bloc de texte avec le nom et mails en moins du précédent auteur
             """
             for mail in self.emails:
-                result = section_auteurs.split(mail)
-                auteurs.append(result[0].split("\n")[0].strip())
+                if mail in section_auteurs.strip():
+                    result = section_auteurs.split(mail)
+                    auteurs.append(result[0].split("\n")[0].strip())
 
-                pos_mail = section_auteurs.find(mail)
-                section_auteurs = section_auteurs[pos_mail + len(mail):].strip()
+                    pos_mail = section_auteurs.find(mail)
+                    section_auteurs = section_auteurs[pos_mail + len(mail):].strip()
+        ######################################################################
 
         # On ne garde que les informations pertinentes
         for i in range(len(auteurs)):
@@ -252,16 +305,7 @@ class Parser:
             self.auteurs.append(auteurs[0].strip())
         ######################################################################
 
-        # S'il y a plusieurs auteurs avec un " and ", on les sépare
-        for auth in self.auteurs:
-            if " and " in auth.strip():
-                auteurs_separes = auth.split(" and ")
-
-                for i in range(len(auteurs_separes)):
-                    auteurs_separes[i] = auteurs_separes[i].strip()
-                self.auteurs.remove(auth)
-                self.auteurs += auteurs_separes
-        ######################################################################
+        self.separateAuthors()
 
     def getTitle(self, minimum_y=650, maximum_y=750) -> None:
         """
@@ -477,7 +521,6 @@ if __name__ == '__main__':
                 if Parser.isPDFFile(pathToFile + element):
                     Parser(pathToFile, element, nomDossier).writeValueInFile(argv)
                     print(f"Analyse efféctué sur : {element}")
-
 
         else:
             last_slash = pathToFile.rfind("/")
