@@ -16,7 +16,7 @@ class Parser:
     auteurs = []
     emails = []
     abstract = ""
-    numbers_last_char = previous_number_last_char = 0
+    dico_nom_mail = {}
 
     def __init__(self, path: str, nomFichier: str, directoryTxtFile: str = None):
         self.pathToFile = path
@@ -65,6 +65,22 @@ class Parser:
         """
         for x, y in dico_ordre.items():
             liste[x] = y
+
+    def replaceAccent(self) -> None:
+        """
+        Remplace tous les accents mal lus dans les noms
+
+        :return: None
+        """
+
+        for i in range(len(self.auteurs)):
+            self.auteurs[i] = self.auteurs[i].replace("´e", "é").replace("`e", "è").replace("´a", "á").replace("`a",
+                                                                                                               "à").replace(
+                "^e", "ê").replace("´i", "í").replace("`i", "ì").replace("^i", "î").replace("~n", "ñ").replace("´o",
+                                                                                                               "ó").replace(
+                "`o", "ò").replace("^o", "ô").replace("´u", "ú").replace("`u", "ù").replace("^u", "û").replace("¨u",
+                                                                                                               "ü").replace(
+                "´y", "ý").replace("`y", "ỳ").replace("^y", "ŷ").strip()
 
     def getAuthor(self) -> None:
         """
@@ -176,12 +192,7 @@ class Parser:
 
             self.auteurs.append(auteurs[0].strip())
 
-        # On corrige les accents mal lu
-        for i in range(len(self.auteurs)):
-            self.auteurs[i] = self.auteurs[i].replace(" ´e", "é").strip()
-            self.auteurs[i] = self.auteurs[i].replace(" `e", "è")
-            self.auteurs[i] = self.auteurs[i].replace("`e", "è")
-            self.auteurs[i] = self.auteurs[i].replace("`e", "è")
+        self.replaceAccent()
 
         # print(self.nomFichier, self.auteurs, self.emails)
 
@@ -190,6 +201,7 @@ class Parser:
         Renvoie le titre du pdf
 
         :param minimum_y position minimal en y
+        :param maximum_y position maximal en y
         :return: Titre
         """
         self.titre = ""
