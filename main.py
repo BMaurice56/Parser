@@ -72,15 +72,89 @@ class Parser:
 
         :return: None
         """
+        dictionnaire_lettre = {
+            " ´e": 'é',
+            " `e": 'è',
+            " ´a": 'á',
+            " `a": 'à',
+            " ^e": 'ê',
+            " ´i": 'í',
+            " `i": 'ì',
+            " ^i": 'î',
+            " ~n": 'ñ',
+            " ´o": 'ó',
+            " `o": 'ò',
+            " ^o": 'ô',
+            " ´u": 'ú',
+            " `u": 'ù',
+            " ^u": 'û',
+            " ¨u": 'ü',
+            " ´y": 'ý',
+            " `y": 'ỳ',
+            " ^y": 'ŷ',
+            "´e": 'é',
+            "`e": 'è',
+            "´a": 'á',
+            "`a": 'à',
+            "^e": 'ê',
+            "´i": 'í',
+            "`i": 'ì',
+            "^i": 'î',
+            "~n": 'ñ',
+            "´o": 'ó',
+            "`o": 'ò',
+            "^o": 'ô',
+            "´u": 'ú',
+            "`u": 'ù',
+            "^u": 'û',
+            "¨u": 'ü',
+            "´y": 'ý',
+            "`y": 'ỳ',
+            "^y": 'ŷ',
+        }
 
-        for i in range(len(self.auteurs)):
-            self.auteurs[i] = self.auteurs[i].replace("´e", "é").replace("`e", "è").replace("´a", "á").replace("`a",
-                                                                                                               "à").replace(
-                "^e", "ê").replace("´i", "í").replace("`i", "ì").replace("^i", "î").replace("~n", "ñ").replace("´o",
-                                                                                                               "ó").replace(
-                "`o", "ò").replace("^o", "ô").replace("´u", "ú").replace("`u", "ù").replace("^u", "û").replace("¨u",
-                                                                                                               "ü").replace(
-                "´y", "ý").replace("`y", "ỳ").replace("^y", "ŷ").strip()
+        for key, value in dictionnaire_lettre.items():
+            for i in range(len(self.auteurs)):
+                self.auteurs[i] = self.auteurs[i].replace(key, value)
+
+    def findEmails(self, texte: str) -> list:
+        # Récupération des emails
+        emails = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)
+        emails2 = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)
+
+        # Dictionnaire qui permet de retrouver l'ordre après tri
+        position_emails = dict((x, y) for x, y in enumerate(emails, 0))
+        position_emails2 = dict((x, y) for x, y in enumerate(emails2, 0))
+
+        # Tri les listes pour pouvoir les comparer
+        emails.sort()
+        emails2.sort()
+
+        if emails and emails != emails2:
+            if len(emails) < len(emails2):
+                self.retrievePreviousOrder(emails, position_emails2)
+            elif len(self.emails) > len(emails2):
+                self.retrievePreviousOrder(emails, position_emails)
+            else:
+                i = 0
+                for mail, mail2 in zip(emails, emails2):
+                    if mail != mail2:
+                        if mail[-5:] == ".univ" or mail[-6:] == ".univ-" or len(mail) < len(mail2):
+                            emails[i] = mail2
+                            position_emails[i] = mail2
+
+                    i += 1
+
+                self.retrievePreviousOrder(emails, position_emails)
+
+        else:
+            self.retrievePreviousOrder(emails, position_emails)
+
+        # Pour chaque mail, on enlève les retours à la ligne
+        for i in range(len(emails)):
+            emails[i] = emails[i].replace("\n", "")
+
+        return emails
 
     def getAuthor(self) -> None:
         """
@@ -88,7 +162,7 @@ class Parser:
 
         :return: List des auteurs
         """
-        self.auteurs = ""
+        self.auteurs = []
 
         page = self.pdfReader.pages[0].extract_text()
 
@@ -100,61 +174,36 @@ class Parser:
         pos_abstract = page.find(self.abstract)
 
         # On garde que la section correspondant aux auteurs
-        self.auteurs = page[pos_titre + len(self.titre): pos_abstract]
+        section_auteurs = page[pos_titre + len(self.titre): pos_abstract]
 
         # Enlèvement des mots clefs
-        if "Abstract" in self.auteurs.strip():
-            self.auteurs = self.auteurs[:self.auteurs.find("Abstract") - 1].strip()
+        if "Abstract" in section_auteurs.strip():
+            section_auteurs = section_auteurs[:section_auteurs.find("Abstract") - 1].strip()
 
         # Enlèvement des caractères spéciaux
-        for string in ["/natural", "/flat"]:
-            if string in self.auteurs:
-                self.auteurs = self.auteurs.replace(string, " ")
+        for string in ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)", "  "]:
+            if string in section_auteurs:
+                section_auteurs = section_auteurs.replace(string, " ")
+
+        # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
+        self.emails = self.findEmails(section_auteurs)
+
+        if not self.emails:
+            self.emails = self.findEmails(page)
+
+        # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
+        pos_asterisk = section_auteurs.find("∗")
+
+        if pos_asterisk != -1:
+            self.auteurs = [section_auteurs[:pos_asterisk]]
+            return
 
         # Stock temporairement les auteurs
         auteurs = []
 
-        # Récupération des emails
-        self.emails = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", page)
-        emails2 = re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", page)
-
-        # Dictionnaire qui permet de retrouver l'ordre après tri
-        position_emails = dict((x, y) for x, y in enumerate(self.emails, 0))
-        position_emails2 = dict((x, y) for x, y in enumerate(emails2, 0))
-
-        # Tri les listes pour pouvoir les comparer
-        self.emails.sort()
-        emails2.sort()
-
-        if self.emails and self.emails != emails2:
-            if len(self.emails) < len(emails2):
-                self.retrievePreviousOrder(self.emails, position_emails2)
-
-            elif len(self.emails) > len(emails2):
-                self.retrievePreviousOrder(self.emails, position_emails)
-
-            else:
-                i = 0
-                for mail, mail2 in zip(self.emails, emails2):
-                    if mail != mail2:
-                        if mail[-5:] == ".univ" or mail[-6:] == ".univ-" or len(mail) < len(mail2):
-                            self.emails[i] = mail2
-                            position_emails[i] = mail2
-
-                    i += 1
-
-                self.retrievePreviousOrder(self.emails, position_emails)
-
-        else:
-            self.retrievePreviousOrder(self.emails, position_emails)
-
-        # Pour chaque mail, on enlève les retours à la ligne
-        for i in range(len(self.emails)):
-            self.emails[i] = self.emails[i].replace("\n", "")
-
         # S'il y a 1 seul mail, on récupère le seul auteur
         if len(self.emails) <= 1:
-            auteurs.append(self.auteurs.split("\n")[0])
+            auteurs.append(section_auteurs.split("\n")[0])
 
         else:
             """
@@ -162,19 +211,18 @@ class Parser:
             - nom
             - université
             - mail
-            et tous se suivent
+            et les auteurs se suivent
             Donc on vient séparer le texte des auteurs selon les mails en gardant le nom
             Et enfin on garde le bloc de texte avec le nom et mails en moins du précédent auteur
             """
             for mail in self.emails:
-                result = self.auteurs.split(mail)
+                result = section_auteurs.split(mail)
                 auteurs.append(result[0].split("\n")[0].strip())
 
-                pos_mail = self.auteurs.find(mail)
-                self.auteurs = self.auteurs[pos_mail + len(mail):].strip()
+                pos_mail = section_auteurs.find(mail)
+                section_auteurs = section_auteurs[pos_mail + len(mail):].strip()
 
         # On ne garde que les informations pertinentes
-        self.auteurs = []
         for i in range(len(auteurs)):
             if len(auteurs[i]) > 0 and auteurs[i][-1] == ",":
                 auteurs[i] = auteurs[i][:-1].strip()
@@ -194,8 +242,6 @@ class Parser:
 
         self.replaceAccent()
 
-        # print(self.nomFichier, self.auteurs, self.emails)
-
     def getTitle(self, minimum_y=650, maximum_y=750) -> None:
         """
         Renvoie le titre du pdf
@@ -208,48 +254,46 @@ class Parser:
 
         page = self.pdfReader.pages[0]
 
-        parts = []
-        parts_sort = []
+        parties = []
+        parties_tries = []
 
         def visitor_body(text, cm, tm, fontDict, fontSize):
             if text != "" and text != " " and text != "\n":
                 y = tm[5]
                 if minimum_y < y < maximum_y:
-                    parts.append(text)
+                    parties.append(text)
 
         # Extraction des premières lignes
         page.extract_text(visitor_text=visitor_body)
 
-        for elt in parts:
+        for elt in parties:
             value = elt.lower().strip()
             if "letter" not in value and "communicated by" not in value:
-                parts_sort.append(elt)
+                parties_tries.append(elt)
+        ######################################################################
 
-        # print("parts : ", parts_sort)
-        # print(self.titre)
+        taille_parties = len(parties_tries)
 
-        taille_parts = len(parts_sort)
-
-        if taille_parts == 1:
+        if taille_parties == 1:
             # Si on n'a pas récupéré la deuxième ligne du titre, on augmente la fenêtre
-            if parts_sort[0][-1] == "\n":
+            if parties_tries[0][-1] == "\n":
                 self.titre = ""
                 self.getTitle(minimum_y - 10, maximum_y - 10)
             else:
-                self.titre += parts_sort[0]
+                self.titre += parties_tries[0]
 
             return
 
-        elif taille_parts == 2:
-            for elt in parts_sort:
+        elif taille_parties == 2:
+            for elt in parties_tries:
                 self.titre += elt
 
             return
 
-        elif len(parts_sort) > 10:
-            self.titre += parts_sort[0]
-            if parts_sort[0][-1] == "\n":
-                self.titre += parts_sort[1]
+        elif len(parties_tries) > 10:
+            self.titre += parties_tries[0]
+            if parties_tries[0][-1] == "\n":
+                self.titre += parties_tries[1]
             return
 
         else:
@@ -278,6 +322,18 @@ class Parser:
             # Position des mots clefs
             pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
             pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
+            pos_keywords = max(content_copy.find("keywords"), content_copy.find("eywords") - 1)
+            pos_index_terms = max(content_copy.find("index terms"), content_copy.find("ndex terms") - 1)
+
+            # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
+            if pos_keywords != -1 and pos_keywords < pos_introduction:
+                pos_introduction = pos_keywords
+            ######################################################################
+
+            # S'il y a une section index terms dans le début du pdf, on l'enlève
+            if pos_index_terms != -1 and pos_index_terms < pos_introduction:
+                pos_introduction = pos_index_terms
+            ######################################################################
 
             # Si trouvé, alors on peut renvoyer l'abstract
             if pos_abstract != -1 and pos_introduction != -1:
@@ -287,6 +343,7 @@ class Parser:
 
                 self.abstract = content[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
                 break
+            ######################################################################
 
             # Sinon absence du mot abstract
             elif pos_abstract == -1 and pos_introduction != -1:
@@ -301,8 +358,24 @@ class Parser:
 
                 self.abstract = content[i + 1:dernier_point]
                 break
+            ######################################################################
 
             numero_page += 1
+
+        # Si présence du 1 de l'introduction, on l'enlève
+        pos_i_introduction = self.abstract.rfind("I.")
+
+        if pos_i_introduction != -1:
+            self.abstract = self.abstract[:pos_i_introduction - 1]
+        ######################################################################
+
+        # Permet d'enlever les espaces et retour à la ligne à la fin pour vérifier la présence du point
+        while self.abstract[-1] in ["\n", " "]:
+            self.abstract = self.abstract[:-1]
+
+        if self.abstract[-1] != ".":
+            self.abstract += "."
+        ######################################################################
 
     def writeValueInFile(self, typeOutputFile: str) -> None:
         """
