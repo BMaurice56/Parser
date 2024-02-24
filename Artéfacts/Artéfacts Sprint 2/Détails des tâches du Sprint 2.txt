@@ -19,7 +19,7 @@ Amélioration : (2 tâches)
 - Améliorer l’extraction de l’abstract et des auteurs
 - Améliorer les tests unitaires
 
-Rendu et artéfacts : (2 tâches) (Faire des rapports comptent pour une tâche)
+Rendu et artéfacts : (3 tâches)
 
 - Rendre le programme sur le Moodle
 
