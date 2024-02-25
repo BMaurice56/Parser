@@ -193,13 +193,14 @@ class Parser:
                 emails.append(f"{dernier_mail}@{nom_domaine}")
         ######################################################################
 
-        # Pour chaque mail, on enlève les retours à la ligne
+        # Pour chaque mail, on enlève différents caractères
         for i in range(len(emails)):
             emails[i] = emails[i].replace("\n", "")
             emails[i] = emails[i].replace("(", "")
             emails[i] = emails[i].replace("{", "")
             emails[i] = emails[i].replace(")", "")
             emails[i] = emails[i].replace("}", "")
+            emails[i] = emails[i].strip()
         ######################################################################
 
         return emails
@@ -255,7 +256,7 @@ class Parser:
             # D'abord, on calcule les distances
             for nom in self.auteurs:
                 for mail in self.emails:
-                    levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail)])
+                    levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
             ######################################################################
 
             # Puis, on ne garde que les distances les plus faibles
@@ -471,21 +472,27 @@ class Parser:
             return
             ######################################################################
 
+        # Soit le titre est en deux parties
         elif taille_parties == 2:
             for elt in parties_tries:
                 self.titre += elt
 
             return
+        ######################################################################
 
+        # Soit, on commence à itérer sur le texte et à ce moment-là, on ne garde que les premières lignes
         elif len(parties_tries) > 10:
             self.titre += parties_tries[0]
             if parties_tries[0][-1] == "\n":
                 self.titre += parties_tries[1]
             return
+        ######################################################################
 
+        # Soit, on n'a rien trouvé, ou on se trouve à moins de 10 éléments
         else:
             self.titre = ""
             self.getTitle(minimum_y - 10, maximum_y - 10)
+        ######################################################################
 
     def getAbstract(self) -> None:
         """
