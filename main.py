@@ -269,6 +269,22 @@ class Parser:
 
         :return: None
         """
+
+        def mailInDict(mail_to_find: str, dico: dict) -> bool:
+            """
+            Permet de vérifier si le mail est présent dans le dictionnaire
+            contenant les noms comme clefs et [mail, distance] comme valeurs
+
+            :param mail_to_find: mail à trouver
+            :param dico: dictionnaire
+            :return: True ou False
+            """
+            for mail_dico, dist in dico.values():
+                if mail_dico == mail_to_find:
+                    return True
+
+            return False
+
         # Appelle la fonction au besoin
         if callGetAuthor:
             self.getAuthor()
@@ -297,8 +313,11 @@ class Parser:
             # Puis, on ne garde que les distances les plus faibles
             for nom, mail, distance in levenshtein_distance:
                 distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
-                if distance_in_dict[1] >= distance:
+
+                # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
+                if distance_in_dict[1] >= distance and not mailInDict(mail, dico_nom_mail_distance):
                     dico_nom_mail_distance[nom] = [mail, distance]
+                ######################################################################
             ######################################################################
 
             # Enfin, on passe les noms et mails dans le dictionnaire final
@@ -306,12 +325,16 @@ class Parser:
                 self.dico_nom_mail[key] = value[0]
             ######################################################################
 
+        # Sinon, comme il est probable qu'il n'y est aucun mail, on met simplement la mention "pas de mail"
         elif taille_auteurs > taille_mails:
             for nom in self.auteurs:
                 self.dico_nom_mail[nom] = "Pas d'adresse mail"
 
             return
+        ######################################################################
 
+        # Soit, on a plus de mails que noms (noms dans une seule chaine de caractère sans espace
+        # et donc on vient d'abord séparer les noms pour avoir le même nombre de noms et mails
         else:
             # On enlève les lettres uniques
             auteurs = self.auteurs[0]
@@ -361,6 +384,7 @@ class Parser:
             # Puis, on rappelle la fonction comme on a le même nombre de mails et de noms
             self.makePairMailName(False)
             ######################################################################
+        ######################################################################
 
     def getAuthor(self) -> None:
         """
