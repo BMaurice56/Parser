@@ -73,7 +73,7 @@ class Parser:
         """
         Remplace tous les accents mal lus dans les noms
 
-        :param texte string à checker
+        :param: texte string à checker
         :return: texte corrigé
         """
         dictionnaire_lettre = {
