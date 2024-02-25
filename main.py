@@ -648,23 +648,21 @@ class Parser:
                 f.write(f"    {self.bibliographie}\n")
 
             elif typeOutputFile == "-x":
-                tree = ET.Element("chess")
-
-                # Ajout du tag article
-                article = ET.SubElement(tree, "article")
+                # Ajout de l'arbre article
+                tree = ET.Element("article")
                 ######################################################################
 
                 # Ajout du preamble
-                preamble = ET.SubElement(article, 'preamble')
+                preamble = ET.SubElement(tree, 'preamble')
                 preamble.text = self.nomFichier
 
                 # Ajout du titre
-                titre = ET.SubElement(article, 'titre')
+                titre = ET.SubElement(tree, 'titre')
                 titre.text = self.titre
                 ######################################################################
 
                 # Ajout du tag auteurs
-                auteurs = ET.SubElement(article, 'auteurs')
+                auteurs = ET.SubElement(tree, 'auteurs')
                 ######################################################################
 
                 # Ajout de chaque auteur avec son nom et mail
@@ -679,12 +677,12 @@ class Parser:
                 ######################################################################
 
                 # Ajout de l'abstract
-                abstract = ET.SubElement(article, 'abstract')
+                abstract = ET.SubElement(tree, 'abstract')
                 abstract.text = self.abstract
                 ######################################################################
 
                 # Ajout de la bibliographie
-                abstract = ET.SubElement(article, 'bibliographie')
+                abstract = ET.SubElement(tree, 'bibliographie')
                 abstract.text = self.bibliographie
                 ######################################################################
 
