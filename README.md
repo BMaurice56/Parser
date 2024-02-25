@@ -4,20 +4,12 @@ Ce logiciel a pour but d'analyser des documents scientific de type pdf
 et d'en extraire les différentes informations de celui-ci comme :
 - Titre
 - Auteurs
+- Abstract
 - Paragraphes
 - Bibliographies
+- etc...
 
-Option utile pour pdftotext : 
-- -raw pour garder la structure dans l'ordre du contenue
-
-
-
-Pdf2txt:
-
-  -Pdf lecture vertical commande : pdf2txt -V fichierPdf.pdf fichierTxt.txt
-  
-  -Pdf lecture normal commande : pdf2txt -A fichierPdf.pdf fichierTxt.txt
-  
-Pdf2txt va affciher chaque schéma à la fin de la page de la page où est le schéma (après le numéro de la page)
-
-Pdftotxt va afficher le schéma à l'endroit où il est dans le pdf
+Pour lancer ce logiciel sur un pdf ou sur un dossier, effectuer la commande suivante :
+- python3 main.py -outputfile [/path/to/the/file.pdf, /path/to/the/dir/]
+- outputfile : -t text
+               -x xml
