@@ -17,6 +17,7 @@ class Parser:
     auteurs = []
     emails = []
     abstract = ""
+    bibliographie = ""
     dico_nom_mail = {}
 
     def __init__(self, path: str, nomFichier: str, directoryTxtFile: str = None):
@@ -512,12 +513,14 @@ class Parser:
             # Récupération du texte
             content = page.extract_text()
             content_copy = content[:].lower()
+            ######################################################################
 
             # Position des mots clefs
             pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
             pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
             pos_keywords = max(content_copy.find("keywords"), content_copy.find("eywords") - 1)
             pos_index_terms = max(content_copy.find("index terms"), content_copy.find("ndex terms") - 1)
+            ######################################################################
 
             # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
             if pos_keywords != -1 and pos_keywords < pos_introduction:
@@ -555,6 +558,7 @@ class Parser:
             ######################################################################
 
             numero_page += 1
+        ######################################################################
 
         # Si présence du 1 de l'introduction, on l'enlève
         pos_i_introduction = self.abstract.rfind("I.")
@@ -570,6 +574,37 @@ class Parser:
         if self.abstract[-1] != ".":
             self.abstract += "."
         ######################################################################
+
+    def getBibliography(self) -> None:
+        """
+        Renvoie la bibliographie de l'article
+
+        :return: None
+        """
+        self.bibliographie = ""
+
+        number_of_pages = len(self.pdfReader.pages) - 1
+        numero_page = number_of_pages
+
+        while numero_page > -1:
+            page = self.pdfReader.pages[numero_page]
+
+            # Récupération du texte
+            content = page.extract_text()
+            content_copy = content[:].lower()
+            ######################################################################
+
+            pos_references = max(content_copy.find("references"), content.find("References"),
+                                 content.find("REFERENCES"))
+
+            if pos_references != -1:
+                self.bibliographie = f"{content[pos_references + len('references'):]}{self.bibliographie}"
+                break
+
+            else:
+                self.bibliographie = f"{content}{self.bibliographie}"
+
+            numero_page -= 1
 
     def writeValueInFile(self, typeOutputFile: str) -> None:
         """
@@ -595,6 +630,7 @@ class Parser:
             self.getAuthor()
             self.replaceAccent()
             self.makePairMailName(False)
+            self.getBibliography()
 
             if typeOutputFile == "-t":
                 f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
@@ -607,6 +643,9 @@ class Parser:
 
                 f.write("\nAbstract :\n")
                 f.write(f"    {self.abstract}\n")
+
+                f.write("\nBibliographie : \n")
+                f.write(f"    {self.bibliographie}\n")
 
             elif typeOutputFile == "-x":
                 tree = ET.Element("chess")
@@ -642,6 +681,11 @@ class Parser:
                 # Ajout de l'abstract
                 abstract = ET.SubElement(article, 'abstract')
                 abstract.text = self.abstract
+                ######################################################################
+
+                # Ajout de la bibliographie
+                abstract = ET.SubElement(article, 'bibliographie')
+                abstract.text = self.bibliographie
                 ######################################################################
 
                 # Ajout de l'indentation
