@@ -1,0 +1,24 @@
+Analyse du fichier et en particulier de son en-tête : (3 tâches)
+
+- Faire une nouvelle sortie de fichier en ".xml" et adapter le code en conséquence
+- Extraction de ou des adresses courriels du/des auteurs
+- Extraction de la bibliographie
+
+Tests : (3 tâches)
+
+- Tests sur les différents fichiers « .pdf » du corpus
+- Augmentation du nombre de fichiers dans le deuxième corpus
+
+- Création de tests unitaires
+
+Amélioration : (2 tâches)
+
+- Améliorer l’extraction de l’abstract et des auteurs
+- Modification des tests unitaires pour avoir un "score" de précision
+
+Rendu et artéfacts : (3 tâches)
+
+- Rendre le programme sur le Moodle
+
+- Faire le tableau Excel et le détails des tâches du Sprint
+- Faire un rapport de fin de Sprint

@@ -1,0 +1,27 @@
+Analyse du fichier et en particulier de son en-tête : (4 tâches)
+
+- Extraction du nom du fichier d’origine
+- Extraction du titre du papier
+- Extraction du résumé (abstract)
+- Extraction du/des nom(s) du/des auteur(s)
+
+Tests : (3 tâches) (La création de tests compte pour une tâche)
+
+- Tests sur les différents fichiers « .pdf » du corpus
+- Création d'un deuxième corpus
+
+- Création de tests unitaires
+- Création de tests de performance
+- Création de tests de charge
+
+Amélioration : (2 tâches)
+
+- Améliorer l’extraction de l’abstract et des auteurs
+- Améliorer les tests unitaires
+
+Rendu et artéfacts : (3 tâches)
+
+- Rendre le programme sur le Moodle
+
+- Faire un rapport de milieu de Sprint
+- Faire un rapport de fin de Sprint
