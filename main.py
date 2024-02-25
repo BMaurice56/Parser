@@ -68,13 +68,34 @@ class Parser:
         for x, y in dico_ordre.items():
             liste[x] = y
 
-    def replaceAccent(self) -> None:
+    @staticmethod
+    def replaceAccent(texte: list | str) -> None | str:
         """
         Remplace tous les accents mal lus dans les noms
 
-        :return: None
+        :param texte string à checker
+        :return: texte corrigé
         """
         dictionnaire_lettre = {
+            "´ e": 'é',
+            "` e": 'è',
+            "´ a": 'á',
+            "` a": 'à',
+            "^ e": 'ê',
+            "´ i": 'í',
+            "` i": 'ì',
+            "ˆ i": 'î',
+            "~ n": 'ñ',
+            "´ o": 'ó',
+            "` o": 'ò',
+            "^ o": 'ô',
+            "´ u": 'ú',
+            "` u": 'ù',
+            "^ u": 'û',
+            "¨ u": 'ü',
+            "´ y": 'ý',
+            "` y": 'ỳ',
+            "^ y": 'ŷ',
             " ´e": 'é',
             " `e": 'è',
             " ´a": 'á',
@@ -94,6 +115,9 @@ class Parser:
             " ´y": 'ý',
             " `y": 'ỳ',
             " ˆy": 'ŷ',
+            " c ¸": "ç",
+            " c¸": "ç",
+            "ˆ ı": "î",
             "´e": 'é',
             "`e": 'è',
             "´a": 'á',
@@ -117,10 +141,20 @@ class Parser:
             "c¸": "ç",
             " ˆı": "î"
         }
+        if type(texte) is list:
+            for key, value in dictionnaire_lettre.items():
+                for i in range(len(texte)):
+                    texte[i] = texte[i].replace(key, value)
+            return
 
-        for key, value in dictionnaire_lettre.items():
-            for i in range(len(self.auteurs)):
-                self.auteurs[i] = self.auteurs[i].replace(key, value)
+        elif type(texte) is str:
+            for key, value in dictionnaire_lettre.items():
+                texte = texte.replace(key, value)
+
+            return texte
+
+        else:
+            raise TypeError("Type non reconnue")
 
     def findEmails(self, texte: str) -> list:
         """
@@ -378,10 +412,26 @@ class Parser:
 
         # Stock temporairement les auteurs
         auteurs = []
+        ######################################################################
 
-        # S'il y a 1 seul mail, on récupère le seul auteur
-        if len(self.emails) <= 1:
+        # S'il y a 0 mail, on récupère les auteurs à tatillon
+        if len(self.emails) == 0:
+            auth = section_auteurs.split("\n")
+
+            for elt in auth:
+                value = elt.strip()
+                if value.find("partement") != -1 or value.find("niversity") != -1 or value.find("partment") != -1:
+                    break
+                else:
+                    auteurs.append(elt)
+        ######################################################################
+
+        # Sinon, on ne récupère que le seul auteur
+        elif len(self.emails) == 1:
             auteurs.append(section_auteurs.split("\n")[0])
+        ######################################################################
+
+        # Sinon, on parcourt les mails et on sépare les auteurs
         else:
             """
             En général, les articles sont sous la forme :
@@ -628,9 +678,10 @@ class Parser:
             self.getTitle()
             self.getAbstract()
             self.getAuthor()
-            self.replaceAccent()
+            self.replaceAccent(self.auteurs)
             self.makePairMailName(False)
             self.getBibliography()
+            self.bibliographie = self.replaceAccent(self.bibliographie)
 
             if typeOutputFile == "-t":
                 f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
