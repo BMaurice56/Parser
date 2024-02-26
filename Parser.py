@@ -1,8 +1,9 @@
 import xml.etree.ElementTree as ET
+from Utils import Utils
 import Levenshtein
 import PyPDF2
 import re
-import os
+
 
 class Parser:
     pdfReader = PyPDF2.PdfReader
@@ -21,7 +22,7 @@ class Parser:
         self.pathToFile = path
         self.nomFichier = nomFichier
 
-        if not self.isPDFFile(path + nomFichier):
+        if not Utils.isPDFFile(path + nomFichier):
             print(f"Nom du fichier : {nomFichier}")
             raise FileNotFoundError("Le fichier fourni n'est pas un pdf")
 
@@ -29,19 +30,6 @@ class Parser:
 
         if directoryTxtFile is not None:
             self.directoryTxtFile = directoryTxtFile
-
-    @staticmethod
-    def isPDFFile(nomFichier: str) -> bool:
-        """
-        Vérifie si le nom de fichier fourni est bien un pdf
-
-        :param nomFichier: Nom du fichier
-        :return: True ou False
-        """
-        if not os.path.isfile(nomFichier) or nomFichier[-4:] != ".pdf":
-            return False
-
-        return True
 
     def openPDF(self) -> PyPDF2.PdfReader:
         """
@@ -52,111 +40,6 @@ class Parser:
         pdfFileObj = open(self.pathToFile + self.nomFichier, 'rb')
 
         return PyPDF2.PdfReader(pdfFileObj)
-
-    @staticmethod
-    def retrievePreviousOrder(liste: list, dico_ordre: dict) -> None:
-        """
-        Remet les éléments dans la liste dans l'ordre du dictionnaire
-
-        :param liste: Liste contenant les éléments de base
-        :param dico_ordre: Contient l'ordre des éléments
-        :return: None
-        """
-        for x, y in dico_ordre.items():
-            liste[x] = y
-
-    @staticmethod
-    def replaceAccent(texte: list | dict | str) -> None | str:
-        """
-        Remplace tous les accents mal lus dans les noms
-
-        :param texte string à checker
-        :return: texte corrigé
-        """
-        dictionnaire_lettre = {
-            "´ e": 'é',
-            "` e": 'è',
-            "´ a": 'á',
-            "` a": 'à',
-            "^ e": 'ê',
-            "´ i": 'í',
-            "` i": 'ì',
-            "ˆ i": 'î',
-            "~ n": 'ñ',
-            "´ o": 'ó',
-            "` o": 'ò',
-            "^ o": 'ô',
-            "´ u": 'ú',
-            "` u": 'ù',
-            "^ u": 'û',
-            "¨ u": 'ü',
-            "´ y": 'ý',
-            "` y": 'ỳ',
-            "^ y": 'ŷ',
-            " ´e": 'é',
-            " `e": 'è',
-            " ´a": 'á',
-            " `a": 'à',
-            " ˆe": 'ê',
-            " ´i": 'í',
-            " `i": 'ì',
-            " ˆi": 'î',
-            " ~n": 'ñ',
-            " ´o": 'ó',
-            " `o": 'ò',
-            " ^o": 'ô',
-            " ´u": 'ú',
-            " `u": 'ù',
-            " ˆu": 'û',
-            " ¨u": 'ü',
-            " ´y": 'ý',
-            " `y": 'ỳ',
-            " ˆy": 'ŷ',
-            " c ¸": "ç",
-            " c¸": "ç",
-            "ˆ ı": "î",
-            "´e": 'é',
-            "`e": 'è',
-            "´a": 'á',
-            "`a": 'à',
-            "^e": 'ê',
-            "´i": 'í',
-            "`i": 'ì',
-            "ˆi": 'î',
-            "~n": 'ñ',
-            "´o": 'ó',
-            "`o": 'ò',
-            "^o": 'ô',
-            "´u": 'ú',
-            "`u": 'ù',
-            "^u": 'û',
-            "¨u": 'ü',
-            "´y": 'ý',
-            "`y": 'ỳ',
-            "^y": 'ŷ',
-            "c ¸": "ç",
-            "c¸": "ç",
-            " ˆı": "î"
-        }
-        if type(texte) is list:
-            for key, value in dictionnaire_lettre.items():
-                for i in range(len(texte)):
-                    texte[i] = texte[i].replace(key, value)
-            return
-
-        elif type(texte) is str:
-            for key, value in dictionnaire_lettre.items():
-                texte = texte.replace(key, value)
-
-            return texte
-
-        elif type(texte) is dict:
-            for key, value in dictionnaire_lettre.items():
-                for i in range(len(texte.keys())):
-                    ""
-
-        else:
-            raise TypeError("Type non reconnue")
 
     def findEmails(self, texte: str) -> list:
         """
@@ -187,9 +70,9 @@ class Parser:
 
         if emails and emails != emails2:
             if len(emails) < len(emails2):
-                self.retrievePreviousOrder(emails, position_emails2)
+                Utils.retrievePreviousOrder(emails, position_emails2)
             elif len(emails) > len(emails2):
-                self.retrievePreviousOrder(emails, position_emails)
+                Utils.retrievePreviousOrder(emails, position_emails)
             else:
                 i = 0
                 for mail, mail2 in zip(emails, emails2):
@@ -200,10 +83,10 @@ class Parser:
 
                     i += 1
 
-                self.retrievePreviousOrder(emails, position_emails)
+                Utils.retrievePreviousOrder(emails, position_emails)
 
         else:
-            self.retrievePreviousOrder(emails, position_emails)
+            Utils.retrievePreviousOrder(emails, position_emails)
 
         # S'il y a des mails dans la troisième regex, on regarde s'il y a plusieurs mails
         if len(emails3) != 0:
@@ -743,7 +626,7 @@ class Parser:
             section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
         ######################################################################
         print()
-        print(self.replaceAccent(section_auteurs))
+        print(Utils.replaceAccent(section_auteurs))
         print()
 
     def writeValueInFile(self, typeOutputFile: str) -> None:
@@ -769,10 +652,10 @@ class Parser:
             self.getAbstract()
             self.getAuthor()
             self.getAffiliation()
-            self.replaceAccent(self.auteurs)
+            Utils.replaceAccent(self.auteurs)
             self.makePairMailName(False)
             self.getBibliography()
-            self.bibliographie = self.replaceAccent(self.bibliographie)
+            self.bibliographie = Utils.replaceAccent(self.bibliographie)
 
             if typeOutputFile == "-t":
                 f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
