@@ -1,8 +1,10 @@
 from Parser import Parser
+from Utils import Utils
 import traceback
 import shutil
 import sys
 import os
+
 
 if __name__ == '__main__':
     try:
@@ -44,7 +46,7 @@ if __name__ == '__main__':
             os.makedirs(nomDossier)
 
             for element in os.listdir(pathToFile):
-                if Parser.isPDFFile(pathToFile + element):
+                if Utils.isPDFFile(pathToFile + element):
                     Parser(pathToFile, element, nomDossier).writeValueInFile(argv)
                     print(f"Analyse efféctué sur : {element}")
 
