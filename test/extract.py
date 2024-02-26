@@ -3,6 +3,15 @@ import re
 
 class Extract :
     def read_text_file(file_path):
+        """
+        Lit le contenu d'un fichier texte.
+
+        Paramètres :
+        - file_path (str) : Le chemin d'accès au fichier texte.
+
+        Retourne :
+        - str : Le contenu du fichier texte, ou un message d'erreur si une exception se produit.
+        """
         try:
             with open(file_path, 'r') as file:
                 content = file.read()
@@ -11,12 +20,28 @@ class Extract :
             return f"Une erreur s'est produite lors de la lecture du fichier : {str(e)}"
 
     def getList(path: str):
+        """
+            Obtient une liste de fichiers et répertoires dans le chemin spécifié.
 
+            Paramètres :
+            - path (str) : Le chemin du répertoire.
 
+            Retourne :
+            - list : Une liste de fichiers et répertoires dans le chemin spécifié.
+        """
         return os.listdir(path)
 
 
     def extract_information(path):
+        """
+            Extrait des informations d'un fichier texte, incluant le nom du fichier PDF, le titre, les auteurs et l'abstract.
+
+            Paramètres :
+            - path (str) : Le chemin du fichier texte.
+
+            Retourne :
+            - dict : Un dictionnaire contenant les informations extraites.
+        """
         text = Extract.read_text_file(path)
 
         result = {}
