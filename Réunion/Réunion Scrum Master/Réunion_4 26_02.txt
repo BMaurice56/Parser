@@ -1,0 +1,6 @@
+Prise de note de la réunion du 26 Février :
+
+Négociation "d'un" mois de Sprint.
+Il y aura 2 semaines consacré au Sprint, et 2 autres potentielles semaines à renégocier le 12 MARS.
+
+Ce potentiel mois sera utilisé pour faire le Sprint et réorganiser notre code fait jusque là afin d'être plus efficace pour les prochains Sprint.

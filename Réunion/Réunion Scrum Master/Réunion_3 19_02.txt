@@ -1,0 +1,10 @@
+Prise de note de la réunion du 19 Février :
+
+Le nom du laboratoire doit être garder dans un coin (potentiellement pour un futur Sprint).
+
+Il est plus simple et conseillé de prendre toutes les références d'un coup plus que de les traiter une par une.
+Cela reste néanmoins une évolution intéressante mais tout doit être mis dans une seule balise pour l'instant.
+
+Un autre conseil a été donné : Utiliser le design pattern "DAO" (Data Access Object).
+
+Le répertoire ".zip" contenant les sources du Sprint 3 est à rendre pour le DIMANCHE 25 FEVRIER à 23H59.
