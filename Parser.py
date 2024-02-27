@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from functools import wraps
 from Utils import Utils
 import Levenshtein
 import PyPDF2
@@ -147,91 +148,98 @@ class Parser:
 
         return emails
 
-    def separateAuthors(self) -> None:
+    def separateAuthors(self, f):
         """
         Séparer les auteurs selon certains marqueurs
-
-        :return: None
         """
-        separate_element = [",", " and "]
 
-        # On regarde si on a des séparateurs dans les noms des auteurs
-        if any(element in auteur for auteur in self.auteurs for element in separate_element):
-            # On sépare les auteurs selon les séparateurs connus
-            for split in separate_element:
-                for auth in self.auteurs:
-                    if split in auth:
-                        auteurs_separer = auth.split(split)
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            f()
 
-                        self.auteurs.remove(auth)
-                        self.auteurs += auteurs_separer
-            ######################################################################
+            separate_element = [",", " and "]
 
-            taille_auteurs = len(self.auteurs)
+            # On regarde si on a des séparateurs dans les noms des auteurs
+            if any(element in auteur for auteur in self.auteurs for element in separate_element):
+                # On sépare les auteurs selon les séparateurs connus
+                for split in separate_element:
+                    for auth in self.auteurs:
+                        if split in auth:
+                            auteurs_separer = auth.split(split)
 
-            # On enlève les espaces de début et de fin
-            for i in range(taille_auteurs):
-                self.auteurs[i] = self.auteurs[i].strip()
-            ######################################################################
-
-            # On enlève les potentiels chiffres à la fin
-            for i in range(taille_auteurs):
-                value = self.auteurs[i]
-                if value != "" and value[-1].isnumeric():
-                    self.auteurs[i] = value[:-1]
-            ######################################################################
-        ######################################################################
-
-        else:
-            # On vérifie qu'on n'a pas les auteurs sur une seule ligne
-            if len(self.auteurs) == 1:
-                taille_mails = len(self.emails)
-
-                # On enlève les lettres uniques
-                auteurs = self.auteurs[0]
-                for i in range(1, len(auteurs) - 1):
-                    if auteurs[i - 1] == " " and auteurs[i + 1] == " ":
-                        auteurs = auteurs[:i] + auteurs[i + 1:]
+                            self.auteurs.remove(auth)
+                            self.auteurs += auteurs_separer
                 ######################################################################
 
-                auteurs = auteurs.replace("  ", " ")
-                noms = auteurs.split()
-                liste_noms = []
+                taille_auteurs = len(self.auteurs)
 
-                # On assemble les noms ensemble
-                i = 0
-                for nom in noms:
-                    if i == 0:
-                        liste_noms.append(nom)
-
-                    elif i == 1:
-                        # Si nom longueur de deux → particule
-                        if len(nom) == 2:
-                            i -= 1
-
-                        liste_noms[-1] += f" {nom}"
-
-                    elif i >= 2:
-                        liste_noms.append(nom)
-                        i = 0
-
-                    i += 1
+                # On enlève les espaces de début et de fin
+                for i in range(taille_auteurs):
+                    self.auteurs[i] = self.auteurs[i].strip()
                 ######################################################################
 
-                # Si on a plus de noms que de mails, on assemble les derniers noms
-                if len(liste_noms) > taille_mails:
-                    difference = len(liste_noms) - taille_mails
-
-                    for i in range(difference):
-                        value = liste_noms.pop()
-
-                        liste_noms[-1] = liste_noms[-1] + " " + value
-                ######################################################################
-
-                # On repasse les noms dans l'attribut de la classe
-                self.auteurs = liste_noms
+                # On enlève les potentiels chiffres à la fin
+                for i in range(taille_auteurs):
+                    value = self.auteurs[i]
+                    if value != "" and value[-1].isnumeric():
+                        self.auteurs[i] = value[:-1]
                 ######################################################################
             ######################################################################
+
+            else:
+                # On vérifie qu'on n'a pas les auteurs sur une seule ligne
+                if len(self.auteurs) == 1:
+                    taille_mails = len(self.emails)
+
+                    # On enlève les lettres uniques
+                    auteurs = self.auteurs[0]
+                    for i in range(1, len(auteurs) - 1):
+                        if auteurs[i - 1] == " " and auteurs[i + 1] == " ":
+                            auteurs = auteurs[:i] + auteurs[i + 1:]
+                    ######################################################################
+
+                    auteurs = auteurs.replace("  ", " ")
+                    noms = auteurs.split()
+                    liste_noms = []
+
+                    # On assemble les noms ensemble
+                    i = 0
+                    for nom in noms:
+                        if i == 0:
+                            liste_noms.append(nom)
+
+                        elif i == 1:
+                            # Si nom longueur de deux → particule
+                            if len(nom) == 2:
+                                i -= 1
+
+                            liste_noms[-1] += f" {nom}"
+
+                        elif i >= 2:
+                            liste_noms.append(nom)
+                            i = 0
+
+                        i += 1
+                    ######################################################################
+
+                    # Si on a plus de noms que de mails, on assemble les derniers noms
+                    if len(liste_noms) > taille_mails:
+                        difference = len(liste_noms) - taille_mails
+
+                        for i in range(difference):
+                            value = liste_noms.pop()
+
+                            liste_noms[-1] = liste_noms[-1] + " " + value
+                    ######################################################################
+
+                    # On repasse les noms dans l'attribut de la classe
+                    self.auteurs = liste_noms
+                    ######################################################################
+                ######################################################################
+
+                return
+
+        return wrapper
 
     def makePairMailName(self, callGetAuthor: bool = True) -> None:
         """
@@ -308,6 +316,7 @@ class Parser:
             return
         ######################################################################
 
+    @separateAuthors
     def getAuthor(self) -> None:
         """
         Renvoi la liste des auteurs (Nom, mail)
@@ -357,7 +366,6 @@ class Parser:
 
         if pos_asterisk != -1:
             self.auteurs = [section_auteurs[:pos_asterisk]]
-            self.separateAuthors()
             return
         ######################################################################
 
@@ -423,10 +431,6 @@ class Parser:
             self.auteurs.append(auteurs[0].strip())
         ######################################################################
 
-        # On sépare les auteurs
-        self.separateAuthors()
-        ######################################################################
-
         # On enlève les caractères vides
         if "" in self.auteurs:
             self.auteurs.remove("")
@@ -447,7 +451,7 @@ class Parser:
         parties_tries = []
 
         def visitor_body(text, cm, tm, fontDict, fontSize):
-            if text != "" and text != " " and text != "\n":
+            if text not in ["", " "] and text != "\n":
                 y = tm[5]
                 if minimum_y < y < maximum_y:
                     parties.append(text)
@@ -634,17 +638,16 @@ class Parser:
 
         :return: None
         """
+        if typeOutputFile not in ["-t", "-x"]:
+            raise ValueError("Erreur type de fichier sortie")
+
         if self.directoryTxtFile == "":
             file = f"{self.pathToFile}{self.nomFichier[:-4]}"
 
         else:
             file = f"{self.directoryTxtFile}{self.nomFichier[:-4]}"
 
-        if typeOutputFile == "-t":
-            file += ".txt"
-
-        elif typeOutputFile == "-x":
-            file += ".xml"
+        file += ".txt" if typeOutputFile == "-t" else ".xml"
 
         with open(file, "w", encoding="utf-8") as f:
             self.getTitle()
@@ -657,19 +660,9 @@ class Parser:
             self.bibliographie = Utils.replaceAccent(self.bibliographie)
 
             if typeOutputFile == "-t":
-                f.write(f"Nom du fichier pdf : {self.nomFichier}\n")
-                f.write("\nTitre :\n")
-                f.write(f"    {self.titre}\n\n")
-
-                f.write("Auteurs :\n")
-                for key, value in self.dico_nom_mail.items():
-                    f.write(f"    {key} : {value}\n")
-
-                f.write("\nAbstract :\n")
-                f.write(f"    {self.abstract}\n")
-
-                f.write("\nBibliographie : \n")
-                f.write(f"    {self.bibliographie}\n")
+                f.write(f"Nom du fichier pdf : {self.nomFichier}\n\nTitre :\n    {self.titre}\n\nAuteurs :\n")
+                f.writelines([f"    {key} : {value}\n" for key, value in self.dico_nom_mail.items()])
+                f.write(f"\nAbstract :\n    {self.abstract}\n\nBibliographie : \n    {self.bibliographie}\n")
 
             elif typeOutputFile == "-x":
                 # Ajout de l'arbre article
@@ -717,6 +710,3 @@ class Parser:
                 # Écrire dans le fichier XML
                 f.write(ET.tostring(tree, encoding="utf-8").decode("utf-8"))
                 ######################################################################
-
-            else:
-                raise ValueError("Erreur type de fichier sortie")
