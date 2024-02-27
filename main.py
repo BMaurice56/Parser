@@ -48,7 +48,7 @@ if __name__ == '__main__':
             for element in os.listdir(pathToFile):
                 if Utils.isPDFFile(pathToFile + element):
                     Parser(pathToFile, element, nomDossier).writeValueInFile(argv)
-                    print(f"Analyse efféctué sur : {element}")
+                    print(f"Analyse effectué sur : {element}")
 
         else:
             last_slash = pathToFile.rfind("/")
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
             parser.writeValueInFile(argv)
 
-            print(f"Analyse efféctué sur : {nom_fichier}")
+            print(f"Analyse effectué sur : {nom_fichier}")
 
     except Exception as e:
         print(traceback.format_exc())
