@@ -33,7 +33,7 @@ class Parser:
 
         if not Utils.isPDFFile(path + nomFichier):
             print(f"Nom du fichier : {nomFichier}")
-            raise FileNotFoundError("Le fichier fourni n'est pas un pdf")
+            raise FileNotFoundError("Le fichier fourni n'est pas un pdf ou n'a pas été trouvé")
 
         self.pdfReader = self.openPDF()
 
@@ -155,29 +155,83 @@ class Parser:
         """
         separate_element = [",", " and "]
 
-        # On sépare les auteurs selon les séparateurs connus
-        for split in separate_element:
-            for auth in self.auteurs:
-                if split in auth:
-                    auteurs_separer = auth.split(split)
+        # On regarde si on a des séparateurs dans les noms des auteurs
+        if any(element in auteur for auteur in self.auteurs for element in separate_element):
+            # On sépare les auteurs selon les séparateurs connus
+            for split in separate_element:
+                for auth in self.auteurs:
+                    if split in auth:
+                        auteurs_separer = auth.split(split)
 
-                    self.auteurs.remove(auth)
-                    self.auteurs += auteurs_separer
+                        self.auteurs.remove(auth)
+                        self.auteurs += auteurs_separer
+            ######################################################################
+
+            taille_auteurs = len(self.auteurs)
+
+            # On enlève les espaces de début et de fin
+            for i in range(taille_auteurs):
+                self.auteurs[i] = self.auteurs[i].strip()
+            ######################################################################
+
+            # On enlève les potentiels chiffres à la fin
+            for i in range(taille_auteurs):
+                value = self.auteurs[i]
+                if value != "" and value[-1].isnumeric():
+                    self.auteurs[i] = value[:-1]
+            ######################################################################
         ######################################################################
 
-        taille_auteurs = len(self.auteurs)
+        else:
+            # On vérifie qu'on n'a pas les auteurs sur une seule ligne
+            if len(self.auteurs) == 1:
+                taille_mails = len(self.emails)
 
-        # On enlève les espaces de début et de fin
-        for i in range(taille_auteurs):
-            self.auteurs[i] = self.auteurs[i].strip()
-        ######################################################################
+                # On enlève les lettres uniques
+                auteurs = self.auteurs[0]
+                for i in range(1, len(auteurs) - 1):
+                    if auteurs[i - 1] == " " and auteurs[i + 1] == " ":
+                        auteurs = auteurs[:i] + auteurs[i + 1:]
+                ######################################################################
 
-        # On enlève les potentiels chiffres à la fin
-        for i in range(taille_auteurs):
-            value = self.auteurs[i]
-            if value != "" and value[-1].isnumeric():
-                self.auteurs[i] = value[:-1]
-        ######################################################################
+                auteurs = auteurs.replace("  ", " ")
+                noms = auteurs.split()
+                liste_noms = []
+
+                # On assemble les noms ensemble
+                i = 0
+                for nom in noms:
+                    if i == 0:
+                        liste_noms.append(nom)
+
+                    elif i == 1:
+                        # Si nom longueur de deux → particule
+                        if len(nom) == 2:
+                            i -= 1
+
+                        liste_noms[-1] += f" {nom}"
+
+                    elif i >= 2:
+                        liste_noms.append(nom)
+                        i = 0
+
+                    i += 1
+                ######################################################################
+
+                # Si on a plus de noms que de mails, on assemble les derniers noms
+                if len(liste_noms) > taille_mails:
+                    difference = len(liste_noms) - taille_mails
+
+                    for i in range(difference):
+                        value = liste_noms.pop()
+
+                        liste_noms[-1] = liste_noms[-1] + " " + value
+                ######################################################################
+
+                # On repasse les noms dans l'attribut de la classe
+                self.auteurs = liste_noms
+                ######################################################################
+            ######################################################################
 
     def makePairMailName(self, callGetAuthor: bool = True) -> None:
         """
@@ -241,9 +295,9 @@ class Parser:
                 self.dico_nom_mail[key] = value[0]
             ######################################################################
 
-        # Sinon, comme il est probable qu'il n'y est aucun mail, on met simplement la mention "pas de mail"
-        # Ou bien si présence d'un seul mail → mail d'une équipe
-        elif taille_auteurs > taille_mails:
+        # Soit il y a qu'un seul mail → mail de l'équipe
+        # Soit on n'en a pas trouvé
+        else:
             mention = "Pas d'adresse mail"
             if len(self.emails) == 1:
                 mention = self.emails[0]
@@ -254,58 +308,6 @@ class Parser:
             return
         ######################################################################
 
-        # Soit, on a plus de mails que noms (noms dans une seule chaine de caractère sans espace
-        # et donc on vient d'abord séparer les noms pour avoir le même nombre de noms et mails
-        else:
-            # On enlève les lettres uniques
-            auteurs = self.auteurs[0]
-            for i in range(1, len(auteurs) - 1):
-                if auteurs[i - 1] == " " and auteurs[i + 1] == " ":
-                    auteurs = auteurs[:i] + auteurs[i + 1:]
-            ######################################################################
-
-            auteurs = auteurs.replace("  ", " ")
-            noms = auteurs.split()
-            liste_noms = []
-
-            # On assemble les noms ensemble
-            i = 0
-            for nom in noms:
-                if i == 0:
-                    liste_noms.append(nom)
-
-                elif i == 1:
-                    # Si nom longueur de deux → particule
-                    if len(nom) == 2:
-                        i -= 1
-
-                    liste_noms[-1] += f" {nom}"
-
-                elif i >= 2:
-                    liste_noms.append(nom)
-                    i = 0
-
-                i += 1
-            ######################################################################
-
-            # Si on a plus de noms que de mails, on assemble les derniers noms
-            if len(liste_noms) > taille_mails:
-                difference = len(liste_noms) - taille_mails
-
-                for i in range(difference):
-                    value = liste_noms.pop()
-
-                    liste_noms[-1] = liste_noms[-1] + " " + value
-            ######################################################################
-
-            # On repasse les noms dans l'attribut de la classe
-            self.auteurs = liste_noms
-            ######################################################################
-
-            # Puis, on rappelle la fonction comme on a le même nombre de mails et de noms
-            self.makePairMailName(False)
-            ######################################################################
-        ######################################################################
 
     def getAuthor(self) -> None:
         """
@@ -660,7 +662,7 @@ class Parser:
             self.getTitle()
             self.getAbstract()
             self.getAuthor()
-            self.getAffiliation()
+            # self.getAffiliation()
             Utils.replaceAccent(self.auteurs)
             self.makePairMailName(False)
             self.getBibliography()
