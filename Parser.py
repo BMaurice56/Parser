@@ -17,6 +17,15 @@ class Parser:
     bibliographie = ""
     dico_nom_mail = {}
     dico_nom_univ = {}
+    type_pdf = -1
+    """
+    Différent type de pdf : 
+    -1 : non trouvé
+    0 : nom - université - mail
+    1 : nom sur une seul ligne - université - mail entre parenthèse ou accolade
+    2 : nom - université et mail autre part
+    3 : nom et mail - université autre part
+    """
 
     def __init__(self, path: str, nomFichier: str, directoryTxtFile: str = None):
         self.pathToFile = path
@@ -516,12 +525,12 @@ class Parser:
             ######################################################################
 
             # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
-            if pos_keywords != -1 and pos_keywords < pos_introduction:
+            if 0 < pos_keywords < pos_introduction:
                 pos_introduction = pos_keywords
             ######################################################################
 
             # S'il y a une section index terms dans le début du pdf, on l'enlève
-            if pos_index_terms != -1 and pos_index_terms < pos_introduction:
+            if 0 < pos_index_terms < pos_introduction:
                 pos_introduction = pos_index_terms
             ######################################################################
 
