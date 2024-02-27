@@ -242,6 +242,8 @@ class Parser:
 
         return wrapper
 
+    _separate_authors = staticmethod(_separate_authors)
+
     def make_pair_mail_name(self, call_get_author: bool = True) -> None:
         """
         Effectue la paire mail et nom des auteurs
