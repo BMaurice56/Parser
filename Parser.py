@@ -308,7 +308,6 @@ class Parser:
             return
         ######################################################################
 
-
     def getAuthor(self) -> None:
         """
         Renvoi la liste des auteurs (Nom, mail)
@@ -442,7 +441,6 @@ class Parser:
         :return: Titre
         """
         self.titre = ""
-
         page = self.pdfReader.pages[0]
 
         parties = []
@@ -502,66 +500,56 @@ class Parser:
         """
         Renvoie l'abstract du pdf
 
-        :return: String
+        :return: None
         """
         self.abstract = ""
 
-        numero_page = 0
-        number_of_pages = len(self.pdfReader.pages)
+        page = self.pdfReader.pages[0]
 
-        # Recherche l'abstract dans le fichier
-        while numero_page < number_of_pages:
-            page = self.pdfReader.pages[numero_page]
+        # Récupération du texte
+        content = page.extract_text()
+        content_copy = content[:].lower()
+        ######################################################################
 
-            # Récupération du texte
-            content = page.extract_text()
-            content_copy = content[:].lower()
-            ######################################################################
+        # Position des mots clefs
+        pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
+        pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
+        pos_keywords = max(content_copy.find("keyword"), content_copy.find("eyword") - 1,
+                           content_copy.find("ey-word") - 1)
+        pos_index_terms = max(content_copy.find("index terms"), content_copy.find("ndex terms") - 1)
+        ######################################################################
 
-            # Position des mots clefs
-            pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
-            pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
-            pos_keywords = max(content_copy.find("keyword"), content_copy.find("eyword") - 1,
-                               content_copy.find("ey-word") - 1)
-            pos_index_terms = max(content_copy.find("index terms"), content_copy.find("ndex terms") - 1)
-            ######################################################################
+        # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
+        if 0 < pos_keywords < pos_introduction:
+            pos_introduction = pos_keywords
+        ######################################################################
 
-            # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
-            if 0 < pos_keywords < pos_introduction:
-                pos_introduction = pos_keywords
-            ######################################################################
+        # S'il y a une section index terms dans le début du pdf, on l'enlève
+        if 0 < pos_index_terms < pos_introduction:
+            pos_introduction = pos_index_terms
+        ######################################################################
 
-            # S'il y a une section index terms dans le début du pdf, on l'enlève
-            if 0 < pos_index_terms < pos_introduction:
-                pos_introduction = pos_index_terms
-            ######################################################################
+        # Si trouvé, alors on peut renvoyer l'abstract
+        if pos_abstract != -1 and pos_introduction != -1:
+            swift = 1
+            if content[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
+                swift += 1
 
-            # Si trouvé, alors on peut renvoyer l'abstract
-            if pos_abstract != -1 and pos_introduction != -1:
-                swift = 1
-                if content[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
-                    swift += 1
+            self.abstract = content[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
+        ######################################################################
 
-                self.abstract = content[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
-                break
-            ######################################################################
+        # Sinon absence du mot abstract
+        elif pos_abstract == -1 and pos_introduction != -1:
+            dernier_point = content[:pos_introduction - 2].rfind(".")
 
-            # Sinon absence du mot abstract
-            elif pos_abstract == -1 and pos_introduction != -1:
-                dernier_point = content[:pos_introduction - 2].rfind(".")
+            i = 0
 
-                i = 0
+            for i in range(dernier_point, 1, -1):
+                if ord(content[i]) < 20:
+                    if ord(content[i - 1]) != 45:
+                        break
 
-                for i in range(dernier_point, 1, -1):
-                    if ord(content[i]) < 20:
-                        if ord(content[i - 1]) != 45:
-                            break
-
-                self.abstract = content[i + 1:dernier_point]
-                break
-            ######################################################################
-
-            numero_page += 1
+            self.abstract = content[i + 1:dernier_point]
         ######################################################################
 
         # Si présence du 1 de l'introduction, on l'enlève
