@@ -635,7 +635,7 @@ class Parser:
         print(Utils.replaceAccent(section_auteurs))
         print()
 
-    def write_value_in_file(self, type_output_file: str) -> None:
+    def pdf_to_file(self, type_output_file: str) -> None:
         """
         Écrit dans un fichier txt l'analyse du pdf
 

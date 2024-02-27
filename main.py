@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
             for element in os.listdir(pathToFile):
                 if Utils.isPDFFile(pathToFile + element):
-                    Parser(pathToFile, element, nomDossier).write_value_in_file(argv)
+                    Parser(pathToFile, element, nomDossier).pdf_to_file(argv)
                     print(f"Analyse effectué sur : {element}")
 
         else:
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
             parser = Parser(chemin_fichier, nom_fichier)
 
-            parser.write_value_in_file(argv)
+            parser.pdf_to_file(argv)
 
             print(f"Analyse effectué sur : {nom_fichier}")
 
