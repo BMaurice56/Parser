@@ -5,7 +5,6 @@ import shutil
 import sys
 import os
 
-
 if __name__ == '__main__':
     try:
         if len(sys.argv) != 3:
