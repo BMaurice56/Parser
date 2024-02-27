@@ -1,4 +1,4 @@
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ETree
 from functools import wraps
 from Utils import Utils
 import Levenshtein
@@ -28,30 +28,30 @@ class Parser:
     3 : nom et mail - université autre part
     """
 
-    def __init__(self, path: str, nomFichier: str, directoryTxtFile: str = None):
+    def __init__(self, path: str, nom_fichier: str, directory_txt_file: str = None):
         self.pathToFile = path
-        self.nomFichier = nomFichier
+        self.nomFichier = nom_fichier
 
-        if not Utils.isPDFFile(path + nomFichier):
-            print(f"Nom du fichier : {nomFichier}")
+        if not Utils.isPDFFile(path + nom_fichier):
+            print(f"Nom du fichier : {nom_fichier}")
             raise FileNotFoundError("Le fichier fourni n'est pas un pdf ou n'a pas été trouvé")
 
-        self.pdfReader = self.openPDF()
+        self.pdfReader = self.open_pdf()
 
-        if directoryTxtFile is not None:
-            self.directoryTxtFile = directoryTxtFile
+        if directory_txt_file is not None:
+            self.directoryTxtFile = directory_txt_file
 
-    def openPDF(self) -> PyPDF2.PdfReader:
+    def open_pdf(self) -> PyPDF2.PdfReader:
         """
         Ouvre le pdf et renvoi l'objet de lecture
 
         :return: Objet de lecture du pdf
         """
-        pdfFileObj = open(self.pathToFile + self.nomFichier, 'rb')
+        pdf_file_obj = open(self.pathToFile + self.nomFichier, 'rb')
 
-        return PyPDF2.PdfReader(pdfFileObj)
+        return PyPDF2.PdfReader(pdf_file_obj)
 
-    def findEmails(self, texte: str) -> list:
+    def find_emails(self, texte: str) -> list:
         """
         Trouve les mails dans le texte donné
 
@@ -148,14 +148,15 @@ class Parser:
 
         return emails
 
-    def separateAuthors(self, f):
+    def _separate_authors(f):
         """
         Séparer les auteurs selon certains marqueurs
         """
 
+        # noinspection PyCallingNonCallable
         @wraps(f)
-        def wrapper(*args, **kwargs):
-            f()
+        def wrapper(self):
+            f(self)
 
             separate_element = [",", " and "]
 
@@ -241,14 +242,14 @@ class Parser:
 
         return wrapper
 
-    def makePairMailName(self, callGetAuthor: bool = True) -> None:
+    def make_pair_mail_name(self, call_get_author: bool = True) -> None:
         """
         Effectue la paire mail et nom des auteurs
 
         :return: None
         """
 
-        def mailInDict(mail_to_find: str, dico: dict) -> bool:
+        def mail_in_dict(mail_to_find: str, dico: dict) -> bool:
             """
             Permet de vérifier si le mail est présent dans le dictionnaire
             contenant les noms comme clefs et [mail, distance] comme valeurs
@@ -264,8 +265,8 @@ class Parser:
             return False
 
         # Appelle la fonction au besoin
-        if callGetAuthor:
-            self.getAuthor()
+        if call_get_author:
+            self.get_author()
         ######################################################################
 
         self.dico_nom_mail = {}
@@ -293,7 +294,7 @@ class Parser:
                 distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
 
                 # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
-                if distance_in_dict[1] >= distance and not mailInDict(mail, dico_nom_mail_distance):
+                if distance_in_dict[1] >= distance and not mail_in_dict(mail, dico_nom_mail_distance):
                     dico_nom_mail_distance[nom] = [mail, distance]
                 ######################################################################
             ######################################################################
@@ -316,8 +317,8 @@ class Parser:
             return
         ######################################################################
 
-    @separateAuthors
-    def getAuthor(self) -> None:
+    @_separate_authors
+    def get_author(self) -> None:
         """
         Renvoi la liste des auteurs (Nom, mail)
 
@@ -327,8 +328,8 @@ class Parser:
 
         page = self.pdfReader.pages[0].extract_text()
 
-        self.getTitle()
-        self.getAbstract()
+        self.get_title()
+        self.get_abstract()
 
         # Position des éléments dans le texte
         pos_titre = page.find(self.titre)
@@ -355,10 +356,10 @@ class Parser:
         ######################################################################
 
         # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
-        self.emails = self.findEmails(section_auteurs)
+        self.emails = self.find_emails(section_auteurs)
 
         if not self.emails:
-            self.emails = self.findEmails(page)
+            self.emails = self.find_emails(page)
         ######################################################################
 
         # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
@@ -436,7 +437,7 @@ class Parser:
             self.auteurs.remove("")
         ######################################################################
 
-    def getTitle(self, minimum_y=650, maximum_y=770) -> None:
+    def get_title(self, minimum_y=650, maximum_y=770) -> None:
         """
         Renvoie le titre du pdf
 
@@ -450,7 +451,7 @@ class Parser:
         parties = []
         parties_tries = []
 
-        def visitor_body(text, cm, tm, fontDict, fontSize):
+        def visitor_body(text, cm, tm, font_dict, font_size):
             if text not in ["", " "] and text != "\n":
                 y = tm[5]
                 if minimum_y < y < maximum_y:
@@ -471,7 +472,7 @@ class Parser:
             # Si on n'a pas récupéré la deuxième ligne du titre, on augmente la fenêtre
             if parties_tries[0][-1] == "\n":
                 self.titre = ""
-                self.getTitle(minimum_y - 10, maximum_y)
+                self.get_title(minimum_y - 10, maximum_y)
             else:
                 self.titre += parties_tries[0]
 
@@ -497,10 +498,10 @@ class Parser:
         # Soit, on n'a rien trouvé, ou on se trouve à moins de 10 éléments
         else:
             self.titre = ""
-            self.getTitle(minimum_y - 10, maximum_y)
+            self.get_title(minimum_y - 10, maximum_y)
         ######################################################################
 
-    def getAbstract(self) -> None:
+    def get_abstract(self) -> None:
         """
         Renvoie l'abstract du pdf
 
@@ -574,7 +575,7 @@ class Parser:
             raise ValueError("Abstract non trouvé")
         ######################################################################
 
-    def getBibliography(self) -> None:
+    def get_bibliography(self) -> None:
         """
         Renvoie la bibliographie de l'article
 
@@ -605,10 +606,10 @@ class Parser:
 
             numero_page -= 1
 
-    def getAffiliation(self):
-        self.getTitle()
-        self.getAbstract()
-        self.makePairMailName(False)
+    def get_affiliation(self):
+        self.get_title()
+        self.get_abstract()
+        self.make_pair_mail_name(False)
 
         page = self.pdfReader.pages[0].extract_text().replace("  ", " ")
 
@@ -632,13 +633,13 @@ class Parser:
         print(Utils.replaceAccent(section_auteurs))
         print()
 
-    def writeValueInFile(self, typeOutputFile: str) -> None:
+    def write_value_in_file(self, type_output_file: str) -> None:
         """
         Écrit dans un fichier txt l'analyse du pdf
 
         :return: None
         """
-        if typeOutputFile not in ["-t", "-x"]:
+        if type_output_file not in ["-t", "-x"]:
             raise ValueError("Erreur type de fichier sortie")
 
         if self.directoryTxtFile == "":
@@ -647,66 +648,66 @@ class Parser:
         else:
             file = f"{self.directoryTxtFile}{self.nomFichier[:-4]}"
 
-        file += ".txt" if typeOutputFile == "-t" else ".xml"
+        file += ".txt" if type_output_file == "-t" else ".xml"
 
         with open(file, "w", encoding="utf-8") as f:
-            self.getTitle()
-            self.getAbstract()
-            self.getAuthor()
+            self.get_title()
+            self.get_abstract()
+            self.get_author()
             # self.getAffiliation()
             Utils.replaceAccent(self.auteurs)
-            self.makePairMailName(False)
-            self.getBibliography()
+            self.make_pair_mail_name(False)
+            self.get_bibliography()
             self.bibliographie = Utils.replaceAccent(self.bibliographie)
 
-            if typeOutputFile == "-t":
+            if type_output_file == "-t":
                 f.write(f"Nom du fichier pdf : {self.nomFichier}\n\nTitre :\n    {self.titre}\n\nAuteurs :\n")
                 f.writelines([f"    {key} : {value}\n" for key, value in self.dico_nom_mail.items()])
                 f.write(f"\nAbstract :\n    {self.abstract}\n\nBibliographie : \n    {self.bibliographie}\n")
 
-            elif typeOutputFile == "-x":
+            elif type_output_file == "-x":
                 # Ajout de l'arbre article
-                tree = ET.Element("article")
+                tree = ETree.Element("article")
                 ######################################################################
 
                 # Ajout du preamble
-                preamble = ET.SubElement(tree, 'preamble')
+                preamble = ETree.SubElement(tree, 'preamble')
                 preamble.text = self.nomFichier
 
                 # Ajout du titre
-                titre = ET.SubElement(tree, 'titre')
+                titre = ETree.SubElement(tree, 'titre')
                 titre.text = self.titre
                 ######################################################################
 
                 # Ajout du tag auteurs
-                auteurs = ET.SubElement(tree, 'auteurs')
+                auteurs = ETree.SubElement(tree, 'auteurs')
                 ######################################################################
 
                 # Ajout de chaque auteur avec son nom et mail
                 for key, value in self.dico_nom_mail.items():
-                    auteur = ET.SubElement(auteurs, 'auteur')
+                    auteur = ETree.SubElement(auteurs, 'auteur')
 
-                    nom = ET.SubElement(auteur, 'name')
+                    nom = ETree.SubElement(auteur, 'name')
                     nom.text = key
 
-                    mail = ET.SubElement(auteur, 'mail')
+                    mail = ETree.SubElement(auteur, 'mail')
                     mail.text = value
                 ######################################################################
 
                 # Ajout de l'abstract
-                abstract = ET.SubElement(tree, 'abstract')
+                abstract = ETree.SubElement(tree, 'abstract')
                 abstract.text = self.abstract
                 ######################################################################
 
                 # Ajout de la bibliographie
-                abstract = ET.SubElement(tree, 'bibliographie')
+                abstract = ETree.SubElement(tree, 'bibliographie')
                 abstract.text = self.bibliographie
                 ######################################################################
 
                 # Ajout de l'indentation
-                ET.indent(tree)
+                ETree.indent(tree)
                 ######################################################################
 
                 # Écrire dans le fichier XML
-                f.write(ET.tostring(tree, encoding="utf-8").decode("utf-8"))
+                f.write(ETree.tostring(tree, encoding="utf-8").decode("utf-8"))
                 ######################################################################
