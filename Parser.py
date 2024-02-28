@@ -176,8 +176,6 @@ class Parser:
         def wrapper(self):
             f(self)
 
-            Utils.replaceAccent(self.__auteurs)
-
             separate_element = [",", " and "]
 
             # On regarde si on a des séparateurs dans les noms des auteurs
