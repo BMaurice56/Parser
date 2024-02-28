@@ -405,13 +405,18 @@ class Parser:
         if len(self.__emails) == 0:
             auth = section_auteurs.split("\n")
 
+            places = ["partement", "niversit", "partment", "aculty", "laborato"]
+
+            # Si apparition de l'affiliation → arrêt
             for elt in auth:
                 value = elt.strip()
-                if value.find("partement") != -1 or value.find("niversity") != -1 or value.find(
-                        "partment") != -1 or value.find("aculty") != -1:
-                    break
+                for place in places:
+                    if value.find(place) != -1:
+                        break
+
                 else:
-                    auteurs.append(elt)
+                    auteurs.append(value)
+            ######################################################################
         ######################################################################
 
         # Sinon, on ne récupère que le seul auteur
@@ -420,7 +425,7 @@ class Parser:
         ######################################################################
 
         # Sinon, on parcourt les mails et on sépare les auteurs
-        else:
+        elif self.__type_mail == 0:
             """
             En général, les articles sont sous la forme :
             - nom
@@ -440,16 +445,16 @@ class Parser:
         ######################################################################
 
         # On ne garde que les informations pertinentes
-        for i in range(len(auteurs)):
-            if len(auteurs[i]) > 0 and auteurs[i][-1] == ",":
-                auteurs[i] = auteurs[i][:-1].strip()
+        for auteur in auteurs:
+            if auteur and auteur[-1] == ",":
+                auteur = auteur[:-1].strip()
 
-            if len(auteurs[i]) > 1 and "@" not in auteurs[i] and "1,2" not in auteurs[i] and "1" not in auteurs[i]:
-                self.__auteurs.append(auteurs[i])
+            if len(auteur) > 1 and "@" not in auteur and "1,2" not in auteur and "1" not in auteur:
+                self.__auteurs.append(auteur)
         ######################################################################
 
-        # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé
-        # On parcourt le texte en enlevant les caractères vides et on garde le seul auteur
+        # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
+        # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
         if not self.__auteurs:
             auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].split("\n")
             for aut in auteurs:
