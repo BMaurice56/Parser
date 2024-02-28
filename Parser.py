@@ -11,6 +11,7 @@ class Parser:
     __pathToFile = ""
     __nomFichier = ""
     __directoryTxtFile = ""
+    __text_first_page = ""
     __titre = ""
     __auteurs = []
     __emails = []
@@ -19,6 +20,7 @@ class Parser:
     __dico_nom_mail = {}
     __dico_nom_univ = {}
     __type_pdf = -1
+    __type_mail = -1
     """
     Différent type de pdf : 
     -1 : non trouvé
@@ -26,6 +28,13 @@ class Parser:
     1 : nom sur une seul ligne - université - mail entre parenthèse ou accolade
     2 : nom - université et mail autre part
     3 : nom et mail - université autre part
+    
+    Le type des mails aident aussi à connaitre le type de pdf
+    -1 : non trouvé
+    0 : normal ???????
+    1 : entre parenthèse ou accolade
+    2 : normal mais dans la page et non au niveau des auteurs
+    3 : entre parenthèse ou accolade et non au niveau des auteurs
     """
 
     def __init__(self, path: str, nom_fichier: str, directory_txt_file: str = None):
@@ -40,6 +49,10 @@ class Parser:
 
         if directory_txt_file is not None:
             self.__directoryTxtFile = directory_txt_file
+
+        # On vient récupérer la première page et remplacer les accents
+        self.__text_first_page = self.__pdfReader.pages[0].extract_text()
+        self.__text_first_page = Utils.replaceAccent(self.__text_first_page)
 
     def __open_pdf(self) -> PyPDF2.PdfReader:
         """
@@ -79,6 +92,7 @@ class Parser:
         ######################################################################
 
         if emails and emails != emails2:
+            self.__type_mail = 0
             if len(emails) < len(emails2):
                 Utils.retrievePreviousOrder(emails, position_emails2)
             elif len(emails) > len(emails2):
@@ -96,11 +110,13 @@ class Parser:
                 Utils.retrievePreviousOrder(emails, position_emails)
 
         else:
+            self.__type_mail = 0
             Utils.retrievePreviousOrder(emails, position_emails)
 
         # S'il y a des mails dans la troisième regex, on regarde s'il y a plusieurs mails
         if len(emails3) != 0:
             if "," in emails3[0]:
+                self.__type_mail = 1
                 emails = []
                 emails3_separer = emails3[0].split(",")
                 dernier_mail, nom_domaine = emails3_separer[-1].split("@")
@@ -114,6 +130,7 @@ class Parser:
         # S'il y a des mails dans la quatrième regex, on regarde s'il y a plusieurs mails
         if len(emails4) != 0:
             if "," in emails4[0]:
+                self.__type_mail = 1
                 emails = []
                 emails4_separer = emails4[0].split(",")
                 dernier_mail, nom_domaine = emails4_separer[-1].split("@")
@@ -127,6 +144,7 @@ class Parser:
         # Soit, le @ a été lu comme un Q et donc on sépare les mails
         if not emails and len(emails5) > 0:
             if "," in emails5[0]:
+                self.__type_mail = 1
                 emails5_separer = emails5[0].split(",")
                 dernier_mail, nom_domaine = emails5_separer[-1].split("Q")
 
@@ -157,6 +175,8 @@ class Parser:
         @wraps(f)
         def wrapper(self):
             f(self)
+
+            Utils.replaceAccent(self.__auteurs)
 
             separate_element = [",", " and "]
 
@@ -238,7 +258,11 @@ class Parser:
                     ######################################################################
                 ######################################################################
 
-                return
+            for elt in ["", " ", "  "]:
+                if elt in self.__auteurs:
+                    self.__auteurs.remove(elt)
+
+            return
 
         return wrapper
 
@@ -328,7 +352,7 @@ class Parser:
         """
         self.__auteurs = []
 
-        page = self.__pdfReader.pages[0].extract_text()
+        page = self.__text_first_page
 
         self._get_title()
         self._get_abstract()
@@ -362,6 +386,11 @@ class Parser:
 
         if not self.__emails:
             self.__emails = self.__find_emails(page)
+
+            # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
+            if self.__emails:
+                self.__type_mail += 2
+            ######################################################################
         ######################################################################
 
         # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
@@ -432,11 +461,6 @@ class Parser:
                     auteurs.remove(aut)
 
             self.__auteurs.append(auteurs[0].strip())
-        ######################################################################
-
-        # On enlève les caractères vides
-        if "" in self.__auteurs:
-            self.__auteurs.remove("")
         ######################################################################
 
     def _get_title(self, minimum_y=650, maximum_y=770) -> None:
@@ -511,10 +535,8 @@ class Parser:
         """
         self.__abstract = ""
 
-        page = self.__pdfReader.pages[0]
-
         # Récupération du texte
-        content = page.extract_text()
+        content = self.__text_first_page
         content_copy = content[:].lower()
         ######################################################################
 
@@ -613,7 +635,7 @@ class Parser:
         self._get_abstract()
         self.__make_pair_mail_name(False)
 
-        page = self.__pdfReader.pages[0].extract_text().replace("  ", " ")
+        page = self.__text_first_page
 
         pos_titre = page.find(self.__titre)
         pos_abstract = page.find(self.__abstract[1:10])
@@ -632,7 +654,7 @@ class Parser:
             section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
         ######################################################################
         print()
-        print(Utils.replaceAccent(section_auteurs))
+        print(section_auteurs)
         print()
 
     def pdf_to_file(self, type_output_file: str) -> None:
@@ -657,7 +679,6 @@ class Parser:
             self._get_abstract()
             self._get_author()
             # self.__getAffiliation()
-            Utils.replaceAccent(self.__auteurs)
             self.__make_pair_mail_name(False)
             self._get_bibliography()
             self.__bibliographie = Utils.replaceAccent(self.__bibliographie)
