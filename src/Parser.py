@@ -350,22 +350,20 @@ class Parser:
         """
         self.__auteurs = []
 
-        page = self.__text_first_page
-
         self._get_title()
         self._get_abstract()
 
         # Position des éléments dans le texte
-        pos_titre = page.find(self.__titre)
-        pos_abstract = page.find(self.__abstract[:20])
-        pos_resume = max(page.find("ésumé") - 1, page.find("esume") - 1)
+        pos_titre = self.__text_first_page.find(self.__titre)
+        pos_abstract = self.__text_first_page.find(self.__abstract[:20])
+        pos_resume = max(self.__text_first_page.find("ésumé") - 1, self.__text_first_page.find("esume") - 1)
 
         if 0 < pos_resume < pos_abstract:
             pos_abstract = pos_resume
         ######################################################################
 
         # On garde que la section correspondant aux auteurs
-        section_auteurs = page[pos_titre + len(self.__titre): pos_abstract]
+        section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract]
         ######################################################################
 
         # Enlèvement des mots clefs
@@ -383,7 +381,7 @@ class Parser:
         self.__emails = self.__find_emails(section_auteurs)
 
         if not self.__emails:
-            self.__emails = self.__find_emails(page)
+            self.__emails = self.__find_emails(self.__text_first_page)
 
             # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
             if self.__emails:
@@ -453,7 +451,7 @@ class Parser:
         # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé
         # On parcourt le texte en enlevant les caractères vides et on garde le seul auteur
         if not self.__auteurs:
-            auteurs = page[pos_titre + len(self.__titre): pos_abstract].split("\n")
+            auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].split("\n")
             for aut in auteurs:
                 if aut == "":
                     auteurs.remove(aut)
