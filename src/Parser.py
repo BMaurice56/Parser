@@ -405,7 +405,7 @@ class Parser:
         if len(self.__emails) == 0:
             auth = section_auteurs.split("\n")
 
-            places = ["partement", "niversit", "partment", "aculty", "laborato"]
+            places = ["partement", "niversit", "partment", "aculty", "laborato", "nstitute"]
 
             # Si apparition de l'affiliation → arrêt
             for elt in auth:
