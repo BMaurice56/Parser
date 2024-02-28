@@ -1,11 +1,13 @@
-from Parser import Parser
-from Utils import Utils
+from time import perf_counter
+from src.Parser import Parser
+from src.Utils import Utils
 import traceback
 import shutil
 import sys
 import os
 
 if __name__ == '__main__':
+    t1 = perf_counter()
     try:
         if len(sys.argv) != 3:
             raise ValueError("Erreur nombre argument")
@@ -45,7 +47,7 @@ if __name__ == '__main__':
             os.makedirs(nomDossier)
 
             for element in os.listdir(pathToFile):
-                if Utils.isPDFFile(pathToFile + element):
+                if Utils.is_pdf_file(pathToFile + element):
                     Parser(pathToFile, element, nomDossier).pdf_to_file(argv)
                     print(f"Analyse effectué sur : {element}")
 
@@ -71,3 +73,7 @@ if __name__ == '__main__':
         print("main.py -outputfile [/path/to/the/file.pdf, /path/to/the/dir/]")
         print("outputfile : -t text")
         print("             -x xml")
+
+    t2 = perf_counter()
+
+    print(f"Temps d'exécution : {t2 - t1} secondes")

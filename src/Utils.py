@@ -4,11 +4,11 @@ import os
 
 class Utils:
     @staticmethod
-    def replaceAccent(texte: list | dict | str) -> None | str:
+    def replace_accent(texte: list | dict | str) -> None | str:
         """
         Remplace tous les accents mal lus dans les noms
 
-        :param texte string à checker
+        :param: texte string à checker
         :return: texte corrigé
         """
         dictionnaire_lettre = {
@@ -88,16 +88,11 @@ class Utils:
 
             return texte
 
-        elif type(texte) is dict:
-            for key, value in dictionnaire_lettre.items():
-                for i in range(len(texte.keys())):
-                    ""
-
         else:
             raise TypeError("Type non reconnue")
 
     @staticmethod
-    def retrievePreviousOrder(liste: list, dico_ordre: dict) -> None:
+    def retrieve_previous_order(liste: list, dico_ordre: dict) -> None:
         """
         Remet les éléments dans la liste dans l'ordre du dictionnaire
 
@@ -109,14 +104,14 @@ class Utils:
             liste[x] = y
 
     @staticmethod
-    def isPDFFile(nomFichier: str) -> bool:
+    def is_pdf_file(nom_fichier: str) -> bool:
         """
         Vérifie si le nom de fichier fourni est bien un pdf
 
-        :param nomFichier: Nom du fichier
+        :param nom_fichier: Nom du fichier
         :return: True ou False
         """
-        if not os.path.isfile(nomFichier) or nomFichier[-4:] != ".pdf":
+        if not os.path.isfile(nom_fichier) or nom_fichier[-4:] != ".pdf":
             return False
 
         return True

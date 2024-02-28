@@ -41,7 +41,7 @@ class Parser:
         self.__pathToFile = path
         self.__nomFichier = nom_fichier
 
-        if not Utils.isPDFFile(path + nom_fichier):
+        if not Utils.is_pdf_file(path + nom_fichier):
             print(f"Nom du fichier : {nom_fichier}")
             raise FileNotFoundError("Le fichier fourni n'est pas un pdf ou n'a pas été trouvé")
 
@@ -52,7 +52,7 @@ class Parser:
 
         # On vient récupérer la première page et remplacer les accents
         self.__text_first_page = self.__pdfReader.pages[0].extract_text()
-        self.__text_first_page = Utils.replaceAccent(self.__text_first_page)
+        self.__text_first_page = Utils.replace_accent(self.__text_first_page)
 
     def __open_pdf(self) -> PyPDF2.PdfReader:
         """
@@ -94,9 +94,9 @@ class Parser:
         if emails and emails != emails2:
             self.__type_mail = 0
             if len(emails) < len(emails2):
-                Utils.retrievePreviousOrder(emails, position_emails2)
+                Utils.retrieve_previous_order(emails, position_emails2)
             elif len(emails) > len(emails2):
-                Utils.retrievePreviousOrder(emails, position_emails)
+                Utils.retrieve_previous_order(emails, position_emails)
             else:
                 i = 0
                 for mail, mail2 in zip(emails, emails2):
@@ -107,11 +107,11 @@ class Parser:
 
                     i += 1
 
-                Utils.retrievePreviousOrder(emails, position_emails)
+                Utils.retrieve_previous_order(emails, position_emails)
 
         else:
             self.__type_mail = 0
-            Utils.retrievePreviousOrder(emails, position_emails)
+            Utils.retrieve_previous_order(emails, position_emails)
 
         # S'il y a des mails dans la troisième regex, on regarde s'il y a plusieurs mails
         if len(emails3) != 0:
@@ -679,7 +679,7 @@ class Parser:
             # self.__getAffiliation()
             self.__make_pair_mail_name(False)
             self._get_bibliography()
-            self.__bibliographie = Utils.replaceAccent(self.__bibliographie)
+            self.__bibliographie = Utils.replace_accent(self.__bibliographie)
 
             if type_output_file == "-t":
                 f.write(f"Nom du fichier pdf : {self.__nomFichier}\n\nTitre :\n    {self.__titre}\n\nAuteurs :\n")
