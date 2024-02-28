@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ETree
 from functools import wraps
-from Utils import Utils
+from src.Utils import Utils
 import Levenshtein
 import PyPDF2
 import re
