@@ -24,17 +24,16 @@ class Parser:
     """
     Différent type de pdf : 
     -1 : non trouvé
-    0 : nom - université - mail
+    0 : nom - université - mail pour chaque auteur
     1 : nom sur une seul ligne - université - mail entre parenthèse ou accolade
-    2 : nom - université et mail autre part
-    3 : nom et mail - université autre part
+    2 : (nom - université) et mail autre part
+    3 : (nom - université) et PAS de mail
     
     Le type des mails aident aussi à connaitre le type de pdf
     -1 : non trouvé
-    0 : normal ???????
+    0 : normal (nom et mail)
     1 : entre parenthèse ou accolade
     2 : normal mais dans la page et non au niveau des auteurs
-    3 : entre parenthèse ou accolade et non au niveau des auteurs
     """
 
     def __init__(self, path: str, nom_fichier: str, directory_txt_file: str = None):
@@ -386,13 +385,21 @@ class Parser:
             # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
             if self.__emails:
                 self.__type_mail += 2
+            else:
+                self.__type_pdf = 3
             ######################################################################
         ######################################################################
 
         # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
         pos_asterisk = section_auteurs.find("∗")
-
         if pos_asterisk != -1:
+
+            # Si les mails sont sur une seule ligne, pdf de type 1
+            if self.__type_mail == 1:
+                self.__type_pdf = 1
+            else:
+                self.__type_pdf = 2
+
             self.__auteurs = [section_auteurs[:pos_asterisk]]
             return
         ######################################################################
@@ -406,6 +413,8 @@ class Parser:
             auth = section_auteurs.split("\n")
 
             places = ["partement", "niversit", "partment", "aculty", "laborato", "nstitute"]
+
+            self.__type_pdf = 3
 
             # Si apparition de l'affiliation → arrêt
             for elt in auth:
@@ -435,6 +444,7 @@ class Parser:
             Donc on vient séparer le texte des auteurs selon les mails en gardant le nom
             Et enfin on garde le bloc de texte avec le nom et mails en moins du précédent auteur
             """
+            self.__type_pdf = 0
             for mail in self.__emails:
                 if mail in section_auteurs.strip():
                     result = section_auteurs.split(mail)
@@ -453,9 +463,23 @@ class Parser:
                 self.__auteurs.append(auteur)
         ######################################################################
 
+        # print(self.__auteurs)
+        # Si on a moins d'auteurs que de mails, il est probable que les noms soient sur une seule ligne
+        if len(self.__auteurs) == 1 and len(self.__auteurs) < len(self.__emails):
+            if self.__type_mail != 2:
+                self.__type_pdf = 1
+        ######################################################################
+
         # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
         # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
         if not self.__auteurs:
+
+            if self.__type_mail == 1:
+                self.__type_pdf = 1
+
+            elif self.__type_mail == 2:
+                self.__type_pdf = 0
+
             auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].split("\n")
             for aut in auteurs:
                 if aut == "":
