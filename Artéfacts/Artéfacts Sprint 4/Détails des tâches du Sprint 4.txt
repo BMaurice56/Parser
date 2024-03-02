@@ -1,0 +1,25 @@
+Analyse du fichier : (7 tâches)
+
+- Modifier la forme de sortie du fichier au format XML
+- Extraction de l'affiliation de l'auteur
+- Extraction de l'introduction
+- Extraction du corps
+- Extraction de la conclusion
+- Extraction de la discussion
+- Création d'un menu textuel
+
+Test : (1 tâche)
+
+- Tests sur les différents fichiers « .pdf » des 2 corpus
+
+Amélioration : (1 tâche)
+
+- Restructuration du code
+
+Rendu et artéfacts : (4 tâches)
+
+- Rendre le programme sur le Moodle
+
+- Faire le tableau Excel et le détails des tâches du Sprint
+- Faire un rapport de milieu de Sprint
+- Faire un rapport de fin de Sprint
