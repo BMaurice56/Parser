@@ -154,10 +154,8 @@ class Parser:
         # Pour chaque mail, on enlève différents caractères
         for i in range(len(emails)):
             emails[i] = emails[i].replace("\n", "")
-            emails[i] = emails[i].replace("(", "")
-            emails[i] = emails[i].replace("{", "")
-            emails[i] = emails[i].replace(")", "")
-            emails[i] = emails[i].replace("}", "")
+            emails[i] = emails[i].replace("(", "").replace(")", "")
+            emails[i] = emails[i].replace("{", "").replace("}", "")
             emails[i] = emails[i].strip()
         ######################################################################
 
@@ -166,6 +164,8 @@ class Parser:
     def __separate_authors(f):
         """
         Sépare les auteurs selon certains marqueurs
+
+        :return: None
         """
 
         @wraps(f)
@@ -344,7 +344,7 @@ class Parser:
         """
         Renvoi la liste des auteurs (Nom, mail)
 
-        :return: List des auteurs
+        :return: None
         """
         if not self.__auteurs and self.__dico_nom_mail == {}:
             self._get_title()
@@ -485,13 +485,13 @@ class Parser:
                 self.__auteurs.append(auteurs[0].strip())
             ######################################################################
 
-    def _get_title(self, minimum_y=650, maximum_y=770) -> None:
+    def _get_title(self, minimum_y: int = 650, maximum_y: int = 770) -> None:
         """
         Renvoie le titre du pdf
 
         :param minimum_y position minimal en y
         :param maximum_y position maximal en y
-        :return: Titre
+        :return: None
         """
         if self.__titre == "":
             page = self.__pdfReader.pages[0]
@@ -657,7 +657,7 @@ class Parser:
 
             self.__bibliographie = Utils.replace_accent(self.__bibliographie)
 
-    def _get_affiliation(self):
+    def _get_affiliation(self) -> None:
         """
         Récupère les universités des différents auteurs
 
