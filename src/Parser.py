@@ -694,18 +694,91 @@ class Parser:
             section_auteurs = section_auteurs[:section_auteurs.find(word) - 1].strip()
         ######################################################################
 
-        """
         if self.__type_pdf == 0:
+            for key, value in self.__dico_nom_mail.items():
+                # Position du nom ainsi que du mail
+                # Si mail de type 2 (mail dans le corps) → rechercher le nom de l'auteur en partant de la fin
+                if self.__type_mail == 2:
+                    pos_key = self.__text_first_page.rfind(key)
+                else:
+                    pos_key = self.__text_first_page.find(key)
+                ######################################################################
 
+                # On localise la position du mail
+                pos_value = self.__text_first_page.find(value.split("@")[0])
+                ######################################################################
+
+                # Puis, on ne garde que l'établissement correspondant à l'auteur
+                result = self.__text_first_page[pos_key + len(key):pos_value]
+                ######################################################################
+
+                # On regarde s'il y a un \n a la fin et on le retire
+                last_new_line = result.rfind("\n")
+
+                if 0 < last_new_line and last_new_line > 10:
+                    result = result[:last_new_line]
+                ######################################################################
+
+                self.__dico_nom_univ[key] = result.strip()
 
         elif self.__type_pdf == 1:
+            first_new_line = section_auteurs.find("\n")
 
-        elif self.__type_pdf == 2:
+            # Si présence d'un @, on récupère la position du dernier \n
+            first_at = section_auteurs.find("@")
 
-        elif self.__type_pdf == 3:
+            if first_at != -1:
+                # Si le @ est précédé d'un \n, on refait une recherche d'un \n avant celui-ci
+                if section_auteurs[first_at - 1] == "\n":
+                    first_at -= 2
+                ######################################################################
+
+                second_new_line = section_auteurs[:first_at].rfind("\n")
+            else:
+                second_new_line = section_auteurs.rfind("\n")
+            ######################################################################
+
+            # Récupération de l'établissement
+            school = section_auteurs[first_new_line:second_new_line]
+            ######################################################################
+
+            for key in self.__dico_nom_mail.keys():
+                self.__dico_nom_univ[key] = school
 
         else:
-        """
+            section_auteurs_separate = section_auteurs.split("\n")
+
+            school = ""
+
+            for element in section_auteurs_separate:
+                if not any(element.find(nom) != -1 for nom in self.__auteurs):
+                    school = f"{school}{element}"
+
+            for key in self.__dico_nom_mail.keys():
+                self.__dico_nom_univ[key] = school
+
+        words_to_remove = ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)",
+                           "  "]
+
+        # On enlève les caractères inutiles aux affiliations
+        for key, value in self.__dico_nom_univ.items():
+            for element in words_to_remove:
+                value = value.replace(element, "")
+
+            # Si présence d'un retour à la ligne au début, on l'enlève
+            first_new_line = value.find("\n")
+
+            if 0 < first_new_line < 4:
+                value = value[first_new_line:]
+            ######################################################################
+
+            # Si présence de "and" (nom composé) → on l'enlève
+            if "and " in value:
+                value = value[value.find("\n"):]
+            ######################################################################
+
+            self.__dico_nom_univ[key] = value.strip()
+        ######################################################################
 
     def pdf_to_file(self, type_output_file: str) -> None:
         """
@@ -763,6 +836,9 @@ class Parser:
 
                     mail = ETree.SubElement(auteur, 'mail')
                     mail.text = value
+
+                    school = ETree.SubElement(auteur, 'affiliation')
+                    school.text = self.__dico_nom_univ.get(key, "Pas d'affiliation trouvée")
                 ######################################################################
 
                 # Ajout de l'abstract
