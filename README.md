@@ -10,7 +10,8 @@ et d'en extraire les différentes informations de celui-ci comme :
 - etc...
 
 # Lancement
-Pour lancer ce logiciel sur un pdf ou sur un dossier, effectuer la commande suivante :
+Pour lancer ce logiciel sur un pdf ou sur un dossier, effectuer les commandes suivantes
+pour installer les modules nécessaires :
 ```
 $ pip install --upgrade PyPDF2==3.0.1
 $ pip install --upgrade python-Levenshtein==0.25.0
