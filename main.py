@@ -7,8 +7,9 @@ import sys
 import os
 
 if __name__ == '__main__':
-    t1 = perf_counter()
     try:
+        t1 = perf_counter()
+
         if len(sys.argv) != 3:
             raise ValueError("Erreur nombre argument")
 
@@ -63,6 +64,10 @@ if __name__ == '__main__':
 
             print(f"Analyse effectué sur : {nom_fichier}")
 
+        t2 = perf_counter()
+
+        print(f"\nTemps d'exécution : {round(t2 - t1, 2)} secondes")
+
     except Exception as e:
         print(traceback.format_exc())
 
@@ -73,7 +78,3 @@ if __name__ == '__main__':
         print("main.py -outputfile [/path/to/the/file.pdf, /path/to/the/dir/]")
         print("outputfile : -t text")
         print("             -x xml")
-
-    t2 = perf_counter()
-
-    print(f"Temps d'exécution : {t2 - t1} secondes")
