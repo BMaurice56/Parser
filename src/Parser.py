@@ -16,6 +16,8 @@ class Parser:
         self.__bibliographie = ""
         self.__dico_nom_mail = {}
         self.__dico_nom_univ = {}
+        self.__school_words = ["partement", "niversit", "partment", "acult", "laborato", "nstitute", "campus",
+                               "academy", "school"]
         self.__type_pdf = -1
         self.__type_mail = -1
         """
@@ -409,16 +411,14 @@ class Parser:
             if len(self.__emails) == 0:
                 auth = section_auteurs.split("\n")
 
-                places = ["partement", "niversit", "partment", "aculty", "laborato", "nstitute"]
-
                 self.__type_pdf = 3
 
                 # Si apparition de l'affiliation → arrêt
                 for elt in auth:
                     value = elt.strip()
-                    for place in places:
-                        if value.find(place) != -1:
-                            break
+
+                    if any(value.find(place) != -1 for place in self.__school_words):
+                        break
 
                     else:
                         auteurs.append(value)
