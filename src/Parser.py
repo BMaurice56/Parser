@@ -7,36 +7,32 @@ import re
 
 
 class Parser:
-    __pdfReader = PyPDF2.PdfReader
-    __pathToFile = ""
-    __nomFichier = ""
-    __directoryTxtFile = ""
-    __text_first_page = ""
-    __titre = ""
-    __auteurs = []
-    __emails = []
-    __abstract = ""
-    __bibliographie = ""
-    __dico_nom_mail = {}
-    __dico_nom_univ = {}
-    __type_pdf = -1
-    __type_mail = -1
-    """
-    Différent type de pdf : 
-    -1 : non trouvé
-    0 : nom - université - mail pour chaque auteur
-    1 : nom sur une seul ligne - université - mail entre parenthèse ou accolade
-    2 : (nom - université) et mail autre part
-    3 : (nom - université) et PAS de mail
-    
-    Le type des mails aident aussi à connaitre le type de pdf
-    -1 : non trouvé
-    0 : normal (nom et mail)
-    1 : entre parenthèse ou accolade
-    2 : normal mais dans la page et non au niveau des auteurs
-    """
-
     def __init__(self, path: str, nom_fichier: str, directory_txt_file: str = None):
+        self.__directoryTxtFile = ""
+        self.__titre = ""
+        self.__auteurs = []
+        self.__emails = []
+        self.__abstract = ""
+        self.__bibliographie = ""
+        self.__dico_nom_mail = {}
+        self.__dico_nom_univ = {}
+        self.__type_pdf = -1
+        self.__type_mail = -1
+        """
+        Différent type de pdf : 
+        -1 : non trouvé
+        0 : nom - université - mail pour chaque auteur
+        1 : nom sur une seul ligne - université - mail entre parenthèse ou accolade
+        2 : (nom - université) et mail autre part
+        3 : (nom - université) et PAS de mail
+
+        Le type des mails aident aussi à connaitre le type de pdf
+        -1 : non trouvé
+        0 : normal (nom et mail)
+        1 : entre parenthèse ou accolade
+        2 : normal mais dans la page et non au niveau des auteurs
+        """
+
         self.__pathToFile = path
         self.__nomFichier = nom_fichier
 
@@ -167,10 +163,9 @@ class Parser:
 
     def __separate_authors(f):
         """
-        Séparer les auteurs selon certains marqueurs
+        Sépare les auteurs selon certains marqueurs
         """
 
-        # noinspection PyCallingNonCallable
         @wraps(f)
         def wrapper(self):
             f(self)
@@ -263,9 +258,7 @@ class Parser:
 
         return wrapper
 
-    __separate_authors = staticmethod(__separate_authors)
-
-    def __make_pair_mail_name(self, call_get_author: bool = True) -> None:
+    def __make_pair_mail_name(f):
         """
         Effectue la paire mail et nom des auteurs
 
@@ -287,59 +280,63 @@ class Parser:
 
             return False
 
-        # Appelle la fonction au besoin
-        if call_get_author:
-            self._get_author()
-        ######################################################################
+        @wraps(f)
+        def wrapper(self):
+            f(self)
 
-        self.__dico_nom_mail = {}
-        taille_auteurs = len(self.__auteurs)
-        taille_mails = len(self.__emails)
-        levenshtein_distance = []
-        dico_nom_mail_distance = {}
+            taille_auteurs = len(self.__auteurs)
+            taille_mails = len(self.__emails)
+            levenshtein_distance = []
+            dico_nom_mail_distance = {}
 
-        # On enlève les caractères de retour à la ligne
-        for i in range(len(self.__auteurs)):
-            if "\n" in self.__auteurs[i]:
-                self.__auteurs[i] = self.__auteurs[i].replace("\n", "")
-        ######################################################################
-
-        # Si les tailles sont équivalentes, on associe les mails aux noms
-        if taille_auteurs == taille_mails:
-            # D'abord, on calcule les distances
-            for nom in self.__auteurs:
-                for mail in self.__emails:
-                    levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
+            # On enlève les caractères de retour à la ligne
+            for i in range(len(self.__auteurs)):
+                if "\n" in self.__auteurs[i]:
+                    self.__auteurs[i] = self.__auteurs[i].replace("\n", "")
             ######################################################################
 
-            # Puis, on ne garde que les distances les plus faibles
-            for nom, mail, distance in levenshtein_distance:
-                distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
-
-                # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
-                if distance_in_dict[1] >= distance and not mail_in_dict(mail, dico_nom_mail_distance):
-                    dico_nom_mail_distance[nom] = [mail, distance]
+            # Si les tailles sont équivalentes, on associe les mails aux noms
+            if taille_auteurs == taille_mails:
+                # D'abord, on calcule les distances
+                for nom in self.__auteurs:
+                    for mail in self.__emails:
+                        levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
                 ######################################################################
+
+                # Puis, on ne garde que les distances les plus faibles
+                for nom, mail, distance in levenshtein_distance:
+                    distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
+
+                    # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
+                    if distance_in_dict[1] >= distance and not mail_in_dict(mail, dico_nom_mail_distance):
+                        dico_nom_mail_distance[nom] = [mail, distance]
+                    ######################################################################
+                ######################################################################
+
+                # Enfin, on passe les noms et mails dans le dictionnaire final
+                for key, value in dico_nom_mail_distance.items():
+                    self.__dico_nom_mail[key] = value[0]
+                ######################################################################
+
+            # Soit il y a qu'un seul mail → mail de l'équipe
+            # Soit on n'en a pas trouvé
+            else:
+                mention = "Pas d'adresse mail"
+                if len(self.__emails) == 1:
+                    mention = self.__emails[0]
+
+                for nom in self.__auteurs:
+                    self.__dico_nom_mail[nom] = mention
             ######################################################################
-
-            # Enfin, on passe les noms et mails dans le dictionnaire final
-            for key, value in dico_nom_mail_distance.items():
-                self.__dico_nom_mail[key] = value[0]
-            ######################################################################
-
-        # Soit il y a qu'un seul mail → mail de l'équipe
-        # Soit on n'en a pas trouvé
-        else:
-            mention = "Pas d'adresse mail"
-            if len(self.__emails) == 1:
-                mention = self.__emails[0]
-
-            for nom in self.__auteurs:
-                self.__dico_nom_mail[nom] = mention
 
             return
-        ######################################################################
 
+        return wrapper
+
+    __separate_authors = staticmethod(__separate_authors)
+    __make_pair_mail_name = staticmethod(__make_pair_mail_name)
+
+    @__make_pair_mail_name
     @__separate_authors
     def _get_author(self) -> None:
         """
@@ -347,146 +344,146 @@ class Parser:
 
         :return: List des auteurs
         """
-        self.__auteurs.clear()
+        if not self.__auteurs and self.__dico_nom_mail == {}:
+            self._get_title()
+            self._get_abstract()
 
-        self._get_title()
-        self._get_abstract()
+            # Position des éléments dans le texte
+            pos_titre = self.__text_first_page.find(self.__titre)
+            pos_abstract = self.__text_first_page.find(self.__abstract[:20])
+            pos_resume = max(self.__text_first_page.find("ésumé") - 1, self.__text_first_page.find("esume") - 1)
 
-        # Position des éléments dans le texte
-        pos_titre = self.__text_first_page.find(self.__titre)
-        pos_abstract = self.__text_first_page.find(self.__abstract[:20])
-        pos_resume = max(self.__text_first_page.find("ésumé") - 1, self.__text_first_page.find("esume") - 1)
-
-        if 0 < pos_resume < pos_abstract:
-            pos_abstract = pos_resume
-        ######################################################################
-
-        # On garde que la section correspondant aux auteurs
-        section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract]
-        ######################################################################
-
-        # Enlèvement des mots clefs
-        if "bstract" in section_auteurs.strip():
-            section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
-        ######################################################################
-
-        # Enlèvement des caractères spéciaux
-        for string in ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)", "  "]:
-            if string in section_auteurs:
-                section_auteurs = section_auteurs.replace(string, " ")
-        ######################################################################
-
-        # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
-        self.__emails = self.__find_emails(section_auteurs)
-
-        if not self.__emails:
-            self.__emails = self.__find_emails(self.__text_first_page)
-
-            # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
-            if self.__emails:
-                self.__type_mail += 2
-            else:
-                self.__type_pdf = 3
+            if 0 < pos_resume < pos_abstract:
+                pos_abstract = pos_resume
             ######################################################################
-        ######################################################################
 
-        # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
-        pos_asterisk = section_auteurs.find("∗")
-        if pos_asterisk != -1:
+            # On garde que la section correspondant aux auteurs
+            section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract]
+            ######################################################################
 
-            # Si les mails sont sur une seule ligne, pdf de type 1
-            if self.__type_mail == 1:
-                self.__type_pdf = 1
-            else:
-                self.__type_pdf = 2
+            # Enlèvement des mots clefs
+            if "bstract" in section_auteurs.strip():
+                section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
+            ######################################################################
 
-            self.__auteurs = [section_auteurs[:pos_asterisk]]
-            return
-        ######################################################################
+            # Enlèvement des caractères spéciaux
+            for string in ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)",
+                           "  "]:
+                if string in section_auteurs:
+                    section_auteurs = section_auteurs.replace(string, " ")
+            ######################################################################
 
-        # Stock temporairement les auteurs
-        auteurs = []
-        ######################################################################
+            # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
+            self.__emails = self.__find_emails(section_auteurs)
 
-        # S'il y a 0 mail, on récupère les auteurs à tatillon
-        if len(self.__emails) == 0:
-            auth = section_auteurs.split("\n")
+            if not self.__emails:
+                self.__emails = self.__find_emails(self.__text_first_page)
 
-            places = ["partement", "niversit", "partment", "aculty", "laborato", "nstitute"]
-
-            self.__type_pdf = 3
-
-            # Si apparition de l'affiliation → arrêt
-            for elt in auth:
-                value = elt.strip()
-                for place in places:
-                    if value.find(place) != -1:
-                        break
-
+                # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
+                if self.__emails:
+                    self.__type_mail += 2
                 else:
-                    auteurs.append(value)
+                    self.__type_pdf = 3
+                ######################################################################
             ######################################################################
-        ######################################################################
 
-        # Sinon, on ne récupère que le seul auteur
-        elif len(self.__emails) == 1:
-            auteurs.append(section_auteurs.split("\n")[0])
-        ######################################################################
+            # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
+            pos_asterisk = section_auteurs.find("∗")
+            if pos_asterisk != -1:
 
-        # Sinon, on parcourt les mails et on sépare les auteurs
-        elif self.__type_mail == 0:
-            """
-            En général, les articles sont sous la forme :
-            - nom
-            - université
-            - mail
-            et les auteurs se suivent
-            Donc on vient séparer le texte des auteurs selon les mails en gardant le nom
-            Et enfin on garde le bloc de texte avec le nom et mails en moins du précédent auteur
-            """
-            self.__type_pdf = 0
-            for mail in self.__emails:
-                if mail in section_auteurs.strip():
-                    result = section_auteurs.split(mail)
-                    auteurs.append(result[0].split("\n")[0].strip())
+                # Si les mails sont sur une seule ligne, pdf de type 1
+                if self.__type_mail == 1:
+                    self.__type_pdf = 1
+                else:
+                    self.__type_pdf = 2
 
-                    pos_mail = section_auteurs.find(mail)
-                    section_auteurs = section_auteurs[pos_mail + len(mail):].strip()
-        ######################################################################
+                self.__auteurs = [section_auteurs[:pos_asterisk]]
+                return
+            ######################################################################
 
-        # On ne garde que les informations pertinentes
-        for auteur in auteurs:
-            if auteur and auteur[-1] == ",":
-                auteur = auteur[:-1].strip()
+            # Stock temporairement les auteurs
+            auteurs = []
+            ######################################################################
 
-            if len(auteur) > 1 and "@" not in auteur and "1,2" not in auteur and "1" not in auteur:
-                self.__auteurs.append(auteur)
-        ######################################################################
+            # S'il y a 0 mail, on récupère les auteurs à tatillon
+            if len(self.__emails) == 0:
+                auth = section_auteurs.split("\n")
 
-        # print(self.__auteurs)
-        # Si on a moins d'auteurs que de mails, il est probable que les noms soient sur une seule ligne
-        if len(self.__auteurs) == 1 and len(self.__auteurs) < len(self.__emails):
-            if self.__type_mail != 2:
-                self.__type_pdf = 1
-        ######################################################################
+                places = ["partement", "niversit", "partment", "aculty", "laborato", "nstitute"]
 
-        # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
-        # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
-        if not self.__auteurs:
+                self.__type_pdf = 3
 
-            if self.__type_mail == 1:
-                self.__type_pdf = 1
+                # Si apparition de l'affiliation → arrêt
+                for elt in auth:
+                    value = elt.strip()
+                    for place in places:
+                        if value.find(place) != -1:
+                            break
 
-            elif self.__type_mail == 2:
+                    else:
+                        auteurs.append(value)
+                ######################################################################
+            ######################################################################
+
+            # Sinon, on ne récupère que le seul auteur
+            elif len(self.__emails) == 1:
+                auteurs.append(section_auteurs.split("\n")[0])
+            ######################################################################
+
+            # Sinon, on parcourt les mails et on sépare les auteurs
+            elif self.__type_mail == 0:
+                """
+                En général, les articles sont sous la forme :
+                - nom
+                - université
+                - mail
+                et les auteurs se suivent
+                Donc on vient séparer le texte des auteurs selon les mails en gardant le nom
+                Et enfin on garde le bloc de texte avec le nom et mails en moins du précédent auteur
+                """
                 self.__type_pdf = 0
+                for mail in self.__emails:
+                    if mail in section_auteurs.strip():
+                        result = section_auteurs.split(mail)
+                        auteurs.append(result[0].split("\n")[0].strip())
 
-            auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].split("\n")
-            for aut in auteurs:
-                if aut == "":
-                    auteurs.remove(aut)
+                        pos_mail = section_auteurs.find(mail)
+                        section_auteurs = section_auteurs[pos_mail + len(mail):].strip()
+            ######################################################################
 
-            self.__auteurs.append(auteurs[0].strip())
-        ######################################################################
+            # On ne garde que les informations pertinentes
+            for auteur in auteurs:
+                if auteur and auteur[-1] == ",":
+                    auteur = auteur[:-1].strip()
+
+                if len(auteur) > 1 and "@" not in auteur and "1,2" not in auteur and "1" not in auteur:
+                    self.__auteurs.append(auteur)
+            ######################################################################
+
+            # print(self.__auteurs)
+            # Si on a moins d'auteurs que de mails, il est probable que les noms soient sur une seule ligne
+            if len(self.__auteurs) == 1 and len(self.__auteurs) < len(self.__emails):
+                if self.__type_mail != 2:
+                    self.__type_pdf = 1
+            ######################################################################
+
+            # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
+            # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
+            if not self.__auteurs:
+
+                if self.__type_mail == 1:
+                    self.__type_pdf = 1
+
+                elif self.__type_mail == 2:
+                    self.__type_pdf = 0
+
+                auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].split("\n")
+                for aut in auteurs:
+                    if aut == "":
+                        auteurs.remove(aut)
+
+                self.__auteurs.append(auteurs[0].strip())
+            ######################################################################
 
     def _get_title(self, minimum_y=650, maximum_y=770) -> None:
         """
@@ -496,61 +493,61 @@ class Parser:
         :param maximum_y position maximal en y
         :return: Titre
         """
-        self.__titre = ""
-        page = self.__pdfReader.pages[0]
+        if self.__titre == "":
+            page = self.__pdfReader.pages[0]
 
-        parties = []
-        parties_tries = []
+            parties = []
+            parties_tries = []
 
-        def visitor_body(text, cm, tm, font_dict, font_size):
-            if text not in ["", " "] and text != "\n":
-                y = tm[5]
-                if minimum_y < y < maximum_y:
-                    parties.append(text)
+            def visitor_body(text, cm, tm, font_dict, font_size):
+                if text not in ["", " "] and text != "\n":
+                    y = tm[5]
+                    if minimum_y < y < maximum_y:
+                        parties.append(text)
 
-        # Extraction des premières lignes
-        page.extract_text(visitor_text=visitor_body)
+            # Extraction des premières lignes
+            page.extract_text(visitor_text=visitor_body)
 
-        for elt in parties:
-            value = elt.lower().strip()
-            if "letter" not in value and "communicated by" not in value:
-                parties_tries.append(elt)
-        ######################################################################
-
-        taille_parties = len(parties_tries)
-
-        if taille_parties == 1:
-            # Si on n'a pas récupéré la deuxième ligne du titre, on augmente la fenêtre
-            if parties_tries[0][-1] == "\n":
-                self.__titre = ""
-                self._get_title(minimum_y - 10, maximum_y)
-            else:
-                self.__titre += parties_tries[0]
-
-            return
+            for elt in parties:
+                value = elt.lower().strip()
+                if "letter" not in value and "communicated by" not in value:
+                    parties_tries.append(elt)
             ######################################################################
 
-        # Soit le titre est en deux parties
-        elif taille_parties == 2:
-            for elt in parties_tries:
-                self.__titre += elt
+            taille_parties = len(parties_tries)
 
-            return
-        ######################################################################
+            if taille_parties == 1:
+                # Si on n'a pas récupéré la deuxième ligne du titre, on augmente la fenêtre
+                if parties_tries[0][-1] == "\n":
+                    self.__titre = ""
+                    self._get_title(minimum_y - 10, maximum_y)
+                else:
+                    self.__titre += parties_tries[0]
 
-        # Soit, on commence à itérer sur le texte et à ce moment-là, on ne garde que les premières lignes
-        elif len(parties_tries) > 10:
-            self.__titre += parties_tries[0]
-            if parties_tries[0][-1] == "\n":
-                self.__titre += parties_tries[1]
-            return
-        ######################################################################
+                return
+                ######################################################################
 
-        # Soit, on n'a rien trouvé, ou on se trouve à moins de 10 éléments
-        else:
-            self.__titre = ""
-            self._get_title(minimum_y - 10, maximum_y)
-        ######################################################################
+            # Soit le titre est en deux parties
+            elif taille_parties == 2:
+                for elt in parties_tries:
+                    self.__titre += elt
+
+                return
+            ######################################################################
+
+            # Soit, on commence à itérer sur le texte et à ce moment-là, on ne garde que les premières lignes
+            elif len(parties_tries) > 10:
+                self.__titre += parties_tries[0]
+                if parties_tries[0][-1] == "\n":
+                    self.__titre += parties_tries[1]
+                return
+            ######################################################################
+
+            # Soit, on n'a rien trouvé, ou on se trouve à moins de 10 éléments
+            else:
+                self.__titre = ""
+                self._get_title(minimum_y - 10, maximum_y)
+            ######################################################################
 
     def _get_abstract(self) -> None:
         """
@@ -558,71 +555,76 @@ class Parser:
 
         :return: None
         """
-        self.__abstract = ""
+        if self.__abstract == "":
+            # Récupération du texte
+            content = self.__text_first_page
+            content_copy = content[:].lower()
+            ######################################################################
 
-        # Récupération du texte
-        content = self.__text_first_page
-        content_copy = content[:].lower()
-        ######################################################################
+            # Position des mots clefs
+            pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
+            pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
+            pos_keywords = max(content_copy.find("keyword"), content_copy.find("eyword") - 1,
+                               content_copy.find("ey-word") - 1)
+            pos_index_terms = max(content_copy.find("index terms"), content_copy.find("ndex terms") - 1)
+            pos_mot_clefs = max(content_copy.find("mots-cl"), content_copy.find("mots cl"))
+            ######################################################################
 
-        # Position des mots clefs
-        pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
-        pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
-        pos_keywords = max(content_copy.find("keyword"), content_copy.find("eyword") - 1,
-                           content_copy.find("ey-word") - 1)
-        pos_index_terms = max(content_copy.find("index terms"), content_copy.find("ndex terms") - 1)
-        ######################################################################
+            # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
+            if 0 < pos_keywords < pos_introduction and pos_keywords > pos_abstract:
+                pos_introduction = pos_keywords
+            ######################################################################
 
-        # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
-        if 0 < pos_keywords < pos_introduction:
-            pos_introduction = pos_keywords
-        ######################################################################
+            # S'il y a une section index terms dans le début du pdf, on l'enlève
+            if 0 < pos_index_terms < pos_introduction and pos_index_terms > pos_abstract:
+                pos_introduction = pos_index_terms
+            ######################################################################
 
-        # S'il y a une section index terms dans le début du pdf, on l'enlève
-        if 0 < pos_index_terms < pos_introduction:
-            pos_introduction = pos_index_terms
-        ######################################################################
+            # S'il y a une section mots clefs dans le débt du pdf, on l'enlève
+            if 0 < pos_mot_clefs < pos_introduction and pos_mot_clefs > pos_abstract:
+                pos_introduction = pos_mot_clefs
+            ######################################################################
 
-        # Si trouvé, alors on peut renvoyer l'abstract
-        if pos_abstract != -1 and pos_introduction != -1:
-            swift = 1
-            if content[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
-                swift += 1
+            # Si trouvé, alors on peut renvoyer l'abstract
+            if pos_abstract != -1 and pos_introduction != -1:
+                swift = 1
+                if content[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
+                    swift += 1
 
-            self.__abstract = content[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
-        ######################################################################
+                self.__abstract = content[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
+            ######################################################################
 
-        # Sinon absence du mot abstract
-        elif pos_abstract == -1 and pos_introduction != -1:
-            dernier_point = content[:pos_introduction - 2].rfind(".")
+            # Sinon absence du mot abstract
+            elif pos_abstract == -1 and pos_introduction != -1:
+                dernier_point = content[:pos_introduction - 2].rfind(".")
 
-            i = 0
+                i = 0
 
-            for i in range(dernier_point, 1, -1):
-                if ord(content[i]) < 20:
-                    if ord(content[i - 1]) != 45:
-                        break
+                for i in range(dernier_point, 1, -1):
+                    if ord(content[i]) < 20:
+                        if ord(content[i - 1]) != 45:
+                            break
 
-            self.__abstract = content[i + 1:dernier_point]
-        ######################################################################
+                self.__abstract = content[i + 1:dernier_point]
+            ######################################################################
 
-        # Si présence du 1 de l'introduction, on l'enlève
-        pos_i_introduction = self.__abstract.rfind("I.")
+            # Si présence du 1 de l'introduction, on l'enlève
+            pos_i_introduction = self.__abstract.rfind("I.")
 
-        if pos_i_introduction != -1:
-            self.__abstract = self.__abstract[:pos_i_introduction - 1]
-        ######################################################################
+            if pos_i_introduction != -1:
+                self.__abstract = self.__abstract[:pos_i_introduction - 1]
+            ######################################################################
 
-        # Permet d'enlever les espaces et retour à la ligne à la fin pour vérifier la présence du point
-        if self.__abstract != "":
-            while self.__abstract[-1] in ["\n", " "]:
-                self.__abstract = self.__abstract[:-1]
+            # Permet d'enlever les espaces et retour à la ligne à la fin pour vérifier la présence du point
+            if self.__abstract != "":
+                while self.__abstract[-1] in ["\n", " "]:
+                    self.__abstract = self.__abstract[:-1]
 
-            if self.__abstract[-1] != ".":
-                self.__abstract += "."
-        else:
-            raise ValueError("Abstract non trouvé")
-        ######################################################################
+                if self.__abstract[-1] != ".":
+                    self.__abstract += "."
+            else:
+                raise ValueError("Abstract non trouvé")
+            ######################################################################
 
     def _get_bibliography(self) -> None:
         """
@@ -630,35 +632,40 @@ class Parser:
 
         :return: None
         """
-        self.__bibliographie = ""
+        if self.__bibliographie == "":
+            number_of_pages = len(self.__pdfReader.pages) - 1
+            numero_page = number_of_pages
 
-        number_of_pages = len(self.__pdfReader.pages) - 1
-        numero_page = number_of_pages
+            while numero_page > -1:
+                page = self.__pdfReader.pages[numero_page]
 
-        while numero_page > -1:
-            page = self.__pdfReader.pages[numero_page]
+                # Récupération du texte
+                content = page.extract_text()
+                content_copy = content[:].lower()
+                ######################################################################
 
-            # Récupération du texte
-            content = page.extract_text()
-            content_copy = content[:].lower()
-            ######################################################################
+                pos_references = content_copy.find("reference")
 
-            pos_references = max(content_copy.find("references"), content.find("References"),
-                                 content.find("REFERENCES"))
+                if pos_references != -1:
+                    self.__bibliographie = f"{content[pos_references + len('references'):]}{self.__bibliographie}"
+                    break
 
-            if pos_references != -1:
-                self.__bibliographie = f"{content[pos_references + len('references'):]}{self.__bibliographie}"
-                break
+                else:
+                    self.__bibliographie = f"{content}{self.__bibliographie}"
 
-            else:
-                self.__bibliographie = f"{content}{self.__bibliographie}"
+                numero_page -= 1
 
-            numero_page -= 1
+            self.__bibliographie = Utils.replace_accent(self.__bibliographie)
 
     def _get_affiliation(self):
+        """
+        Récupère les universités des différents auteurs
+
+        :return: None
+        """
         self._get_title()
         self._get_abstract()
-        self.__make_pair_mail_name(False)
+        self._get_author()
 
         pos_titre = self.__text_first_page.find(self.__titre)
         pos_abstract = self.__text_first_page.find(self.__abstract[1:10])
@@ -669,16 +676,36 @@ class Parser:
         ######################################################################
 
         # On garde que la section correspondant aux auteurs
-        section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract]
+        section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].strip()
         ######################################################################
 
         # Enlèvement des mots clefs
-        if "bstract" in section_auteurs.strip():
+        if "bstract" in section_auteurs:
             section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
         ######################################################################
-        print()
-        print(section_auteurs)
-        print()
+
+        # Si présence d'un résumé avant l'abstract, on l'enlève
+        if pos_resume != -1:
+            word = "ésumé"
+
+            if word not in section_auteurs:
+                word = "esume"
+
+            section_auteurs = section_auteurs[:section_auteurs.find(word) - 1].strip()
+        ######################################################################
+
+        """
+        if self.__type_pdf == 0:
+
+
+        elif self.__type_pdf == 1:
+
+        elif self.__type_pdf == 2:
+
+        elif self.__type_pdf == 3:
+
+        else:
+        """
 
     def pdf_to_file(self, type_output_file: str) -> None:
         """
@@ -701,10 +728,8 @@ class Parser:
             self._get_title()
             self._get_abstract()
             self._get_author()
-            # self.__getAffiliation()
-            self.__make_pair_mail_name(False)
+            self._get_affiliation()
             self._get_bibliography()
-            self.__bibliographie = Utils.replace_accent(self.__bibliographie)
 
             if type_output_file == "-t":
                 f.write(f"Nom du fichier pdf : {self.__nomFichier}\n\nTitre :\n    {self.__titre}\n\nAuteurs :\n")
