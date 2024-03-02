@@ -1,4 +1,5 @@
 # Fichier contenant des fonctions utiles
+import json
 import os
 
 
@@ -11,85 +12,23 @@ class Utils:
         :param: texte string à checker
         :return: texte corrigé
         """
-        dictionnaire_lettre = {
-            "´ e": 'é',
-            "` e": 'è',
-            "´ a": 'á',
-            "` a": 'à',
-            "^ e": 'ê',
-            "´ i": 'í',
-            "` i": 'ì',
-            "ˆ i": 'î',
-            "~ n": 'ñ',
-            "´ o": 'ó',
-            "` o": 'ò',
-            "^ o": 'ô',
-            "´ u": 'ú',
-            "` u": 'ù',
-            "^ u": 'û',
-            "¨ u": 'ü',
-            "´ y": 'ý',
-            "` y": 'ỳ',
-            "^ y": 'ŷ',
-            " ´e": 'é',
-            " `e": 'è',
-            " ´a": 'á',
-            " `a": 'à',
-            " ˆe": 'ê',
-            " ´i": 'í',
-            " `i": 'ì',
-            " ˆi": 'î',
-            " ~n": 'ñ',
-            " ´o": 'ó',
-            " `o": 'ò',
-            " ^o": 'ô',
-            " ´u": 'ú',
-            " `u": 'ù',
-            " ˆu": 'û',
-            " ¨u": 'ü',
-            " ´y": 'ý',
-            " `y": 'ỳ',
-            " ˆy": 'ŷ',
-            " c ¸": "ç",
-            " c¸": "ç",
-            "ˆ ı": "î",
-            "´e": 'é',
-            "`e": 'è',
-            "´a": 'á',
-            "`a": 'à',
-            "^e": 'ê',
-            "´i": 'í',
-            "`i": 'ì',
-            "ˆi": 'î',
-            "~n": 'ñ',
-            "´o": 'ó',
-            "`o": 'ò',
-            "^o": 'ô',
-            "´u": 'ú',
-            "`u": 'ù',
-            "^u": 'û',
-            "¨u": 'ü',
-            "´y": 'ý',
-            "`y": 'ỳ',
-            "^y": 'ŷ',
-            "c ¸": "ç",
-            "c¸": "ç",
-            " ˆı": "î"
-        }
-        if type(texte) is list:
-            for key, value in dictionnaire_lettre.items():
-                for i in range(len(texte)):
-                    texte[i] = texte[i].replace(key, value)
-            return
+        with open("src/letters_accent.json", "r") as f:
+            dictionnaire_lettre = json.load(f)
 
-        elif type(texte) is str:
-            for key, value in dictionnaire_lettre.items():
-                texte = texte.replace(key, value)
+            if type(texte) is list:
+                for key, value in dictionnaire_lettre.items():
+                    for i in range(len(texte)):
+                        texte[i] = texte[i].replace(key, value)
+                return
 
-            return texte
+            elif type(texte) is str:
+                for key, value in dictionnaire_lettre.items():
+                    texte = texte.replace(key, value)
 
-        else:
-            raise TypeError("Type non reconnue")
+                return texte
+
+            else:
+                raise TypeError("Type non reconnue")
 
     @staticmethod
     def retrieve_previous_order(liste: list, dico_ordre: dict) -> None:
