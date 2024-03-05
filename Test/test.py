@@ -7,7 +7,7 @@ class TestComparison(unittest.TestCase):
 
     path_d= "/Corpus_2022/analyse_pdf"
     def test_isTxt(self):
-        self.assertEqual(isTXTFiles(self.path_d),True)
+        self.assertEqual(Extract.isTextFiles(self.path_d),True)
 
     def test_Boudin(self):
         titre = "A Scalable MMR Approach to Sentence Scoring for Multi-Document Update Summarization"
@@ -15,7 +15,7 @@ class TestComparison(unittest.TestCase):
         auteur = "" #TODO
         abstract = "We present S MMR , a scalable sentence ..."
 
-        result = extract_information(self.path_d+"/Boudin-Torres-2006.txt")
+        result = Extract.extract_information(self.path_d+"/Boudin-Torres-2006.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre , "Auteurs": auteur,"Abstract":abstract}
 
@@ -27,7 +27,7 @@ class TestComparison(unittest.TestCase):
         Nom = "A Survey on Automatic Text Summarization"
         auteur = "" #TODO
         abstract = "The increasing availability of online information ..."
-        result = extract_information(self.path_d+"/Das_Martins.txt")
+        result = Extract.extract_information(self.path_d+"/Das_Martins.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -37,7 +37,7 @@ class TestComparison(unittest.TestCase):
         Nom = "WiSeBE: Window-Based Sentence Boundary Evaluation"
         auteur = "" #TODO
         abstract = "Sentence Boundary Detection (SBD) has been a ..."
-        result = extract_information(self.path_d+"/Gonzalez_2018_Wisebe.txt")
+        result = Extract.extract_information(self.path_d+"/Gonzalez_2018_Wisebe.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -47,7 +47,7 @@ class TestComparison(unittest.TestCase):
         Nom = "On the Development of the RST Spanish Treebank"
         auteur = "" #TODO
         abstract = "In this article we present the RST Spanish  ..."
-        result = extract_information(self.path_d+"/Iria_Juan-Manuel_Gerardo.txt")
+        result = Extract.extract_information(self.path_d+"/Iria_Juan-Manuel_Gerardo.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -57,7 +57,7 @@ class TestComparison(unittest.TestCase):
         Nom = "Cut and Paste Based Text Summarization"
         auteur = "" #TODO
         abstract = "We present a cut and paste based text summa-  ..."
-        result = extract_information(self.path_d+"/jing-cutepaste.txt")
+        result = Extract.extract_information(self.path_d+"/jing-cutepaste.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -67,7 +67,7 @@ class TestComparison(unittest.TestCase):
         Nom = "" #TODO
         auteur = "" #TODO
         abstract = "" #TODO
-        result = extract_information(self.path_d+"/kessler94715.txt")
+        result = Extract.extract_information(self.path_d+"/kessler94715.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -77,7 +77,7 @@ class TestComparison(unittest.TestCase):
         Nom = "" #TODO
         auteur = "" #TODO
         abstract = "" #TODO
-        result = extract_information(self.path_d+"/kesslerMETICS-ICDIM2019.txt")
+        result = Extract.extract_information(self.path_d+"/kesslerMETICS-ICDIM2019.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -87,7 +87,7 @@ class TestComparison(unittest.TestCase):
         Nom = "" #TODO
         auteur = "" #TODO
         abstract = "" #TODO
-        result = extract_information(self.path_d+"/mikheev J02-3002.txt")
+        result = Extract.extract_information(self.path_d+"/mikheev J02-3002.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -97,7 +97,7 @@ class TestComparison(unittest.TestCase):
         Nom = "" #TODO
         auteur = "" #TODO
         abstract = "" #TODO
-        result = extract_information(self.path_d+"/Mikolov.txt")
+        result = Extract.extract_information(self.path_d+"/Mikolov.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -107,7 +107,7 @@ class TestComparison(unittest.TestCase):
         Nom = "" #TODO
         auteur = "" #TODO
         abstract = "" #TODO
-        result = extract_information(self.path_d+"/Nasr.txt")
+        result = Extract.extract_information(self.path_d+"/Nasr.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -117,7 +117,7 @@ class TestComparison(unittest.TestCase):
         Nom = "" #TODO
         auteur = "" #TODO
         abstract = "" #TODO
-        result = extract_information(self.path_d+"/Torres.txt")
+        result = Extract.extract_information(self.path_d+"/Torres.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -127,7 +127,7 @@ class TestComparison(unittest.TestCase):
         Nom = "" #TODO
         auteur = "" #TODO
         abstract = "" #TODO
-        result = extract_information(self.path_d+"/Torres-moreno1998.txt")
+        result = Extract.extract_information(self.path_d+"/Torres-moreno1998.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
