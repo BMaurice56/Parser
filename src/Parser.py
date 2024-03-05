@@ -4,10 +4,12 @@ from src.Utils import Utils
 import Levenshtein
 import PyPDF2
 import re
+import io
 
 
 class Parser:
     def __init__(self, path: str, nom_fichier: str, directory_txt_file: str = None):
+        self.__pdf_file_obj = io.TextIOWrapper
         self.__directoryTxtFile = ""
         self.__titre = ""
         self.__auteurs = []
@@ -55,7 +57,6 @@ class Parser:
         if directory_txt_file is not None:
             self.__directoryTxtFile = directory_txt_file
 
-
     def __open_pdf(self) -> PyPDF2.PdfReader:
         """
         Ouvre le pdf et renvoi l'objet de lecture
@@ -66,7 +67,12 @@ class Parser:
 
         return PyPDF2.PdfReader(self.__pdf_file_obj)
 
-    def close_pdf(self):
+    def __del__(self) -> None:
+        """
+        Permet à la terminaison du programme de couper l'ouverture du pdf
+
+        :return: None
+        """
         self.__pdf_file_obj.close()
 
     def __load_text_attribut(self) -> None:
@@ -81,7 +87,6 @@ class Parser:
 
         self.__text_first_page = Utils.replace_accent(self.__text_first_page)
         self.__text_rest = Utils.replace_accent(self.__text_rest)
-
 
     def __find_emails(self, texte: str) -> list:
         """

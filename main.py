@@ -1,7 +1,7 @@
 from multiprocessing import Process
 from time import perf_counter
 from src.Parser import Parser
-from src.menu import menuPdf
+from src.menu import menu_pdf
 from src.Utils import Utils
 import traceback
 import shutil
@@ -11,14 +11,11 @@ import os
 
 def my_process(parser_object: Parser, argument: str, name_file: str):
     parser_object.pdf_to_file(argument)
-    parser_object.close_pdf()
     print(f"Analyse effectué sur : {name_file}")
 
 
 if __name__ == '__main__':
     try:
-        t1 = perf_counter()
-
         if len(sys.argv) > 4:
             raise ValueError("Erreur nombre argument")
 
@@ -66,18 +63,26 @@ if __name__ == '__main__':
             os.makedirs(nomDossier)
 
             liste_process = []
-            #si choix all on va chercher itéré sur tout les pdf
-            if choix == "--all":
-                pdfs = os.listdir(pathToFile)
 
-                pdfs = [file for file in pdfs if Utils.is_pdf_file(pathToFile + file)]
-            else: #sinon on affiche le menu
-                pdfs = menuPdf(pathToFile)
+            element_in_dir = os.listdir(pathToFile)
+
+            if not element_in_dir:
+                raise Exception("Le dossier fourni est vide.")
+
+            # si choix all, on va chercher itéré sur tous les pdf
+            if choix == "--all":
+                pdfs = [file for file in element_in_dir if Utils.is_pdf_file(pathToFile + file)]
+            else:  # sinon on affiche le menu
+                pdfs = menu_pdf(element_in_dir)
+
+                os.system("clear")
 
             if pdfs:
+                t1 = perf_counter()
+
                 for element in pdfs:
                     liste_process.append(
-                            Process(target=my_process, args=(Parser(pathToFile, element, nomDossier), argv, element)))
+                        Process(target=my_process, args=(Parser(pathToFile, element, nomDossier), argv, element)))
 
                 for element in liste_process:
                     element.start()
@@ -85,7 +90,13 @@ if __name__ == '__main__':
                 for elt in liste_process:
                     elt.join()
 
+                t2 = perf_counter()
+
+                print(f"\nTemps d'exécution : {round(t2 - t1, 2)} secondes")
+
         else:
+            t1 = perf_counter()
+
             last_slash = pathToFile.rfind("/")
 
             chemin_fichier = pathToFile[:last_slash + 1]
@@ -97,9 +108,9 @@ if __name__ == '__main__':
 
             print(f"Analyse effectué sur : {nom_fichier}")
 
-        t2 = perf_counter()
+            t2 = perf_counter()
 
-        print(f"\nTemps d'exécution : {round(t2 - t1, 2)} secondes")
+            print(f"\nTemps d'exécution : {round(t2 - t1, 2)} secondes")
 
     except Exception as e:
         print(traceback.format_exc())
