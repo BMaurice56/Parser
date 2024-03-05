@@ -19,6 +19,9 @@ if __name__ == '__main__':
         if argv != "-t" and argv != "-x":
             raise ValueError("Erreur argument rentré")
 
+        if not os.path.exists(pathToFile):
+            raise FileNotFoundError("Le fichier ou dossier fourni n'existe pas.")
+
         # Check si dossier ou fichier
         if os.path.isdir(pathToFile):
             # Check si / à la fin
