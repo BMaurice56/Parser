@@ -1,5 +1,4 @@
 import pytermgui as ptg
-from functools import partial
 
 
 def menu_pdf(all_element_in_folder: list) -> list:
@@ -51,15 +50,15 @@ def menu_pdf(all_element_in_folder: list) -> list:
             for item in liste:
                 input_fields.append(ptg.InputField("", prompt=f"{item}: "))
 
-            window = ptg.Window(
+            _window = ptg.Window(
                 ptg.Container(ptg.Label("Entrez une * \npour analyser le pdf"), ),
                 *input_fields,
-                ["Submit", lambda *_: submit(manager, window)],
+                ["Submit", lambda *_: submit(manager, _window)],
                 width=60,
                 box="DOUBLE",
-            )
+            ).set_title("User Input").center()
 
-            manager.add(window)
+            manager.add(_window)
             manager.run()
 
     # vérification que les éléments dans le dossier sont des pdf
