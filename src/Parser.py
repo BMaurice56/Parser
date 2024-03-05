@@ -663,7 +663,7 @@ class Parser:
             pos_references = max(self.__text_rest.rfind("eferences"), self.__text_rest.rfind("EFERENCES"))
 
             if pos_references != -1:
-                self.__references = f"{self.__text_rest[pos_references + len('references') + 1:]}"
+                self.__references = f"{self.__text_rest[pos_references + len('references'):]}"
                 self.__text_rest = self.__text_rest[:pos_references]
             else:
                 self.__references = "Aucune bibliographie"
