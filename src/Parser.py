@@ -4,23 +4,31 @@ from src.Utils import Utils
 import Levenshtein
 import PyPDF2
 import re
+import io
 
 
 class Parser:
     def __init__(self, path: str, nom_fichier: str, directory_txt_file: str = None):
+        self.__pdf_file_obj = io.TextIOWrapper
         self.__directoryTxtFile = ""
         self.__titre = ""
         self.__auteurs = []
         self.__emails = []
         self.__abstract = ""
-        self.__bibliographie = ""
+        self.__introduction = ""
+        self.__corps = ""
+        self.__acknoledgments = ""
+        self.__conclusion = ""
+        self.__appendix = ""
+        self.__discussion = ""
+        self.__references = ""
         self.__dico_nom_mail = {}
         self.__dico_nom_univ = {}
         self.__school_words = ["partement", "niversit", "partment", "acult", "laborato", "nstitute", "campus",
                                "academy", "school"]
-        self.__type_pdf = -1
-        self.__type_mail = -1
-        self.__discussion = ""
+        self.__title_keywords = ["iscussion", "onclusion", "ppendix", "cknowledgments", "eferences"]
+        self.__text_first_page = ""
+        self.__text_rest = ""
         """
         Différent type de pdf : 
         -1 : non trouvé
@@ -43,14 +51,11 @@ class Parser:
             print(f"Nom du fichier : {nom_fichier}")
             raise FileNotFoundError("Le fichier fourni n'est pas un pdf ou n'a pas été trouvé")
 
+        self.__pdf_file_obj = None
         self.__pdfReader = self.__open_pdf()
 
         if directory_txt_file is not None:
             self.__directoryTxtFile = directory_txt_file
-
-        # On vient récupérer la première page et remplacer les accents
-        self.__text_first_page = self.__pdfReader.pages[0].extract_text()
-        self.__text_first_page = Utils.replace_accent(self.__text_first_page)
 
     def __open_pdf(self) -> PyPDF2.PdfReader:
         """
@@ -58,9 +63,30 @@ class Parser:
 
         :return: Objet de lecture du pdf
         """
-        pdf_file_obj = open(self.__pathToFile + self.__nomFichier, 'rb')
+        self.__pdf_file_obj = open(self.__pathToFile + self.__nomFichier, 'rb')
 
-        return PyPDF2.PdfReader(pdf_file_obj)
+        return PyPDF2.PdfReader(self.__pdf_file_obj)
+
+    def __del__(self) -> None:
+        """
+        Permet à la terminaison du programme de couper l'ouverture du pdf
+
+        :return: None
+        """
+        self.__pdf_file_obj.close()
+
+    def __load_text_attribut(self) -> None:
+        """
+        Charge le contenu du text dans les deux attributs
+
+        :return: None
+        """
+        self.__text_first_page = self.__pdfReader.pages[0].extract_text()
+        self.__text_rest = "".join(
+            self.__pdfReader.pages[x].extract_text() for x in range(1, len(self.__pdfReader.pages)))
+
+        self.__text_first_page = Utils.replace_accent(self.__text_first_page)
+        self.__text_rest = Utils.replace_accent(self.__text_rest)
 
     def __find_emails(self, texte: str) -> list:
         """
@@ -633,30 +659,14 @@ class Parser:
 
         :return: None
         """
-        if self.__bibliographie == "":
-            number_of_pages = len(self.__pdfReader.pages) - 1
-            numero_page = number_of_pages
+        if self.__references == "":
+            pos_references = max(self.__text_rest.rfind("eferences"), self.__text_rest.rfind("EFERENCES"))
 
-            while numero_page > -1:
-                page = self.__pdfReader.pages[numero_page]
-
-                # Récupération du texte
-                content = page.extract_text()
-                content_copy = content[:].lower()
-                ######################################################################
-
-                pos_references = content_copy.find("reference")
-
-                if pos_references != -1:
-                    self.__bibliographie = f"{content[pos_references + len('references'):]}{self.__bibliographie}"
-                    break
-
-                else:
-                    self.__bibliographie = f"{content}{self.__bibliographie}"
-
-                numero_page -= 1
-
-            self.__bibliographie = Utils.replace_accent(self.__bibliographie)
+            if pos_references != -1:
+                self.__references = f"{self.__text_rest[pos_references + len('references'):]}"
+                self.__text_rest = self.__text_rest[:pos_references]
+            else:
+                self.__references = "Aucune bibliographie"
 
     def _get_affiliation(self) -> None:
         """
@@ -873,18 +883,18 @@ class Parser:
         file += ".txt" if type_output_file == "-t" else ".xml"
 
         with open(file, "w", encoding="utf-8") as f:
+            self.__load_text_attribut()
             self._get_title()
             self._get_abstract()
             self._get_author()
             self._get_affiliation()
             self._get_bibliography()
-            # self.getDiscussion()
             self._get_discussion()
 
             if type_output_file == "-t":
                 f.write(f"Nom du fichier pdf : {self.__nomFichier}\n\nTitre :\n    {self.__titre}\n\nAuteurs :\n")
                 f.writelines([f"    {key} : {value}\n" for key, value in self.__dico_nom_mail.items()])
-                f.write(f"\nAbstract :\n    {self.__abstract}\n\nBibliographie : \n    {self.__bibliographie}\n")
+                f.write(f"\nAbstract :\n    {self.__abstract}\n\nBibliographie : \n    {self.__references}\n")
 
             elif type_output_file == "-x":
                 # Ajout de l'arbre article
@@ -930,7 +940,7 @@ class Parser:
 
                 # Ajout de la bibliographie
                 abstract = ETree.SubElement(tree, 'bibliographie')
-                abstract.text = self.__bibliographie
+                abstract.text = self.__references
                 ######################################################################
 
                 # Ajout de l'indentation
