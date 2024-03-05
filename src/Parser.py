@@ -20,6 +20,7 @@ class Parser:
                                "academy", "school"]
         self.__type_pdf = -1
         self.__type_mail = -1
+        self.__discussion = ""
         """
         Différent type de pdf : 
         -1 : non trouvé
@@ -780,6 +781,80 @@ class Parser:
             self.__dico_nom_univ[key] = value.strip()
         ######################################################################
 
+    def _get_discussion(self) -> None:
+        """
+        Récupère la discussion dans le texte
+
+        :return: None
+        """
+        if self.__discussion == "":
+            number_of_pages = len(self.__pdfReader.pages)
+            numero_page = number_of_pages - 1
+
+            iscusion_word = "iscussion"
+
+            stop_keywords = ["onclusion", "ppendix", "cknowledgments", "eferences"]
+
+            contenue_pages = ""
+            find = False
+            pos_discussion = -1
+
+            while numero_page >= number_of_pages / 2:
+                content = self.__pdfReader.pages[numero_page].extract_text()
+                content_lower = content.lower()
+
+                # Contenue de tout le pdf jusqu'à la fin
+                contenue_pages = f"{content}{contenue_pages}"
+
+                # Recherche du mot iscussion
+                pos_discussion = content_lower.find(iscusion_word)
+                if pos_discussion != -1:
+
+                    # on regarde s'il y a un \n devant + présence de la lettre D majuscule (titre)
+                    content_around_word = content[
+                                          pos_discussion - 7:pos_discussion]
+
+                    if "\n" in content_around_word and content_around_word.find("D") != -1:
+                        find = True
+                        break
+                    ######################################################################
+                ######################################################################
+
+                numero_page -= 1
+
+            if find:
+                # On enlève tout ce qu'il y a devant
+                contenue_pages = contenue_pages[pos_discussion:].strip()
+                ######################################################################
+
+                pos_minimum = 10 ** 9
+
+                # Comme on a toute la fin du pdf, on recherche le mot de noms de paragraphes le plus haut
+                for element in stop_keywords:
+                    pos_stop_word = contenue_pages.lower().find(element)
+
+                    # Si on trouve un mot d'arrêt, on enregistre sa position si elle est inférieur au précédent
+                    if pos_stop_word != -1 and contenue_pages[pos_stop_word - 10:pos_stop_word + 1].find(
+                            "\n") != -1 and pos_minimum > pos_stop_word:
+                        pos_minimum = pos_stop_word
+                    ######################################################################
+                ######################################################################
+
+                # Si on a trouvé un titre d'un autre chapitre, on coupe pour garder que le nécessaire
+                if pos_minimum != 10 ** 9:
+                    self.__discussion = contenue_pages[len(iscusion_word):pos_minimum].strip()
+
+                    # Si présence d'un "and", on le retire
+                    if self.__discussion[:4] == "and ":
+                        self.__discussion = self.__discussion[self.__discussion.find("\n"):]
+
+                    # On enlève les caractères du titre suivant la discussion
+                    self.__discussion = self.__discussion[:self.__discussion.rfind("\n")].strip()
+
+                    return
+                else:
+                    self.__discussion = "Aucune discussion"
+
     def pdf_to_file(self, type_output_file: str) -> None:
         """
         Écrit dans un fichier txt l'analyse du pdf
@@ -803,6 +878,8 @@ class Parser:
             self._get_author()
             self._get_affiliation()
             self._get_bibliography()
+            # self.getDiscussion()
+            self._get_discussion()
 
             if type_output_file == "-t":
                 f.write(f"Nom du fichier pdf : {self.__nomFichier}\n\nTitre :\n    {self.__titre}\n\nAuteurs :\n")
@@ -844,6 +921,11 @@ class Parser:
                 # Ajout de l'abstract
                 abstract = ETree.SubElement(tree, 'abstract')
                 abstract.text = self.__abstract
+                ######################################################################
+
+                # Ajout de la discussion
+                discussion = ETree.SubElement(tree, 'discussion')
+                discussion.text = self.__discussion
                 ######################################################################
 
                 # Ajout de la bibliographie
