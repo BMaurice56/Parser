@@ -4,13 +4,13 @@ import re
 class Extract :
     def read_text_file(file_path):
         """
-        Lit le contenu d'un fichier texte.
+            Lit le contenu d'un fichier texte.
 
-        Paramètres :
-        - file_path (str) : Le chemin d'accès au fichier texte.
+            Paramètre :
+            - file_path (str) : Le chemin d'accès au fichier texte.
 
-        Retourne :
-        - str : Le contenu du fichier texte, ou un message d'erreur si une exception se produit.
+            Retourne :
+            - str : Le contenu du fichier texte, ou un message d'erreur si une exception se produit.
         """
         try:
             with open(file_path, 'r') as file:
@@ -23,7 +23,7 @@ class Extract :
         """
             Obtient une liste de fichiers et répertoires dans le chemin spécifié.
 
-            Paramètres :
+            Paramètre :
             - path (str) : Le chemin du répertoire.
 
             Retourne :
@@ -36,7 +36,7 @@ class Extract :
         """
             Extrait des informations d'un fichier texte, incluant le nom du fichier PDF, le titre, les auteurs et l'abstract.
 
-            Paramètres :
+            Paramètre :
             - path (str) : Le chemin du fichier texte.
 
             Retourne :
@@ -79,3 +79,27 @@ class Extract :
             result['Abstract'] = abstract_match.group(1).strip()
 
         return result
+
+    def isTextFiles(folder_path: str) -> bool:
+        """
+            Vérifie si le dossier contient des fichiers texte ('.txt').
+
+            Paramètre :
+            - folder_path (str) : Chemin du dossier à vérifier.
+
+            Retourne :
+            - Bool : 'True' si des fichiers texte sont présents, 'False' sinon.
+        """
+        # Vérifie si le chemin correspond à un dossier existant
+        if not os.path.isdir(folder_path):
+            raise ValueError("Le chemin spécifié n'est pas un dossier valide.")
+
+        # Liste les fichiers dans le dossier
+        files = os.listdir(folder_path)
+
+        # Vérifie si au moins un fichier a l'extension .txt
+        for file in files:
+            if file.endswith(".txt"):
+                return True
+
+        return False
