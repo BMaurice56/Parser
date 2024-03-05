@@ -7,6 +7,7 @@ import traceback
 import shutil
 import sys
 import os
+import io
 
 
 def my_process(parser_object: Parser, argument: str, name_file: str):
@@ -69,6 +70,14 @@ if __name__ == '__main__':
             if not element_in_dir:
                 raise Exception("Le dossier fourni est vide.")
 
+            # Sauvegarde de la sortie standard et création d'une nouvelle
+            old_stdout = sys.stdout
+            sys.stdout = io.StringIO()
+            """
+            Le basculement vers une autre sortie était nécessaire car 
+            à chaque pdf sélectionné, le menu était reaffiché
+            """
+
             # si choix all, on va chercher itéré sur tous les pdf
             if choix == "--all":
                 pdfs = [file for file in element_in_dir if Utils.is_pdf_file(pathToFile + file)]
@@ -76,6 +85,10 @@ if __name__ == '__main__':
                 pdfs = menu_pdf(element_in_dir)
 
                 os.system("clear")
+
+            # Puis, on rebascule sur celle d'origine
+            output = sys.stdout.getvalue()
+            sys.stdout = old_stdout
 
             if pdfs:
                 t1 = perf_counter()
