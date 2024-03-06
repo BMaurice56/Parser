@@ -109,8 +109,9 @@ class Parser:
         self._get_abstract()
         self._get_author()
         self._get_affiliation()
-        self._get_references()
         self._get_discussion()
+        self._get_conclusion()
+        self._get_references()
 
     def __localisation_keywords(self) -> None:
         """
@@ -145,6 +146,25 @@ class Parser:
         # On ne garde que les mots clefs ayant été trouvé
         self.__position_title_keywords = {k: v for k, v in
                                           sorted(self.__position_title_keywords.items(), key=lambda item: item[1])}
+        ######################################################################
+
+    def __get_pos_word_after(self, mot: str) -> int:
+        """
+        Fonction qui renvoi l'indice dans le text du mot à suivre
+        dans le dictionnaire des mots clefs
+
+        :param mot: Mot de base
+        :return: int Position du mot d'après
+        """
+        # Récupération des clefs + indice du mot suivant
+        keys = list(self.__position_title_keywords.keys())
+        pos_word_after_plus_one = keys.index(mot) + 1
+        ######################################################################
+
+        # Récupération du mot + son indice dans le texte
+        word_after = keys[pos_word_after_plus_one]
+
+        return self.__position_title_keywords[word_after]
         ######################################################################
 
     def __find_emails(self, texte: str) -> list:
@@ -835,6 +855,35 @@ class Parser:
             self.__dico_nom_univ[key] = value.strip()
         ######################################################################
 
+    def _get_conclusion(self) -> None:
+        """
+        Récupère la conclusion
+
+        :return: None
+        """
+        if self.__conclusion == "":
+            onclusion_word = "onclusion"
+
+            pos_conclusion = self.__position_title_keywords[onclusion_word]
+
+            if pos_conclusion != -1:
+                pos_word_after = self.__get_pos_word_after(onclusion_word)
+
+                # Récupération du texte
+                self.__conclusion = self.__text_rest[pos_conclusion + len(onclusion_word):pos_word_after].strip()
+
+                # Si présence d'un "and", on le retire
+                if self.__conclusion[:4] == "and ":
+                    self.__conclusion = self.__conclusion[self.__conclusion.find("\n"):]
+                ######################################################################
+
+                # On enlève les caractères du titre suivant la discussion
+                self.__conclusion = self.__conclusion[:self.__conclusion.rfind("\n")].strip()
+                ######################################################################
+
+            else:
+                self.__conclusion = "Pas de conclusion"
+
     def _get_discussion(self) -> None:
         """
         Récupère la discussion dans le texte
@@ -842,21 +891,17 @@ class Parser:
         :return: None
         """
         if self.__discussion == "":
-            pos_discussion = self.__position_title_keywords["iscussion"]
+            iscussion_word = "iscussion"
+
+            pos_discussion = self.__position_title_keywords[iscussion_word]
 
             if pos_discussion != -1:
-                # Récupération des clefs + indice du mot suivant
-                keys = list(self.__position_title_keywords.keys())
-                pos_word_after_plus_one = keys.index("iscussion") + 1
-                ######################################################################
-
-                # Récupération du mot + son indice dans le texte
-                word_after = keys[pos_word_after_plus_one]
-                pos_word_after = self.__position_title_keywords[word_after]
+                # Récupération de l'indice du mot après dans le texte
+                pos_word_after = self.__get_pos_word_after(iscussion_word)
                 ######################################################################
 
                 # Récupération du texte
-                self.__discussion = self.__text_rest[pos_discussion + len("iscussion"):pos_word_after].strip()
+                self.__discussion = self.__text_rest[pos_discussion + len(iscussion_word):pos_word_after].strip()
                 ######################################################################
 
                 # Si présence d'un "and", on le retire
@@ -946,6 +991,11 @@ class Parser:
                 # Ajout de l'abstract
                 abstract = ETree.SubElement(tree, 'abstract')
                 abstract.text = self.__abstract
+                ######################################################################
+
+                # Ajout de la conclusion
+                conclusion = ETree.SubElement(tree, 'conclusion')
+                conclusion.text = self.__conclusion
                 ######################################################################
 
                 # Ajout de la discussion
