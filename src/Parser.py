@@ -17,7 +17,7 @@ class Parser:
         self.__abstract = ""
         self.__introduction = ""
         self.__corps = ""
-        self.__acknoledgments = ""
+        self.__acknowledgments = ""
         self.__conclusion = ""
         self.__appendix = ""
         self.__discussion = ""
@@ -97,22 +97,6 @@ class Parser:
         self.__text_rest = Utils.replace_accent(self.__text_rest)
         self.__text_rest_lower = self.__text_rest.lower()
 
-    def _call_function(self) -> None:
-        """
-        Appelle toutes les fonctions utiles au Parser
-
-        :return: None
-        """
-        self.__load_text_attribut()
-        self.__localisation_keywords()
-        self._get_title()
-        self._get_abstract()
-        self._get_author()
-        self._get_affiliation()
-        self._get_discussion()
-        self._get_conclusion()
-        self._get_references()
-
     def __localisation_keywords(self) -> None:
         """
         Localise la position des mots clefs
@@ -147,6 +131,24 @@ class Parser:
         self.__position_title_keywords = {k: v for k, v in
                                           sorted(self.__position_title_keywords.items(), key=lambda item: item[1])}
         ######################################################################
+
+    def _call_function(self) -> None:
+        """
+        Appelle toutes les fonctions utiles au Parser
+
+        :return: None
+        """
+        # !!! ORDRE A CONSERVER
+        self.__load_text_attribut()
+        self.__localisation_keywords()
+        self._get_title()
+        self._get_abstract()
+        self._get_author()
+        self._get_affiliation()
+        self._get_introduction_and_corps()
+        self._get_discussion()
+        self._get_conclusion()
+        self._get_references()
 
     def __get_pos_word_after(self, mot: str) -> int:
         """
@@ -453,9 +455,6 @@ class Parser:
         :return: None
         """
         if not self.__auteurs and self.__dico_nom_mail == {}:
-            self._get_title()
-            self._get_abstract()
-
             # Position des éléments dans le texte
             pos_titre = self.__text_first_page.find(self.__titre)
             pos_abstract = self.__text_first_page.find(self.__abstract[:20])
@@ -732,128 +731,176 @@ class Parser:
                 raise ValueError("Abstract non trouvé")
             ######################################################################
 
+    def _get_introduction_and_corps(self) -> None:
+        """
+        Récupère l'introduction et le corps du texte
+
+        :return: None
+        """
+        if self.__introduction == "" and self.__corps == "":
+            # Position de l'abstract
+            pos_abstract = self.__text_first_page.find(self.__abstract)
+            ######################################################################
+
+            # Récupération des positions des mots par ordre croisant != -1
+            position_title_keywords = {k: v for k, v in
+                                       sorted(self.__position_title_keywords.items(), key=lambda item: item[1]) if
+                                       v != -1}
+            ######################################################################
+
+            # Récupération de l'indice du premier mot clef
+            pos_first_keyword = position_title_keywords[list(position_title_keywords.keys())[0]]
+            ######################################################################
+
+            # Récupération du texte en entier
+            texte = self.__text_first_page[pos_abstract + len(self.__abstract):] + self.__text_rest[:pos_first_keyword]
+            texte_lower = texte.lower()
+            ######################################################################
+
+            # Position du mot introduction
+            pos_introduction = texte_lower.find("ntroduction")
+            ######################################################################
+
+            # Si présence d'un espace entre le I et ntroduction, on l'enlève
+            if texte_lower[pos_introduction - 1] == " ":
+                pos_introduction -= 1
+            ######################################################################
+
+            # On regarde si c'est un chiffre ou en lettre
+            if texte_lower[pos_introduction - 3] == "1":
+                pos_second_title_word = texte.find("\n2")
+            else:
+                pos_second_title_word = texte.find("\nII.")
+            ######################################################################
+
+            # Récupération de l'introduction et du corps du texte
+            self.__introduction = texte[pos_introduction + len("ntroduction"): pos_second_title_word]
+
+            self.__corps = texte[pos_second_title_word + 2:]
+            self.__corps = self.__corps[self.__corps.find("\n"):]
+            self.__corps = self.__corps[:self.__corps.rfind("\n")].strip()
+            ######################################################################
+
     def _get_affiliation(self) -> None:
         """
         Récupère les universités des différents auteurs
 
         :return: None
         """
-        self._get_title()
-        self._get_abstract()
-        self._get_author()
+        if self.__dico_nom_univ == {}:
+            pos_titre = self.__text_first_page.find(self.__titre)
+            pos_abstract = self.__text_first_page.find(self.__abstract[1:10])
+            pos_resume = max(self.__text_first_page.find("ésumé") - 1, self.__text_first_page.find("esume") - 1)
 
-        pos_titre = self.__text_first_page.find(self.__titre)
-        pos_abstract = self.__text_first_page.find(self.__abstract[1:10])
-        pos_resume = max(self.__text_first_page.find("ésumé") - 1, self.__text_first_page.find("esume") - 1)
+            if 0 < pos_resume < pos_abstract:
+                pos_abstract = pos_resume
+            ######################################################################
 
-        if 0 < pos_resume < pos_abstract:
-            pos_abstract = pos_resume
-        ######################################################################
+            # On garde que la section correspondant aux auteurs
+            section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].strip()
+            ######################################################################
 
-        # On garde que la section correspondant aux auteurs
-        section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].strip()
-        ######################################################################
+            # Enlèvement des mots clefs
+            if "bstract" in section_auteurs:
+                section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
+            ######################################################################
 
-        # Enlèvement des mots clefs
-        if "bstract" in section_auteurs:
-            section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
-        ######################################################################
+            # Si présence d'un résumé avant l'abstract, on l'enlève
+            if pos_resume != -1:
+                word = "ésumé"
 
-        # Si présence d'un résumé avant l'abstract, on l'enlève
-        if pos_resume != -1:
-            word = "ésumé"
+                if word not in section_auteurs:
+                    word = "esume"
 
-            if word not in section_auteurs:
-                word = "esume"
+                section_auteurs = section_auteurs[:section_auteurs.find(word) - 1].strip()
+            ######################################################################
 
-            section_auteurs = section_auteurs[:section_auteurs.find(word) - 1].strip()
-        ######################################################################
+            if self.__type_pdf == 0:
+                for key, value in self.__dico_nom_mail.items():
+                    # Position du nom ainsi que du mail
+                    # Si mail de type 2 (mail dans le corps) → rechercher le nom de l'auteur en partant de la fin
+                    if self.__type_mail == 2:
+                        pos_key = self.__text_first_page.rfind(key)
+                    else:
+                        pos_key = self.__text_first_page.find(key)
+                    ######################################################################
 
-        if self.__type_pdf == 0:
-            for key, value in self.__dico_nom_mail.items():
-                # Position du nom ainsi que du mail
-                # Si mail de type 2 (mail dans le corps) → rechercher le nom de l'auteur en partant de la fin
-                if self.__type_mail == 2:
-                    pos_key = self.__text_first_page.rfind(key)
+                    # On localise la position du mail
+                    pos_value = self.__text_first_page.find(value.split("@")[0])
+                    ######################################################################
+
+                    # Puis, on ne garde que l'établissement correspondant à l'auteur
+                    result = self.__text_first_page[pos_key + len(key):pos_value]
+                    ######################################################################
+
+                    # On regarde s'il y a un \n a la fin et on le retire
+                    last_new_line = result.rfind("\n")
+
+                    if 0 < last_new_line and last_new_line > 10:
+                        result = result[:last_new_line]
+                    ######################################################################
+
+                    self.__dico_nom_univ[key] = result.strip()
+
+            elif self.__type_pdf == 1:
+                first_new_line = section_auteurs.find("\n")
+
+                # Si présence d'un @, on récupère la position du dernier \n
+                first_at = section_auteurs.find("@")
+
+                if first_at != -1:
+                    # Si le @ est précédé d'un \n, on refait une recherche d'un \n avant celui-ci
+                    if section_auteurs[first_at - 1] == "\n":
+                        first_at -= 2
+                    ######################################################################
+
+                    second_new_line = section_auteurs[:first_at].rfind("\n")
                 else:
-                    pos_key = self.__text_first_page.find(key)
+                    second_new_line = section_auteurs.rfind("\n")
                 ######################################################################
 
-                # On localise la position du mail
-                pos_value = self.__text_first_page.find(value.split("@")[0])
+                # Récupération de l'établissement
+                school = section_auteurs[first_new_line:second_new_line]
                 ######################################################################
 
-                # Puis, on ne garde que l'établissement correspondant à l'auteur
-                result = self.__text_first_page[pos_key + len(key):pos_value]
-                ######################################################################
+                for key in self.__dico_nom_mail.keys():
+                    self.__dico_nom_univ[key] = school
 
-                # On regarde s'il y a un \n a la fin et on le retire
-                last_new_line = result.rfind("\n")
-
-                if 0 < last_new_line and last_new_line > 10:
-                    result = result[:last_new_line]
-                ######################################################################
-
-                self.__dico_nom_univ[key] = result.strip()
-
-        elif self.__type_pdf == 1:
-            first_new_line = section_auteurs.find("\n")
-
-            # Si présence d'un @, on récupère la position du dernier \n
-            first_at = section_auteurs.find("@")
-
-            if first_at != -1:
-                # Si le @ est précédé d'un \n, on refait une recherche d'un \n avant celui-ci
-                if section_auteurs[first_at - 1] == "\n":
-                    first_at -= 2
-                ######################################################################
-
-                second_new_line = section_auteurs[:first_at].rfind("\n")
             else:
-                second_new_line = section_auteurs.rfind("\n")
+                section_auteurs_separate = section_auteurs.split("\n")
+
+                school = ""
+
+                for element in section_auteurs_separate:
+                    if not any(element.find(nom) != -1 for nom in self.__auteurs):
+                        school = f"{school}{element}"
+
+                for key in self.__dico_nom_mail.keys():
+                    self.__dico_nom_univ[key] = school
+
+            words_to_remove = ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2",
+                               "(B)",
+                               "  "]
+
+            # On enlève les caractères inutiles aux affiliations
+            for key, value in self.__dico_nom_univ.items():
+                for element in words_to_remove:
+                    value = value.replace(element, "")
+
+                # Si présence d'un retour à la ligne au début, on l'enlève
+                first_new_line = value.find("\n")
+
+                if 0 < first_new_line < 4:
+                    value = value[first_new_line:]
+                ######################################################################
+
+                # Si présence de "and" (nom composé) → on l'enlève
+                if "and " in value:
+                    value = value[value.find("\n"):]
+                ######################################################################
+
+                self.__dico_nom_univ[key] = value.strip()
             ######################################################################
-
-            # Récupération de l'établissement
-            school = section_auteurs[first_new_line:second_new_line]
-            ######################################################################
-
-            for key in self.__dico_nom_mail.keys():
-                self.__dico_nom_univ[key] = school
-
-        else:
-            section_auteurs_separate = section_auteurs.split("\n")
-
-            school = ""
-
-            for element in section_auteurs_separate:
-                if not any(element.find(nom) != -1 for nom in self.__auteurs):
-                    school = f"{school}{element}"
-
-            for key in self.__dico_nom_mail.keys():
-                self.__dico_nom_univ[key] = school
-
-        words_to_remove = ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)",
-                           "  "]
-
-        # On enlève les caractères inutiles aux affiliations
-        for key, value in self.__dico_nom_univ.items():
-            for element in words_to_remove:
-                value = value.replace(element, "")
-
-            # Si présence d'un retour à la ligne au début, on l'enlève
-            first_new_line = value.find("\n")
-
-            if 0 < first_new_line < 4:
-                value = value[first_new_line:]
-            ######################################################################
-
-            # Si présence de "and" (nom composé) → on l'enlève
-            if "and " in value:
-                value = value[value.find("\n"):]
-            ######################################################################
-
-            self.__dico_nom_univ[key] = value.strip()
-        ######################################################################
 
     def _get_conclusion(self) -> None:
         """
@@ -991,6 +1038,16 @@ class Parser:
                 # Ajout de l'abstract
                 abstract = ETree.SubElement(tree, 'abstract')
                 abstract.text = self.__abstract
+                ######################################################################
+
+                # Ajout de l'introduction
+                introduction = ETree.SubElement(tree, 'introduction')
+                introduction.text = self.__introduction
+                ######################################################################
+
+                # Ajout de l'introduction
+                corps = ETree.SubElement(tree, 'corps')
+                corps.text = self.__corps
                 ######################################################################
 
                 # Ajout de la conclusion
