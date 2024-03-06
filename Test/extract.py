@@ -103,3 +103,30 @@ class Extract :
                 return True
 
         return False
+
+    def calculate_precision(file_path, extracted_info, expected_info) -> float:
+        """
+            Calcule la précision de l'analyse et l'extraction des données.
+
+            Paramètres :
+            - file_path (str) : Le chemin du fichier analysé.
+            - extracted_info (dict) : Les informations extraites.
+            - expected_info (dict) : Les informations attendues.
+
+            Retourne :
+            - float : La précision
+        """
+        analyse_correcte = 0
+        analyse_incorrecte = 0
+
+        for k in expected_info:
+            if (k in extracted_info[k]) and (extracted_info[k] == expected_info[k]):
+                analyse_correcte += 1
+            else:
+                analyse_incorrecte += 1
+
+        if analyse_correcte + analyse_incorrecte == 0:
+            return 0
+
+        return analyse_correcte / (analyse_correcte + analyse_incorrecte)
+
