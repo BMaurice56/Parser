@@ -26,9 +26,17 @@ class Parser:
         self.__dico_nom_univ = {}
         self.__school_words = ["partement", "niversit", "partment", "acult", "laborato", "nstitute", "campus",
                                "academy", "school"]
-        self.__title_keywords = ["iscussion", "onclusion", "ppendix", "cknowledgments", "eferences"]
+        self.__title_keywords = {"iscussion": "D",
+                                 "onclusion": "C",
+                                 "ppendix": "A",
+                                 "cknowledgments": "A",
+                                 "eferences": "R",
+                                 "ollow-up work": "F"}
+
+        self.__position_title_keywords = {}
         self.__text_first_page = ""
         self.__text_rest = ""
+        self.__text_rest_lower = ""
         """
         Différent type de pdf : 
         -1 : non trouvé
@@ -87,6 +95,7 @@ class Parser:
 
         self.__text_first_page = Utils.replace_accent(self.__text_first_page)
         self.__text_rest = Utils.replace_accent(self.__text_rest)
+        self.__text_rest_lower = self.__text_rest.lower()
 
     def _call_function(self) -> None:
         """
@@ -99,8 +108,44 @@ class Parser:
         self._get_abstract()
         self._get_author()
         self._get_affiliation()
+        self.__localisation_keywords()
         self._get_bibliography()
         self._get_discussion()
+
+    def __localisation_keywords(self) -> None:
+        """
+        Localise la position des mots clefs
+
+        :return: None
+        """
+        pos_word = -2
+
+        for word, first_letter in self.__title_keywords.items():
+            while pos_word != -1:
+                pos_word = self.__text_rest_lower[:pos_word].rfind(word)
+
+                if pos_word != -1:
+
+                    # on regarde s'il y a un \n devant + présence de la lettre en majuscule (titre)
+                    content_around_word = self.__text_rest[
+                                          pos_word - 10:pos_word]
+
+                    if "\n" in content_around_word and content_around_word.find(first_letter) != -1:
+                        self.__position_title_keywords[word] = pos_word
+                        pos_word = -2
+                        break
+                    else:
+                        pos_word -= 5
+                    ######################################################################
+                else:
+                    self.__position_title_keywords[word] = -1
+                    pos_word = -2
+                    break
+
+        # On ne garde que les mots clefs ayant été trouvé
+        self.__position_title_keywords = {k: v for k, v in
+                                          sorted(self.__position_title_keywords.items(), key=lambda item: item[1])}
+        ######################################################################
 
     def __find_emails(self, texte: str) -> list:
         """
