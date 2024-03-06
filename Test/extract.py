@@ -6,7 +6,7 @@ class Extract :
         """
             Lit le contenu d'un fichier texte.
 
-            Paramètres :
+            Paramètre :
             - file_path (str) : Le chemin d'accès au fichier texte.
 
             Retourne :
@@ -23,7 +23,7 @@ class Extract :
         """
             Obtient une liste de fichiers et répertoires dans le chemin spécifié.
 
-            Paramètres :
+            Paramètre :
             - path (str) : Le chemin du répertoire.
 
             Retourne :
@@ -36,7 +36,7 @@ class Extract :
         """
             Extrait des informations d'un fichier texte, incluant le nom du fichier PDF, le titre, les auteurs et l'abstract.
 
-            Paramètres :
+            Paramètre :
             - path (str) : Le chemin du fichier texte.
 
             Retourne :
@@ -82,13 +82,13 @@ class Extract :
 
     def isTextFiles(folder_path: str) -> bool:
         """
-            Vérifie si le dossier contient des fichiers texte (.txt).
+            Vérifie si le dossier contient des fichiers texte ('.txt').
 
-            Paramètres :
+            Paramètre :
             - folder_path (str) : Chemin du dossier à vérifier.
 
             Retourne :
-            - bool : 'True' si des fichiers texte sont présents, 'False' sinon.
+            - Bool : 'True' si des fichiers texte sont présents, 'False' sinon.
         """
         # Vérifie si le chemin correspond à un dossier existant
         if not os.path.isdir(folder_path):
@@ -103,3 +103,29 @@ class Extract :
                 return True
 
         return False
+
+    def calculate_precision(file_path, extracted_info, expected_info) -> float:
+        """
+            Calcule la précision de l'analyse et l'extraction des données.
+
+            Paramètres :
+            - file_path (str) : Le chemin du fichier analysé.
+            - extracted_info (dict) : Les informations extraites.
+            - expected_info (dict) : Les informations attendues.
+
+            Retourne :
+            - float : La précision
+        """
+        analyse_correcte = 0
+        analyse_incorrecte = 0
+
+        for k in expected_info:
+            if (k in extracted_info[k]) and (extracted_info[k] == expected_info[k]):
+                analyse_correcte += 1
+            else:
+                analyse_incorrecte += 1
+
+        if analyse_correcte + analyse_incorrecte == 0:
+            return 0
+
+        return analyse_correcte / (analyse_correcte + analyse_incorrecte)
