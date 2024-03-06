@@ -20,7 +20,7 @@ $ pip install --upgrade PyTermGUI==7.7.1
 
 Et enfin réaliser la commande suivante :
 ```
-$ python3 main.py -outputfile [/path/to/the/file.pdf, /path/to/the/dir/]
+$ python3 main.py -outputfile [/path/to/the/file.pdf, /path/to/the/dir/] [--all]
 - outputfile : -t text
                -x xml
 ```
