@@ -768,9 +768,9 @@ class Parser:
 
             # On regarde si c'est un chiffre ou en lettre
             if texte_lower[pos_introduction - 3] == "1":
-                pos_second_title_word = texte.find("\n2")
+                pos_second_title_word = texte.find("\n2 ")
             else:
-                pos_second_title_word = texte.find("\nII.")
+                pos_second_title_word = texte.find("\nII. ")
             ######################################################################
 
             # Récupération de l'introduction et du corps du texte
