@@ -129,4 +129,3 @@ class Extract :
             return 0
 
         return analyse_correcte / (analyse_correcte + analyse_incorrecte)
-
