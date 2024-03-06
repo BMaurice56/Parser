@@ -660,7 +660,15 @@ class Parser:
         :return: None
         """
         if self.__references == "":
-            pos_references = max(self.__text_rest.rfind("eferences"), self.__text_rest.rfind("EFERENCES"))
+            pos_references = max(self.__text_rest.rfind("References"), self.__text_rest.rfind("EFERENCES"),
+                                 self.__text_rest.rfind("R eferences"))
+
+            # Si la bibliographie est trop petite, on refait une recherche
+            if pos_references != -1 and "\n" not in self.__text_rest[pos_references - 6:pos_references + 6].strip():
+                pos_references = max(self.__text_rest[:pos_references].rfind("References"),
+                                     self.__text_rest[:pos_references].rfind("EFERENCES"),
+                                     self.__text_rest[:pos_references].rfind("R eferences"))
+            ######################################################################
 
             if pos_references != -1:
                 self.__references = f"{self.__text_rest[pos_references + len('references'):]}"
@@ -862,8 +870,8 @@ class Parser:
                     self.__discussion = self.__discussion[:self.__discussion.rfind("\n")].strip()
 
                     return
-                else:
-                    self.__discussion = "Aucune discussion"
+
+            self.__discussion = "Aucune discussion"
 
     def pdf_to_file(self, type_output_file: str) -> None:
         """
