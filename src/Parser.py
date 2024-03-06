@@ -924,6 +924,10 @@ class Parser:
                     self.__conclusion = self.__conclusion[self.__conclusion.find("\n"):]
                 ######################################################################
 
+                # On retire le "s" de conclusion s'il y en a un
+                if self.__conclusion[0] == "s":
+                    self.__conclusion = self.__conclusion[1:]
+
                 # On enlève les caractères du titre suivant la discussion
                 self.__conclusion = self.__conclusion[:self.__conclusion.rfind("\n")].strip()
                 ######################################################################
