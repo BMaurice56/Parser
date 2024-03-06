@@ -873,7 +873,7 @@ class Parser:
                 self.__conclusion = self.__text_rest[pos_conclusion + len(onclusion_word):pos_word_after].strip()
 
                 # Si présence d'un "and", on le retire
-                if self.__conclusion[:4] == "and ":
+                if self.__conclusion[:4] == "and " or self.__conclusion[:6] == "s and ":
                     self.__conclusion = self.__conclusion[self.__conclusion.find("\n"):]
                 ######################################################################
 
