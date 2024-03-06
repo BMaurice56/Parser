@@ -88,6 +88,20 @@ class Parser:
         self.__text_first_page = Utils.replace_accent(self.__text_first_page)
         self.__text_rest = Utils.replace_accent(self.__text_rest)
 
+    def _call_function(self) -> None:
+        """
+        Appelle toutes les fonctions utiles au Parser
+
+        :return: None
+        """
+        self.__load_text_attribut()
+        self._get_title()
+        self._get_abstract()
+        self._get_author()
+        self._get_affiliation()
+        self._get_bibliography()
+        self._get_discussion()
+
     def __find_emails(self, texte: str) -> list:
         """
         Trouve les mails dans le texte donné
@@ -891,13 +905,7 @@ class Parser:
         file += ".txt" if type_output_file == "-t" else ".xml"
 
         with open(file, "w", encoding="utf-8") as f:
-            self.__load_text_attribut()
-            self._get_title()
-            self._get_abstract()
-            self._get_author()
-            self._get_affiliation()
-            self._get_bibliography()
-            self._get_discussion()
+            self._call_function()
 
             if type_output_file == "-t":
                 f.write(f"Nom du fichier pdf : {self.__nomFichier}\n\nTitre :\n    {self.__titre}\n\nAuteurs :\n")
