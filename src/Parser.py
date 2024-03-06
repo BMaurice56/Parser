@@ -104,12 +104,12 @@ class Parser:
         :return: None
         """
         self.__load_text_attribut()
+        self.__localisation_keywords()
         self._get_title()
         self._get_abstract()
         self._get_author()
         self._get_affiliation()
-        self.__localisation_keywords()
-        self._get_bibliography()
+        self._get_references()
         self._get_discussion()
 
     def __localisation_keywords(self) -> None:
@@ -712,29 +712,6 @@ class Parser:
                 raise ValueError("Abstract non trouvé")
             ######################################################################
 
-    def _get_bibliography(self) -> None:
-        """
-        Renvoie la bibliographie de l'article
-
-        :return: None
-        """
-        if self.__references == "":
-            pos_references = max(self.__text_rest.rfind("References"), self.__text_rest.rfind("EFERENCES"),
-                                 self.__text_rest.rfind("R eferences"))
-
-            # Si la bibliographie est trop petite, on refait une recherche
-            if pos_references != -1 and "\n" not in self.__text_rest[pos_references - 6:pos_references + 6].strip():
-                pos_references = max(self.__text_rest[:pos_references].rfind("References"),
-                                     self.__text_rest[:pos_references].rfind("EFERENCES"),
-                                     self.__text_rest[:pos_references].rfind("R eferences"))
-            ######################################################################
-
-            if pos_references != -1:
-                self.__references = f"{self.__text_rest[pos_references + len('references'):]}"
-                self.__text_rest = self.__text_rest[:pos_references]
-            else:
-                self.__references = "Aucune bibliographie"
-
     def _get_affiliation(self) -> None:
         """
         Récupère les universités des différents auteurs
@@ -865,72 +842,49 @@ class Parser:
         :return: None
         """
         if self.__discussion == "":
-            number_of_pages = len(self.__pdfReader.pages)
-            numero_page = number_of_pages - 1
+            pos_discussion = self.__position_title_keywords["iscussion"]
 
-            iscusion_word = "iscussion"
-
-            stop_keywords = ["onclusion", "ppendix", "cknowledgments", "eferences"]
-
-            contenue_pages = ""
-            find = False
-            pos_discussion = -1
-
-            while numero_page >= number_of_pages / 2:
-                content = self.__pdfReader.pages[numero_page].extract_text()
-                content_lower = content.lower()
-
-                # Contenue de tout le pdf jusqu'à la fin
-                contenue_pages = f"{content}{contenue_pages}"
-
-                # Recherche du mot iscussion
-                pos_discussion = content_lower.find(iscusion_word)
-                if pos_discussion != -1:
-
-                    # on regarde s'il y a un \n devant + présence de la lettre D majuscule (titre)
-                    content_around_word = content[
-                                          pos_discussion - 7:pos_discussion]
-
-                    if "\n" in content_around_word and content_around_word.find("D") != -1:
-                        find = True
-                        break
-                    ######################################################################
+            if pos_discussion != -1:
+                # Récupération des clefs + indice du mot suivant
+                keys = list(self.__position_title_keywords.keys())
+                pos_word_after_plus_one = keys.index("iscussion") + 1
                 ######################################################################
 
-                numero_page -= 1
-
-            if find:
-                # On enlève tout ce qu'il y a devant
-                contenue_pages = contenue_pages[pos_discussion:].strip()
+                # Récupération du mot + son indice dans le texte
+                word_after = keys[pos_word_after_plus_one]
+                pos_word_after = self.__position_title_keywords[word_after]
                 ######################################################################
 
-                pos_minimum = 10 ** 9
-
-                # Comme on a toute la fin du pdf, on recherche le mot de noms de paragraphes le plus haut
-                for element in stop_keywords:
-                    pos_stop_word = contenue_pages.lower().find(element)
-
-                    # Si on trouve un mot d'arrêt, on enregistre sa position si elle est inférieur au précédent
-                    if pos_stop_word != -1 and contenue_pages[pos_stop_word - 10:pos_stop_word + 1].find(
-                            "\n") != -1 and pos_minimum > pos_stop_word:
-                        pos_minimum = pos_stop_word
-                    ######################################################################
+                # Récupération du texte
+                self.__discussion = self.__text_rest[pos_discussion + len("iscussion"):pos_word_after].strip()
                 ######################################################################
 
-                # Si on a trouvé un titre d'un autre chapitre, on coupe pour garder que le nécessaire
-                if pos_minimum != 10 ** 9:
-                    self.__discussion = contenue_pages[len(iscusion_word):pos_minimum].strip()
+                # Si présence d'un "and", on le retire
+                if self.__discussion[:4] == "and ":
+                    self.__discussion = self.__discussion[self.__discussion.find("\n"):]
+                ######################################################################
 
-                    # Si présence d'un "and", on le retire
-                    if self.__discussion[:4] == "and ":
-                        self.__discussion = self.__discussion[self.__discussion.find("\n"):]
+                # On enlève les caractères du titre suivant la discussion
+                self.__discussion = self.__discussion[:self.__discussion.rfind("\n")].strip()
+                ######################################################################
 
-                    # On enlève les caractères du titre suivant la discussion
-                    self.__discussion = self.__discussion[:self.__discussion.rfind("\n")].strip()
+            else:
+                self.__discussion = "Aucune discussion"
 
-                    return
+    def _get_references(self) -> None:
+        """
+        Renvoie la bibliographie de l'article
 
-            self.__discussion = "Aucune discussion"
+        :return: None
+        """
+        if self.__references == "":
+            pos_references = self.__position_title_keywords["eferences"]
+
+            if pos_references != -1:
+                self.__references = f"{self.__text_rest[pos_references + len('references'):]}"
+
+            else:
+                self.__references = "Aucune bibliographie"
 
     def pdf_to_file(self, type_output_file: str) -> None:
         """
