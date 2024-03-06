@@ -34,7 +34,7 @@ class TestComparison(unittest.TestCase):
         auteur = ("Dipanjan Das : fdipanjan@cs.cmu.edu\n"
                   "André F.T. Martins : afmg@cs.cmu.edu") #TODO
         abstract = "The increasing availability of online information has necessitated intensive"
-        result = extract_information(self.path_d+"/Das_Martins.txt")
+        result = Extract.extract_information(self.path_d+"/Das_Martins.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -45,7 +45,7 @@ class TestComparison(unittest.TestCase):
         auteur = ("Carlos-Emiliano González-Gallardo : carlos-emiliano.gonzalez-gallardo@alumni.univ-avignon.fr\n"
                   "Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr") #TODO
         abstract = "Sentence Boundary Detection (SBD) has been a major"
-        result = extract_information(self.path_d+"/Gonzalez_2018_Wisebe.txt")
+        result = Extract.extract_information(self.path_d+"/Gonzalez_2018_Wisebe.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -57,7 +57,7 @@ class TestComparison(unittest.TestCase):
                   "Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr\n"
                   "Gerardo Sierra : gsierram@iingen.unam") #TODO
         abstract = "In this article we present the RST Spanish"
-        result = extract_information(self.path_d+"/Iria_Juan-Manuel_Gerardo.txt")
+        result = Extract.extract_information(self.path_d+"/Iria_Juan-Manuel_Gerardo.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -68,7 +68,7 @@ class TestComparison(unittest.TestCase):
         auteur = ("Hongyan Jing : hjing@cs.columbia.edu\n"
                   "Kathleen R. McKeown : kathy@cs.columbia.edu") #TODO
         abstract = "We present a cut and paste based text summa-"
-        result = extract_information(self.path_d+"/jing-cutepaste.txt")
+        result = Extract.extract_information(self.path_d+"/jing-cutepaste.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -80,7 +80,7 @@ class TestComparison(unittest.TestCase):
                   "Nicolas Béchet : nicolas.bechet@irisa.fr\n"
                   "Giuseppe Berio : giuseppe.berio@univ-ubs.fr\n") #TODO
         abstract = "We describe a corpus analysis method to extract" #TODO
-        result = extract_information(self.path_d+"/kessler94715.txt")
+        result = Extract.extract_information(self.path_d+"/kessler94715.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -93,7 +93,7 @@ class TestComparison(unittest.TestCase):
                   "Gudrun Ledegen : gudrun.ledegen@univ-rennes2.fr\n"
                   "Frederic Pugnière-Saavedra : frederic.pugniere-saavedra@univ-ubs.fr\n")  #TODO
         abstract = "In order to better adapt to society, an association" #TODO
-        result = extract_information(self.path_d+"/kesslerMETICS-ICDIM2019.txt")
+        result = Extract.extract_information(self.path_d+"/kesslerMETICS-ICDIM2019.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -103,7 +103,7 @@ class TestComparison(unittest.TestCase):
         Nom = "mikheev J02-3002.pdf" #TODO
         auteur = "Andrei Mikheev : mikheev@cogsci.ed.ac.uk" #TODO
         abstract = "In this article we present an approach for tackling three important aspects of text normaliza-" #TODO
-        result = extract_information(self.path_d+"/mikheev J02-3002.txt")
+        result = Extract.extract_information(self.path_d+"/mikheev J02-3002.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -116,7 +116,7 @@ class TestComparison(unittest.TestCase):
                   "Greg Corrado : gcorrado@google.com\n"
                   "Jeffrey Dean : jeff@google.com") #TODO
         abstract = "We propose two novel model architectures for computing continuous vector repre-" #TODO
-        result = extract_information(self.path_d+"/Mikolov.txt")
+        result = Extract.extract_information(self.path_d+"/Mikolov.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -130,7 +130,7 @@ class TestComparison(unittest.TestCase):
                   "Benoît Favre : benoit.favre@lif.univ-mrs.fr\n"
                   "Joseph Le Roux : joseph.le.roux@lif.univ-mrs.fr") #TODO
         abstract = "MACAON is a tool suite for standard NLP tasks" #TODO
-        result = extract_information(self.path_d+"/Nasr.txt")
+        result = Extract.extract_information(self.path_d+"/Nasr.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -144,7 +144,7 @@ class TestComparison(unittest.TestCase):
                   "Eric SanJuan : eric.sanjuan@univ-avignon.fr\n"
                   "Patricia Velázquez-Morales : velazquez@yahoo.com") #TODO
         abstract = "We study a new content-based method for" #TODO
-        result = extract_information(self.path_d+"/Torres.txt")
+        result = Extract.extract_information(self.path_d+"/Torres.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
@@ -155,7 +155,7 @@ class TestComparison(unittest.TestCase):
         auteur = ("J. Manuel Torres Moreno : Pas d'adresse mail\n"
                   "Mirta B. Gordon : Pas d'adresse mail") #TODO
         abstract = "This article presents a new incremental learning algorithm for classi-" #TODO
-        result = extract_information(self.path_d+"/Torres-moreno1998.txt")
+        result = Extract.extract_information(self.path_d+"/Torres-moreno1998.txt")
 
         dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
         self.assertEqual(result, dict2)
