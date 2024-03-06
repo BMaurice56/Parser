@@ -5,7 +5,7 @@ from extract import *
 
 class TestComparison(unittest.TestCase):
 
-    path_d= "/Corpus_2022/analyse_pdf"
+    path_d = "/Corpus_2022/analyse_pdf"
     def test_isTxt(self):
         self.assertEqual(Extract.isTextFiles(self.path_d),True)
 
@@ -19,7 +19,11 @@ class TestComparison(unittest.TestCase):
 
         result = Extract.extract_information(self.path_d+"/Boudin-Torres-2006.txt")
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre , "Auteurs": auteur,"Abstract":abstract}
+        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
+
+        # Appel de la méthode pour calculer la précision
+        precision = Extract.calculate_precision(self.path_d+"/Boudin-Torres-2006.txt", result, dict2)
+        print("Précision pour 'Boudin-Torres-2006' : ", precision)
 
         self.assertEqual(result, dict2)
 
