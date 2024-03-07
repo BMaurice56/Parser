@@ -37,6 +37,8 @@ class Parser:
         self.__text_first_page = ""
         self.__text_rest = ""
         self.__text_rest_lower = ""
+        self.__type_pdf = -1
+        self.__type_mail = -1
         """
         Différent type de pdf : 
         -1 : non trouvé
@@ -142,6 +144,7 @@ class Parser:
         self.__load_text_attribut()
         self.__localisation_keywords()
         self._get_title()
+        self.__titre = Utils.replace_accent(self.__titre)
         self._get_abstract()
         self._get_author()
         self._get_affiliation()
@@ -645,6 +648,7 @@ class Parser:
                 self.__titre += parties_tries[0]
                 if parties_tries[0][-1] == "\n":
                     self.__titre += parties_tries[1]
+
                 return
             ######################################################################
 
@@ -766,11 +770,38 @@ class Parser:
                 pos_introduction -= 1
             ######################################################################
 
+            # On vérifie s'il y a un point
+            add_point = False
+
+            if texte_lower[pos_introduction - 3] == ".":
+                pos_introduction -= 1
+                add_point = True
+            ######################################################################
+
             # On regarde si c'est un chiffre ou en lettre
             if texte_lower[pos_introduction - 3] == "1":
-                pos_second_title_word = texte.find("\n2 ")
+                type_indices = "\n2"
             else:
-                pos_second_title_word = texte.find("\nII. ")
+                type_indices = "\nII"
+            ######################################################################
+
+            # On rajoute le point si nécessaire
+            if add_point:
+                type_indices += ". "
+            else:
+                type_indices += " "
+            ######################################################################
+
+            # On vient rechercher le deuxième titre dans le texte
+            pos_second_title_word = 0
+
+            while pos_second_title_word != -1:
+                pos_second_title_word = texte.find(type_indices, pos_second_title_word)
+
+                if pos_second_title_word != -1 and texte[pos_second_title_word + len(type_indices) + 2].isdigit():
+                    pos_second_title_word += 2
+                else:
+                    break
             ######################################################################
 
             # Récupération de l'introduction et du corps du texte
