@@ -37,6 +37,8 @@ class Parser:
         self.__text_first_page = ""
         self.__text_rest = ""
         self.__text_rest_lower = ""
+        self.__type_pdf = -1
+        self.__type_mail = -1
         """
         Différent type de pdf : 
         -1 : non trouvé
@@ -773,9 +775,21 @@ class Parser:
 
             # On regarde si c'est un chiffre ou en lettre
             if texte_lower[pos_introduction - 3] == "1":
-                pos_second_title_word = texte.find("\n2 ")
+                type_indices = "\n2 "
             else:
-                pos_second_title_word = texte.find("\nII. ")
+                type_indices = "\nII. "
+            ######################################################################
+
+            # On vient rechercher le deuxième titre dans le texte
+            pos_second_title_word = 0
+
+            while pos_second_title_word != -1:
+                pos_second_title_word = texte.find(type_indices, pos_second_title_word)
+
+                if pos_second_title_word != -1 and texte[pos_second_title_word + len(type_indices) + 2].isdigit():
+                    pos_second_title_word += 2
+                else:
+                    break
             ######################################################################
 
             # Récupération de l'introduction et du corps du texte
