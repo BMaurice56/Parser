@@ -769,15 +769,25 @@ class Parser:
             ######################################################################
 
             # On vérifie s'il y a un point
+            add_point = False
+
             if texte_lower[pos_introduction - 3] == ".":
                 pos_introduction -= 1
+                add_point = True
             ######################################################################
 
             # On regarde si c'est un chiffre ou en lettre
             if texte_lower[pos_introduction - 3] == "1":
-                type_indices = "\n2 "
+                type_indices = "\n2"
             else:
-                type_indices = "\nII. "
+                type_indices = "\nII"
+            ######################################################################
+
+            # On rajoute le point si nécessaire
+            if add_point:
+                type_indices += ". "
+            else:
+                type_indices += " "
             ######################################################################
 
             # On vient rechercher le deuxième titre dans le texte
