@@ -766,6 +766,11 @@ class Parser:
                 pos_introduction -= 1
             ######################################################################
 
+            # On vérifie s'il y a un point
+            if texte_lower[pos_introduction - 3] == ".":
+                pos_introduction -= 1
+            ######################################################################
+
             # On regarde si c'est un chiffre ou en lettre
             if texte_lower[pos_introduction - 3] == "1":
                 pos_second_title_word = texte.find("\n2 ")
