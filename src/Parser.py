@@ -144,6 +144,7 @@ class Parser:
         self.__load_text_attribut()
         self.__localisation_keywords()
         self._get_title()
+        self.__titre = Utils.replace_accent(self.__titre)
         self._get_abstract()
         self._get_author()
         self._get_affiliation()
@@ -647,6 +648,7 @@ class Parser:
                 self.__titre += parties_tries[0]
                 if parties_tries[0][-1] == "\n":
                     self.__titre += parties_tries[1]
+
                 return
             ######################################################################
 
