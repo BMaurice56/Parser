@@ -11,8 +11,13 @@ import io
 
 
 def my_process(parser_object: Parser, argument: str, name_file: str):
-    parser_object.pdf_to_file(argument)
-    print(f"Analyse effectué sur : {name_file}")
+    try:
+        parser_object.pdf_to_file(argument)
+        print(f"Analyse effectué sur : {name_file}")
+
+    except Exception:
+        print(f"Impossible d'analyser le pdf : {name_file}")
+        print("Les causes possibles sont un mauvais encoder utilisé pour créer le pdf.\n")
 
 
 if __name__ == '__main__':
