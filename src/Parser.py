@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ETree
 from functools import wraps
 from src.Utils import Utils
 import Levenshtein
+import unicodedata
 import PyPDF2
 import re
 import io
@@ -97,7 +98,11 @@ class Parser:
 
         self.__text_first_page = Utils.replace_accent(self.__text_first_page)
         self.__text_rest = Utils.replace_accent(self.__text_rest)
-        self.__text_rest_lower = self.__text_rest.lower()
+
+        chaine_normalisee = unicodedata.normalize('NFD', self.__text_rest.lower())
+
+        # Filtre les caractères pour ne conserver que les caractères ASCII
+        self.__text_rest_lower = ''.join(c for c in chaine_normalisee if unicodedata.category(c) != 'Mn')
 
     def __localisation_keywords(self) -> None:
         """
@@ -184,7 +189,7 @@ class Parser:
         # Récupération des emails
         emails = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)]
         emails2 = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
-        emails3 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
+        emails3 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+@[a-z0-9.\n\- +_]+\.[a-z]+", texte)]
         emails4 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+\n@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
         emails5 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+Q[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
         ######################################################################
@@ -363,9 +368,22 @@ class Parser:
                     ######################################################################
                 ######################################################################
 
+            # Si présence de chiffre, on les enlève
+            for aut in self.__auteurs:
+                if any(char.isdigit() for char in aut):
+                    aut_split = re.findall("[^0-9]+", aut)
+
+                    aut_split = [x for x in aut_split if len(x) > 2]
+
+                    self.__auteurs.remove(aut)
+                    self.__auteurs += aut_split
+            ######################################################################
+
+            # On enlève les espaces et string vide
             for elt in ["", " ", "  "]:
                 if elt in self.__auteurs:
                     self.__auteurs.remove(elt)
+            ######################################################################
 
             return
 
@@ -578,7 +596,6 @@ class Parser:
             # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
             # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
             if not self.__auteurs:
-
                 if self.__type_mail == 1:
                     self.__type_pdf = 1
 
