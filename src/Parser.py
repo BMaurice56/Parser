@@ -30,7 +30,7 @@ class Parser:
         self.__title_keywords = {"iscussion": "D",
                                  "onclusion": "C",
                                  "ppendix": "A",
-                                 "cknowledgments": "A",
+                                 "cknowledgment": "A",
                                  "eferences": "R",
                                  "ollow-up work": "F"}
 
@@ -106,7 +106,7 @@ class Parser:
         ######################################################################
 
         # Remplace le mot clef pour mieux le retrouver
-        self.__text_rest_lower = self.__text_rest_lower.replace("cknowledgements", "cknowledgments ")
+        self.__text_rest_lower = self.__text_rest_lower.replace("cknowledgement", "cknowledgment ")
         ######################################################################
 
     def __localisation_keywords(self) -> None:
@@ -787,9 +787,14 @@ class Parser:
             pos_introduction = texte_lower.find("ntroduction")
             ######################################################################
 
+            # Ajoute une marge à cause de la présence d'espace dans le titre
+            add_margin_cause_space = 0
+            ######################################################################
+
             # Si présence d'un espace entre le I et ntroduction, on l'enlève
             if texte_lower[pos_introduction - 1] == " ":
                 pos_introduction -= 1
+                add_margin_cause_space += 1
             ######################################################################
 
             # On vérifie s'il y a un point
@@ -797,6 +802,7 @@ class Parser:
 
             if texte_lower[pos_introduction - 3] == ".":
                 pos_introduction -= 1
+                add_margin_cause_space += 1
                 add_point = True
             ######################################################################
 
@@ -827,7 +833,8 @@ class Parser:
             ######################################################################
 
             # Récupération de l'introduction et du corps du texte
-            self.__introduction = texte[pos_introduction + len("ntroduction"): pos_second_title_word]
+            self.__introduction = texte[
+                                  pos_introduction + len("ntroduction") + add_margin_cause_space: pos_second_title_word]
 
             self.__corps = texte[pos_second_title_word + 2:]
             self.__corps = self.__corps[self.__corps.find("\n"):]
