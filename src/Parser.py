@@ -951,7 +951,8 @@ class Parser:
                 emails = self.__find_emails(value)
 
                 if emails:
-                    value = value.split(emails[0])[0]
+                    nom_mail = emails[0].split("@")[0]
+                    value = value.split(nom_mail)[0]
                 ######################################################################
 
                 self.__dico_nom_univ[key] = value.strip()
