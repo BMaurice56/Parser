@@ -99,10 +99,15 @@ class Parser:
         self.__text_first_page = Utils.replace_accent(self.__text_first_page)
         self.__text_rest = Utils.replace_accent(self.__text_rest)
 
+        # Filtre les caractères pour ne conserver que les caractères ASCII
         chaine_normalisee = unicodedata.normalize('NFD', self.__text_rest.lower())
 
-        # Filtre les caractères pour ne conserver que les caractères ASCII
         self.__text_rest_lower = ''.join(c for c in chaine_normalisee if unicodedata.category(c) != 'Mn')
+        ######################################################################
+
+        # Remplace le mot clef pour mieux le retrouver
+        self.__text_rest_lower = self.__text_rest_lower.replace("cknowledgements", "cknowledgments ")
+        ######################################################################
 
     def __localisation_keywords(self) -> None:
         """
@@ -908,7 +913,12 @@ class Parser:
                 ######################################################################
 
                 # Récupération de l'établissement
-                school = section_auteurs[first_new_line:second_new_line]
+                school = section_auteurs[first_new_line:second_new_line].strip()
+                ######################################################################
+
+                # Si présence d'un chiffre devant, on l'enlève
+                if school[0].isdigit() and not school[1].isdigit():
+                    school = school[1:]
                 ######################################################################
 
                 for key in self.__dico_nom_mail.keys():
