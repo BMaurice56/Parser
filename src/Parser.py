@@ -808,9 +808,9 @@ class Parser:
 
             # On regarde si c'est un chiffre ou en lettre
             if texte_lower[pos_introduction - 3] == "1":
-                type_indices = "\n2"
+                type_indices = "2"
             else:
-                type_indices = "\nII"
+                type_indices = "II"
             ######################################################################
 
             # On rajoute le point si nécessaire
@@ -829,7 +829,11 @@ class Parser:
                 if pos_second_title_word != -1 and texte[pos_second_title_word + len(type_indices) + 2].isdigit():
                     pos_second_title_word += 2
                 else:
-                    break
+                    if "\n" in texte[pos_second_title_word - 2:pos_second_title_word] or any(
+                            re.findall("[.][a-zA-Z]+", texte[pos_second_title_word - 5: pos_second_title_word])):
+                        break
+                    else:
+                        pos_second_title_word += 2
             ######################################################################
 
             # Récupération de l'introduction et du corps du texte
@@ -993,12 +997,12 @@ class Parser:
                 self.__conclusion = self.__text_rest[pos_conclusion + len(onclusion_word):pos_word_after].strip()
 
                 # Si présence d'un "and", on le retire
-                if self.__conclusion[:4] == "and " or self.__conclusion[:6] == "s and ":
+                if self.__conclusion[:4].lower() == "and " or self.__conclusion[:6].lower() == "s and ":
                     self.__conclusion = self.__conclusion[self.__conclusion.find("\n"):]
                 ######################################################################
 
                 # On retire le "s" de conclusion s'il y en a un
-                if self.__conclusion[0] == "s":
+                if self.__conclusion[0].lower() == "s":
                     self.__conclusion = self.__conclusion[1:]
 
                 # On enlève les caractères du titre suivant la discussion
