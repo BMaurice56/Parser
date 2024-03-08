@@ -900,7 +900,7 @@ class Parser:
                     # On regarde s'il y a un \n a la fin et on le retire
                     last_new_line = result.rfind("\n")
 
-                    if 0 < last_new_line and last_new_line > 10:
+                    if last_new_line > 10:
                         result = result[:last_new_line]
                     ######################################################################
 
@@ -964,7 +964,7 @@ class Parser:
                 ######################################################################
 
                 # Si présence de "and" (nom composé) → on l'enlève
-                if "and " in value:
+                if "and " in value and any(value.find(x) != -1 for x in self.__auteurs):
                     value = value[value.find("\n"):]
                 ######################################################################
 
