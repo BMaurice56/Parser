@@ -947,6 +947,13 @@ class Parser:
                     value = value[value.find("\n"):]
                 ######################################################################
 
+                # Si présence de mail, on l'enlève
+                emails = self.__find_emails(value)
+
+                if emails:
+                    value = value.split(emails[0])[0]
+                ######################################################################
+
                 self.__dico_nom_univ[key] = value.strip()
             ######################################################################
 
