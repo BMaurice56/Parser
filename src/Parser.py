@@ -826,14 +826,18 @@ class Parser:
             while pos_second_title_word != -1:
                 pos_second_title_word = texte.find(type_indices, pos_second_title_word)
 
-                if pos_second_title_word != -1 and texte[pos_second_title_word + len(type_indices) + 2].isdigit():
-                    pos_second_title_word += 2
-                else:
-                    if "\n" in texte[pos_second_title_word - 2:pos_second_title_word] or any(
-                            re.findall("[.][a-zA-Z]+", texte[pos_second_title_word - 5: pos_second_title_word])):
-                        break
-                    else:
+                if pos_second_title_word != -1:
+                    if texte[pos_second_title_word + len(type_indices) + 2].isdigit():
                         pos_second_title_word += 2
+                    else:
+                        newline_in_texte = "\n" in texte[pos_second_title_word - 2:pos_second_title_word]
+                        domaine_name = any(
+                            re.findall("[.][a-zA-Z]+", texte[pos_second_title_word - 5: pos_second_title_word]))
+
+                        if newline_in_texte or domaine_name:
+                            break
+                        else:
+                            pos_second_title_word += 2
             ######################################################################
 
             # Récupération de l'introduction et du corps du texte
