@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ETree
 from functools import wraps
 from src.Utils import Utils
 import Levenshtein
+import unicodedata
 import PyPDF2
 import re
 import io
@@ -29,7 +30,7 @@ class Parser:
         self.__title_keywords = {"iscussion": "D",
                                  "onclusion": "C",
                                  "ppendix": "A",
-                                 "cknowledgments": "A",
+                                 "cknowledgment": "A",
                                  "eferences": "R",
                                  "ollow-up work": "F"}
 
@@ -97,7 +98,16 @@ class Parser:
 
         self.__text_first_page = Utils.replace_accent(self.__text_first_page)
         self.__text_rest = Utils.replace_accent(self.__text_rest)
-        self.__text_rest_lower = self.__text_rest.lower()
+
+        # Filtre les caractères pour ne conserver que les caractères ASCII
+        chaine_normalisee = unicodedata.normalize('NFD', self.__text_rest.lower())
+
+        self.__text_rest_lower = ''.join(c for c in chaine_normalisee if unicodedata.category(c) != 'Mn')
+        ######################################################################
+
+        # Remplace le mot clef pour mieux le retrouver
+        self.__text_rest_lower = self.__text_rest_lower.replace("cknowledgement", "cknowledgment ")
+        ######################################################################
 
     def __localisation_keywords(self) -> None:
         """
@@ -184,7 +194,7 @@ class Parser:
         # Récupération des emails
         emails = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)]
         emails2 = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
-        emails3 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
+        emails3 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+@[a-z0-9.\n\- +_]+\.[a-z]+", texte)]
         emails4 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+\n@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
         emails5 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+Q[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
         ######################################################################
@@ -363,9 +373,22 @@ class Parser:
                     ######################################################################
                 ######################################################################
 
+            # Si présence de chiffre, on les enlève
+            for aut in self.__auteurs:
+                if any(char.isdigit() for char in aut):
+                    aut_split = re.findall("[^0-9]+", aut)
+
+                    aut_split = [x for x in aut_split if len(x) > 2]
+
+                    self.__auteurs.remove(aut)
+                    self.__auteurs += aut_split
+            ######################################################################
+
+            # On enlève les espaces et string vide
             for elt in ["", " ", "  "]:
                 if elt in self.__auteurs:
                     self.__auteurs.remove(elt)
+            ######################################################################
 
             return
 
@@ -578,7 +601,6 @@ class Parser:
             # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
             # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
             if not self.__auteurs:
-
                 if self.__type_mail == 1:
                     self.__type_pdf = 1
 
@@ -765,9 +787,14 @@ class Parser:
             pos_introduction = texte_lower.find("ntroduction")
             ######################################################################
 
+            # Ajoute une marge à cause de la présence d'espace dans le titre
+            add_margin_cause_space = 0
+            ######################################################################
+
             # Si présence d'un espace entre le I et ntroduction, on l'enlève
             if texte_lower[pos_introduction - 1] == " ":
                 pos_introduction -= 1
+                add_margin_cause_space += 1
             ######################################################################
 
             # On vérifie s'il y a un point
@@ -775,14 +802,15 @@ class Parser:
 
             if texte_lower[pos_introduction - 3] == ".":
                 pos_introduction -= 1
+                add_margin_cause_space += 1
                 add_point = True
             ######################################################################
 
             # On regarde si c'est un chiffre ou en lettre
             if texte_lower[pos_introduction - 3] == "1":
-                type_indices = "\n2"
+                type_indices = "2"
             else:
-                type_indices = "\nII"
+                type_indices = "II"
             ######################################################################
 
             # On rajoute le point si nécessaire
@@ -798,14 +826,23 @@ class Parser:
             while pos_second_title_word != -1:
                 pos_second_title_word = texte.find(type_indices, pos_second_title_word)
 
-                if pos_second_title_word != -1 and texte[pos_second_title_word + len(type_indices) + 2].isdigit():
-                    pos_second_title_word += 2
-                else:
-                    break
+                if pos_second_title_word != -1:
+                    if texte[pos_second_title_word + len(type_indices) + 2].isdigit():
+                        pos_second_title_word += 2
+                    else:
+                        newline_in_texte = "\n" in texte[pos_second_title_word - 2:pos_second_title_word]
+                        domaine_name = any(
+                            re.findall("[.][a-zA-Z]+", texte[pos_second_title_word - 5: pos_second_title_word]))
+
+                        if newline_in_texte or domaine_name:
+                            break
+                        else:
+                            pos_second_title_word += 2
             ######################################################################
 
             # Récupération de l'introduction et du corps du texte
-            self.__introduction = texte[pos_introduction + len("ntroduction"): pos_second_title_word]
+            self.__introduction = texte[
+                                  pos_introduction + len("ntroduction") + add_margin_cause_space: pos_second_title_word]
 
             self.__corps = texte[pos_second_title_word + 2:]
             self.__corps = self.__corps[self.__corps.find("\n"):]
@@ -867,7 +904,7 @@ class Parser:
                     # On regarde s'il y a un \n a la fin et on le retire
                     last_new_line = result.rfind("\n")
 
-                    if 0 < last_new_line and last_new_line > 10:
+                    if last_new_line > 10:
                         result = result[:last_new_line]
                     ######################################################################
 
@@ -891,7 +928,12 @@ class Parser:
                 ######################################################################
 
                 # Récupération de l'établissement
-                school = section_auteurs[first_new_line:second_new_line]
+                school = section_auteurs[first_new_line:second_new_line].strip()
+                ######################################################################
+
+                # Si présence d'un chiffre devant, on l'enlève
+                if school[0].isdigit() and not school[1].isdigit():
+                    school = school[1:]
                 ######################################################################
 
                 for key in self.__dico_nom_mail.keys():
@@ -926,8 +968,16 @@ class Parser:
                 ######################################################################
 
                 # Si présence de "and" (nom composé) → on l'enlève
-                if "and " in value:
+                if "and " in value and any(value.find(x) != -1 for x in self.__auteurs):
                     value = value[value.find("\n"):]
+                ######################################################################
+
+                # Si présence de mail, on l'enlève
+                emails = self.__find_emails(value)
+
+                if emails:
+                    nom_mail = emails[0].split("@")[0]
+                    value = value.split(nom_mail)[0]
                 ######################################################################
 
                 self.__dico_nom_univ[key] = value.strip()
@@ -951,12 +1001,12 @@ class Parser:
                 self.__conclusion = self.__text_rest[pos_conclusion + len(onclusion_word):pos_word_after].strip()
 
                 # Si présence d'un "and", on le retire
-                if self.__conclusion[:4] == "and " or self.__conclusion[:6] == "s and ":
+                if self.__conclusion[:4].lower() == "and " or self.__conclusion[:6].lower() == "s and ":
                     self.__conclusion = self.__conclusion[self.__conclusion.find("\n"):]
                 ######################################################################
 
                 # On retire le "s" de conclusion s'il y en a un
-                if self.__conclusion[0] == "s":
+                if self.__conclusion[0].lower() == "s":
                     self.__conclusion = self.__conclusion[1:]
 
                 # On enlève les caractères du titre suivant la discussion
