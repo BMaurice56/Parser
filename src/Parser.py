@@ -904,7 +904,7 @@ class Parser:
                     # On regarde s'il y a un \n a la fin et on le retire
                     last_new_line = result.rfind("\n")
 
-                    if last_new_line > 10:
+                    if len(result) - 10 < last_new_line:
                         result = result[:last_new_line]
                     ######################################################################
 
@@ -945,15 +945,23 @@ class Parser:
                 school = ""
 
                 for element in section_auteurs_separate:
-                    if not any(element.find(nom) != -1 for nom in self.__auteurs):
+                    name_in_element = any(element.find(nom) != -1 for nom in self.__auteurs)
+                    mail_in_element = any(element.find(nom) != -1 for nom in self.__emails)
+                    link_in_element = any(element.find(link) != -1 for link in ["http", "www"])
+
+                    if not name_in_element and not mail_in_element and not link_in_element:
+                        # Si présence d'un chiffre devant, on le remplace
+                        if element[0].isdigit() and not element[1].isdigit():
+                            element = f"\n{element[1:]}"
+                        ######################################################################
+
                         school = f"{school}{element}"
 
                 for key in self.__dico_nom_mail.keys():
                     self.__dico_nom_univ[key] = school
 
             words_to_remove = ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2",
-                               "(B)",
-                               "  "]
+                               "(B)", "  ", "(1)", "(2)", "(1,2)"]
 
             # On enlève les caractères inutiles aux affiliations
             for key, value in self.__dico_nom_univ.items():
