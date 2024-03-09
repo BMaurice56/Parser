@@ -1022,7 +1022,7 @@ class Parser:
                 ######################################################################
 
             else:
-                self.__conclusion = "Pas de conclusion"
+                self.__conclusion = "Aucune conclusion"
 
     def _get_discussion(self) -> None:
         """
