@@ -122,12 +122,13 @@ class Parser:
                 pos_word = self.__text_rest_lower[:pos_word].rfind(word)
 
                 if pos_word != -1:
-
-                    # on regarde s'il y a un \n devant + présence de la lettre en majuscule (titre)
+                    # On regarde s'il y a un \n devant ou un . + présence de la lettre en majuscule (titre)
                     content_around_word = self.__text_rest[
-                                          pos_word - 10:pos_word]
+                                          pos_word - 8:pos_word]
 
-                    if "\n" in content_around_word and content_around_word.find(first_letter) != -1:
+                    check_title = "\n" in content_around_word or f".{first_letter}" in content_around_word
+
+                    if check_title and content_around_word.find(first_letter) != -1:
                         self.__position_title_keywords[word] = pos_word
                         pos_word = -2
                         break
@@ -169,18 +170,22 @@ class Parser:
         dans le dictionnaire des mots clefs
 
         :param mot: Mot de base
-        :return: int Position du mot d'après
+        :return: int Position du mot d'après, -1 si aucun mot après
         """
-        # Récupération des clefs + indice du mot suivant
-        keys = list(self.__position_title_keywords.keys())
-        pos_word_after_plus_one = keys.index(mot) + 1
-        ######################################################################
+        try:
+            # Récupération des clefs + indice du mot suivant
+            keys = list(self.__position_title_keywords.keys())
+            pos_word_after_plus_one = keys.index(mot) + 1
+            ######################################################################
 
-        # Récupération du mot + son indice dans le texte
-        word_after = keys[pos_word_after_plus_one]
+            # Récupération du mot + son indice dans le texte
+            word_after = keys[pos_word_after_plus_one]
 
-        return self.__position_title_keywords[word_after]
-        ######################################################################
+            return self.__position_title_keywords[word_after]
+            ######################################################################
+
+        except IndexError:
+            return -1
 
     def __find_emails(self, texte: str) -> list:
         """
@@ -1088,8 +1093,12 @@ class Parser:
         if self.__references == "":
             pos_references = self.__position_title_keywords["eferences"]
 
+            # On vérifie s'il y a des éléments après
+            word_after = self.__get_pos_word_after("eferences")
+            ######################################################################
+
             if pos_references != -1:
-                self.__references = f"{self.__text_rest[pos_references + len('references'):]}"
+                self.__references = f"{self.__text_rest[pos_references + len('references'):word_after - 1]}"
 
             else:
                 self.__references = "Aucune bibliographie"
