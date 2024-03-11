@@ -235,7 +235,7 @@ class Parser:
         if len(emails3) != 0:
             if "," in emails3[0]:
                 self.__type_mail = 1
-                emails = []
+
                 emails3_separer = emails3[0].split(",")
                 dernier_mail, nom_domaine = emails3_separer[-1].split("@")
 
@@ -249,7 +249,7 @@ class Parser:
         if len(emails4) != 0:
             if "," in emails4[0]:
                 self.__type_mail = 1
-                emails = []
+
                 emails4_separer = emails4[0].split(",")
                 dernier_mail, nom_domaine = emails4_separer[-1].split("@")
 
@@ -373,6 +373,8 @@ class Parser:
                     ######################################################################
                 ######################################################################
 
+            presence_star = False
+
             # Si présence de chiffre, on les enlève
             for aut in self.__auteurs:
                 if any(char.isdigit() for char in aut):
@@ -382,6 +384,16 @@ class Parser:
 
                     self.__auteurs.remove(aut)
                     self.__auteurs += aut_split
+                if "*" in aut:
+                    presence_star = True
+            ######################################################################
+
+            # Si présence d'une étoile dans le nom, on l'enlève
+            if presence_star:
+                for auth in self.__auteurs:
+                    if "*" in auth:
+                        index = self.__auteurs.index(auth)
+                        self.__auteurs[index] = self.__auteurs[index][:-1]
             ######################################################################
 
             # On enlève les espaces et string vide
@@ -529,6 +541,7 @@ class Parser:
                     self.__type_pdf = 1
                 else:
                     self.__type_pdf = 2
+                ######################################################################
 
                 self.__auteurs = [section_auteurs[:pos_asterisk]]
                 return
@@ -670,6 +683,11 @@ class Parser:
                 self.__titre += parties_tries[0]
                 if parties_tries[0][-1] == "\n":
                     self.__titre += parties_tries[1]
+
+                    # Si titre sur trois lignes, on récupère le bout manquant
+                    if parties_tries[1][-1] == "\n" and len(parties_tries[2].split(" ")) <= 1:
+                        self.__titre += parties_tries[2]
+                    ######################################################################
 
                 return
             ######################################################################
@@ -986,6 +1004,11 @@ class Parser:
                 if emails:
                     nom_mail = emails[0].split("@")[0]
                     value = value.split(nom_mail)[0]
+                ######################################################################
+
+                # Si présence d'une étoile, on l'enlève
+                if "*" in value:
+                    value = value[:value.find("*")]
                 ######################################################################
 
                 self.__dico_nom_univ[key] = value.strip()
