@@ -1,4 +1,8 @@
-Notre_Corpus/*
-Notre_Corpus/analyse_pdf/*
-Corpus_2022/*
-Corpus_2022/analyse_pdf/*
+Notre_Corpus/*.xml
+Notre_Corpus/*.txt
+Notre_Corpus/analyse_pdf/*.xml
+Notre_Corpus/analyse_pdf/*.txt
+Corpus_2022/*.xml
+Corpus_2022/*.txt
+Corpus_2022/analyse_pdf/*.xml
+Corpus_2022/analyse_pdf/*.txt
