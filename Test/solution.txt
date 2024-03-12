@@ -9,6 +9,7 @@ Auteurs:
     Marc El-Bèze : juan-manuel.torres@univ-avignon.fr
     Juan-Manuel Torres-Moreno : marc.elbeze@univ-avignon.fr
 
+
 Abstract:
     We present S MMR , a scalable sentence
 scoring method for query-oriented up-
