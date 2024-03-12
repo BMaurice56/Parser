@@ -1,172 +1,132 @@
+import fitz  # PyMuPDF
+import re
 import os
-import unittest
-from extract import *
+import Levenshtein
+
+#methode qui permet d'extraire les txt du dosier analyse.pdf
+def read_text_files_in_directory(directory_path):
+    try:
+        # Liste tous les fichiers dans le répertoire avec l'extension .txt
+        text_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
+
+        # Initialiser un dictionnaire pour stocker le contenu de chaque fichier
+        text_contents = {}
+
+        for text_file in text_files:
+            file_path = os.path.join(directory_path, text_file)
+
+            print(file_path)
+
+            # Ouvrir et lire le contenu du fichier texte
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                text_contents[text_file] = content
+                print(text_contents)
+
+        return text_contents
+    except Exception as e:
+        return f"Erreur lors de la lecture des fichiers : {e}"
 
 
-class TestComparison(unittest.TestCase):
-
-    path_d = "/Corpus_2022/analyse_pdf"
-    def test_isTxt(self):
-        self.assertEqual(Extract.isTextFiles(self.path_d),True)
-
-    def test_Boudin_Torres(self):
-        titre = "A Scalable MMR Approach to Sentence Scoring for Multi-Document Update Summarization"
-        Nom = "Boudin-Torres-2006.pdf"
-        auteur = ("Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr\n"
-                  "Florian Boudin : florian.boudin@univ-avignon.fr\n"
-                  "Marc El-Bèze : marc.elbeze@univ-avignon.fr\n") #TODO
-        abstract = "We present S MMR , a scalable sentence"
-
-        result = Extract.extract_information(self.path_d+"/Boudin-Torres-2006.txt")
-
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-
-        # Appel de la méthode pour calculer la précision
-        precision = Extract.calculate_precision(self.path_d+"/Boudin-Torres-2006.txt", result, dict2)
-        print("Précision pour 'Boudin-Torres-2006' : ", precision)
-
-        self.assertEqual(result, dict2)
+#methode qui permet d'extraire le texte du txt resAttendu.txt
+def extract_text_from_pdf(pdf_filename):
+    try:
+        doc = fitz.open(pdf_filename)
+        text = ""
+        for page_num in range(doc.page_count):
+            page = doc[page_num]
+            text += page.get_text()
+        return text
+    except Exception as e:
+        return f"Erreur lors de l'extraction du texte : {e}"
 
 
-    def test_Das_Martin(self):
-        titre = "Das_Martins.pdf"
-        Nom = "A Survey on Automatic Text Summarization"
-        auteur = ("Dipanjan Das : fdipanjan@cs.cmu.edu\n"
-                  "André F.T. Martins : afmg@cs.cmu.edu") #TODO
-        abstract = "The increasing availability of online information has necessitated intensive"
+#methode qui permet d'extraire du fichier resAttendu.txt un txt en entrant le pdf en question en parametre
+def find_and_display_keyword(pdf_filename, keyword):
+    extracted_text = extract_text_from_pdf(pdf_filename)
 
-        result = Extract.extract_information(self.path_d+"/Das_Martins.txt")
+    if keyword.lower() in extracted_text.lower():
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
+        # Trouver la position du mot clé
+        keyword_start = extracted_text.lower().find(keyword.lower())
 
-    def test_Gonzalez_2018_Wisebe(self):
-        titre = "Gonzalez_2018_Wisebe.pdf"
-        Nom = "WiSeBE: Window-Based Sentence Boundary Evaluation"
-        auteur = ("Carlos-Emiliano González-Gallardo : carlos-emiliano.gonzalez-gallardo@alumni.univ-avignon.fr\n"
-                  "Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr") #TODO
-        abstract = "Sentence Boundary Detection (SBD) has been a major"
+        # Trouver le prochain "Nom du fichier pdf"
+        next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", extracted_text)
 
-        result = Extract.extract_information(self.path_d+"/Gonzalez_2018_Wisebe.txt")
+        if next_filename_match:
+            snippet_end = keyword_start + next_filename_match.end()
+        else:
+            # Si le prochain "Nom du fichier pdf" n'est pas trouvé, utiliser la fin du texte
+            snippet_end = len(extracted_text)
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
+        # Trouver le prochain "Nom du fichier pdf" après le snippet_end jusqu'à la fin du texte
+        next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", extracted_text[snippet_end:])
 
-    def test_Iria_Juan_Manuel_Gerardo(self):
-        titre = "Iria_Juan-Manuel_Gerardo.pdf"
-        Nom = "On the Development of the RST Spanish Treebank"
-        auteur = ("Iria da Cunha : iria.dacunha@upf.edu\n"
-                  "Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr\n"
-                  "Gerardo Sierra : gsierram@iingen.unam") #TODO
-        abstract = "In this article we present the RST Spanish"
+        if next_filename_match:
+            snippet_end += next_filename_match.start()
+        else:
+            # Si le prochain "Nom du fichier pdf" n'est pas trouvé, utiliser la fin du texte
+            snippet_end = len(extracted_text)
 
-        result = Extract.extract_information(self.path_d+"/Iria_Juan-Manuel_Gerardo.txt")
+        snippet_start = max(0, keyword_start)
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
+        return extracted_text[snippet_start:snippet_end]
+    else:
+        print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {pdf_filename}.")
 
-    def test_jing_cutepaste(self):
-        titre = "jing-cutepaste.pdf"
-        Nom = "Cut and Paste Based Text Summarization"
-        auteur = ("Hongyan Jing : hjing@cs.columbia.edu\n"
-                  "Kathleen R. McKeown : kathy@cs.columbia.edu") #TODO
-        abstract = "We present a cut and paste based text summa-"
 
-        result = Extract.extract_information(self.path_d+"/jing-cutepaste.txt")
+#Permet de prendre les 2 résultats et de les comparer en appelant la fonction levenshtein_distance_percentage(s1, s2)
+def compare_files(directory_path):
+    try:
+        resAttendu_path = "/home/benjamin/Documents/L3/Semestre_2/Projet_de_developpement/pythonProject/resAttendu.txt"
+        text_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
+        for text_file in text_files:
+            print(f"Analyse du fichier : {text_file}")
+            file_path = os.path.join(directory_path, text_file)
 
-    def kessler94715(self):
-        titre = "Extraction of terminology in the field of construction" #TODO
-        Nom = "kessler94715.pdf" #TODO
-        auteur = ("Rémy Kessler : remy.kessler@univ-ubs.fr\n"
-                  "Nicolas Béchet : nicolas.bechet@irisa.fr\n"
-                  "Giuseppe Berio : giuseppe.berio@univ-ubs.fr\n") #TODO
-        abstract = "We describe a corpus analysis method to extract" #TODO
+            with open(file_path, 'r', encoding='utf-8') as file:
+                keyword = file.readline().strip()
+                content = file.read()
 
-        result = Extract.extract_information(self.path_d+"/kessler94715.txt")
+                found_text = find_and_display_keyword(resAttendu_path, keyword)
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
+                if found_text is not None:
+                    # Appliquer la fonction levenshtein_distance
+                    percentage = levenshtein_distance_percentage(content, found_text)
 
-    def kesslerMETICS_ICDIM2019(self):
-        titre = "A word embedding approach to explore a collection of discussions of people in psychological distress" #TODO
-        Nom = "kesslerMETICS-ICDIM2019.pdf" #TODO
-        auteur = ("Rémy Kessler : remy.kessler@univ-ubs.fr\n"
-                  "Nicolas Béchet : nicolas.bechet@irisa.fr\n"
-                  "Gudrun Ledegen : gudrun.ledegen@univ-rennes2.fr\n"
-                  "Frederic Pugnière-Saavedra : frederic.pugniere-saavedra@univ-ubs.fr\n")  #TODO
-        abstract = "In order to better adapt to society, an association" #TODO
+                    # Afficher les résultats pour le fichier en cours
+                    print(f"{text_file}: {percentage:.2f}%")
+                else:
+                    print(f"Ignorer {text_file} car le mot-clé n'a pas été trouvé.")
+                print()
 
-        result = Extract.extract_information(self.path_d+"/kesslerMETICS-ICDIM2019.txt")
+    except Exception as e:
+        print(f"Erreur lors de la lecture des fichiers : {e}")
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
 
-    def mikheev_J02_3002(self):
-        titre = "Periods, Capitalized Words, etc." #TODO
-        Nom = "mikheev J02-3002.pdf" #TODO
-        auteur = "Andrei Mikheev : mikheev@cogsci.ed.ac.uk" #TODO
-        abstract = "In this article we present an approach for tackling three important aspects of text normaliza-" #TODO
+#Traduit la distance de levenshtein en pourcentage
+def levenshtein_distance_percentage(s1, s2):
+    if len(s1) < len(s2):
+        return levenshtein_distance_percentage(s2, s1)
 
-        result = Extract.extract_information(self.path_d+"/mikheev J02-3002.txt")
+    max_length = max(len(s1), len(s2))
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
+    if max_length == 0:
+        return 100  # Les deux chaînes sont vides, la distance est nulle
 
-    def Mikolov(self):
-        titre = "Efficient Estimation of Word Representations in Vector Space" #TODO
-        Nom = "Mikolov.pdf" #TODO
-        auteur = ("Tomas Mikolov : tmikolov@google.com\n"
-                  "Kai Chen : kaichen@google.com\n"
-                  "Greg Corrado : gcorrado@google.com\n"
-                  "Jeffrey Dean : jeff@google.com") #TODO
-        abstract = "We propose two novel model architectures for computing continuous vector repre-" #TODO
+    distance = Levenshtein.distance(s1, s2)
 
-        result = Extract.extract_information(self.path_d+"/Mikolov.txt")
+    # Utilisation de la distance maximale possible pour normaliser
+    normalized_distance = distance / max_length
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
+    # Calcul du pourcentage de ressemblance
+    percentage = (1 - normalized_distance) * 100
 
-    def Nasr(self):
-        titre = "MACAON An NLP Tool Suite for Processing Word Lattices" #TODO
-        Nom = "Nasr.pdf" #TODO
-        auteur = ("Alexis Nasr : alexis.nasr@lif.univ-mrs.fr\n"
-                  "Frédéric Béchet : frederic.bechet@lif.univ-mrs.fr\n"
-                  "Jean-François Rey : jean-francois.rey@lif.univ-mrs.fr\n"
-                  "Benoît Favre : benoit.favre@lif.univ-mrs.fr\n"
-                  "Joseph Le Roux : joseph.le.roux@lif.univ-mrs.fr") #TODO
-        abstract = "MACAON is a tool suite for standard NLP tasks" #TODO
+    return percentage
 
-        result = Extract.extract_information(self.path_d+"/Nasr.txt")
+if __name__ == "__main__":
+    folder_path = "/home/benjamin/Documents/L3/Semestre_2/Projet_de_developpement/pythonProject/Corpus_2022/analyse_pdf"
+    texts = compare_files(folder_path)
 
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
 
-    def Torres(self):
-        titre = "Summary Evaluation with and without References" #TODO
-        Nom = "Torres.pdf" #TODO
-        auteur = ("Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr\n"
-                  "Horacio Saggion : horacio.saggion@upf.edu\n"
-                  "Iria da Cunha : iria.dacunha@upf.edu\n"
-                  "Eric SanJuan : eric.sanjuan@univ-avignon.fr\n"
-                  "Patricia Velázquez-Morales : velazquez@yahoo.com") #TODO
-        abstract = "We study a new content-based method for" #TODO
-        
-        result = Extract.extract_information(self.path_d+"/Torres.txt")
-
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
-
-    def Torres_moreno1998(self):
-        titre = "Efficient Adaptive Learning for Classification Tasks with Binary Units" #TODO
-        Nom = "Torres-moreno1998.pdf" #TODO
-        auteur = ("J. Manuel Torres Moreno : Pas d'adresse mail\n"
-                  "Mirta B. Gordon : Pas d'adresse mail") #TODO
-        abstract = "This article presents a new incremental learning algorithm for classi-" #TODO
-
-        result = Extract.extract_information(self.path_d+"/Torres-moreno1998.txt")
-
-        dict2 = {"Nom du fichier pdf": Nom, "Titre": titre, "Auteurs": auteur, "Abstract": abstract}
-        self.assertEqual(result, dict2)
