@@ -38,6 +38,7 @@ class Parser:
         self.__text_first_page = ""
         self.__text_rest = ""
         self.__text_rest_lower = ""
+        self.__auteurs_deux_lignes = False
         self.__type_pdf = -1
         self.__type_mail = -1
         """
@@ -640,6 +641,7 @@ class Parser:
 
                 # Si on a beaucoup de mails → auteurs sur deux lignes
                 if len(self.__emails) >= 6:
+                    self.__auteurs_deux_lignes = True
                     self.__auteurs.append(auteurs[1].strip())
                 ######################################################################
             ######################################################################
@@ -708,8 +710,14 @@ class Parser:
             elif self.__type_pdf == 1:
                 first_new_line = section_auteurs.find("\n")
 
+                # Si auteurs sur deux lignes, on ressaute une ligne
+                if self.__auteurs_deux_lignes:
+                    first_new_line = section_auteurs[first_new_line + 1:].find("\n") + first_new_line
+                ######################################################################
+
                 # Si présence d'un @, on récupère la position du dernier \n
                 first_at = section_auteurs.find("@")
+                ######################################################################
 
                 if first_at != -1:
                     # Si le @ est précédé d'un \n, on refait une recherche d'un \n avant celui-ci
@@ -724,11 +732,6 @@ class Parser:
 
                 # Récupération de l'établissement
                 school = section_auteurs[first_new_line:second_new_line].strip()
-                ######################################################################
-
-                # Si présence d'un chiffre devant, on l'enlève
-                if school[0].isdigit() and not school[1].isdigit():
-                    school = school[1:]
                 ######################################################################
 
                 for key in self.__dico_nom_mail.keys():
@@ -788,7 +791,18 @@ class Parser:
                     value = value[:value.find("*")]
                 ######################################################################
 
-                self.__dico_nom_univ[key] = value.strip()
+                result = ""
+
+                for element in value.split("\n"):
+                    if len(element) > 1:
+                        # Si présence d'un chiffre devant, on l'enlève
+                        if element[0].isdigit() and not element[1].isdigit():
+                            element = element[1:]
+                        ######################################################################
+
+                        result = f"{result}\n{element}"
+
+                self.__dico_nom_univ[key] = result.strip()
             ######################################################################
 
     def _get_title(self, minimum_y: int = 650, maximum_y: int = 770) -> None:
@@ -814,9 +828,11 @@ class Parser:
             # Extraction des premières lignes
             page.extract_text(visitor_text=visitor_body)
 
+            word_to_avoid = ["letter", "communicated by", "article", "published", "/"]
+
             for elt in parties:
                 value = elt.lower().strip()
-                if "letter" not in value and "communicated by" not in value:
+                if not any([value.find(x) != -1 for x in word_to_avoid]) and len(value) > 4:
                     parties_tries.append(elt)
             ######################################################################
 
