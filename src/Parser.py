@@ -285,6 +285,12 @@ class Parser:
             emails[i] = emails[i].strip()
         ######################################################################
 
+        # Si le mail est trop petit(erreur) -> on l'enlève
+        for element in emails:
+            if len(element.split("@")[0]) < 2:
+                emails.remove(element)
+        ######################################################################
+
         return emails
 
     def __separate_authors(f):
@@ -298,7 +304,7 @@ class Parser:
         def wrapper(self):
             f(self)
 
-            separate_element = [",", " and "]
+            separate_element = [",", " and ", "1;2", "1", "2", "3"]
 
             # On regarde si on a des séparateurs dans les noms des auteurs
             if any(element in auteur for auteur in self.__auteurs for element in separate_element):
@@ -402,7 +408,7 @@ class Parser:
             ######################################################################
 
             # On enlève les espaces et string vide
-            for elt in ["", " ", "  "]:
+            for elt in ["", " ", "  ", ",", ";", ".", '', ' ', '  ', ',', ';', '.']:
                 if elt in self.__auteurs:
                     self.__auteurs.remove(elt)
             ######################################################################
@@ -609,7 +615,6 @@ class Parser:
                     self.__auteurs.append(auteur)
             ######################################################################
 
-            # print(self.__auteurs)
             # Si on a moins d'auteurs que de mails, il est probable que les noms soient sur une seule ligne
             if len(self.__auteurs) == 1 and len(self.__auteurs) < len(self.__emails):
                 if self.__type_mail != 2:
@@ -626,11 +631,17 @@ class Parser:
                     self.__type_pdf = 0
 
                 auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].split("\n")
+
                 for aut in auteurs:
                     if aut == "":
                         auteurs.remove(aut)
 
                 self.__auteurs.append(auteurs[0].strip())
+
+                # Si on a beaucoup de mails → auteurs sur deux lignes
+                if len(self.__emails) >= 6:
+                    self.__auteurs.append(auteurs[1].strip())
+                ######################################################################
             ######################################################################
 
     def _get_title(self, minimum_y: int = 650, maximum_y: int = 770) -> None:
