@@ -819,7 +819,7 @@ class Parser:
             parties = []
             parties_tries = []
 
-            def visitor_body(text, cm, tm, font_dict, font_size):
+            def visitor_body(text, _cm, tm, _font_dict, _font_size):
                 if text not in ["", " "] and text != "\n":
                     y = tm[5]
                     if minimum_y < y < maximum_y:
