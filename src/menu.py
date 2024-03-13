@@ -64,19 +64,24 @@ def menu_pdf(all_element_in_folder: list) -> list:
     # vérification que les éléments dans le dossier sont des pdf
     element_in_dir = [elt for elt in all_element_in_folder if len(elt) > 4 and elt[-4:] == ".pdf"]
     element_in_dir.append("TOUS LES ELEMENTS ")
+    ######################################################################
 
+    # Création de la fenêtre
     window(element_in_dir)
+    ######################################################################
 
     selected_pdfs = []
 
     # Si "TOUS LES ELEMENTS : " a été sélectionné, ajout de tous les fichiers PDF
     if output["TOUS LES ELEMENTS : "] != "":
         selected_pdfs = element_in_dir[:-2]
+    ######################################################################
 
     # Sinon, ajouter les fichiers PDF correspondant aux réponses
     else:
         for key, value in output.items():
             if key != "TOUS LES ELEMENTS : " and value != "":
                 selected_pdfs.append(key.strip(': '))
+    ######################################################################
 
     return selected_pdfs

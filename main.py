@@ -11,10 +11,11 @@ import io
 
 
 def my_process(parser_object: Parser, argument: str, name_file: str):
+    # noinspection PyBroadException
     try:
         parser_object.pdf_to_file(argument)
         print(f"Analyse effectué sur : {name_file}")
-
+        
     except Exception:
         print(f"Impossible d'analyser le pdf : {name_file}")
         print("Les causes possibles sont un mauvais encoder utilisé pour créer le pdf.\n")
@@ -31,6 +32,7 @@ if __name__ == '__main__':
         if len(sys.argv) == 4:
             choix = sys.argv[3]
 
+        # Sécurité
         if argv != "-t" and argv != "-x":
             raise ValueError("Erreur argument rentré")
 
@@ -39,15 +41,19 @@ if __name__ == '__main__':
 
         if choix != "--all" and choix != "":
             raise ValueError("Erreur argument numéro 3 ne peut avoir que --all")
+        ######################################################################
 
-        # Check si dossier ou fichier
+        # Vérifie si c'est un dossier
         if os.path.isdir(pathToFile):
+
             # Check si / à la fin
             if pathToFile[-1] != "/":
                 pathToFile += "/"
+            ######################################################################
 
             # Chemin du dossier de sortie
             nomDossier = pathToFile + "analyse_pdf/"
+            ######################################################################
 
             # Si existence du dossier → on le supprime
             if os.path.exists(nomDossier):
@@ -64,16 +70,20 @@ if __name__ == '__main__':
                             "bonne exécution du programme")
 
                         raise Exception(message)
-
-            # Création du dossier
-            os.makedirs(nomDossier)
-
-            liste_process = []
+            ######################################################################
 
             element_in_dir = os.listdir(pathToFile)
 
             if not any([elt for elt in element_in_dir if len(elt) > 4 and elt[-4:] == ".pdf"]):
                 raise Exception("Le dossier fourni est vide ou ne contient aucun pdf.")
+
+            # Création du dossier
+            os.makedirs(nomDossier)
+            ######################################################################
+
+            # liste des processus
+            liste_process = []
+            ######################################################################
 
             # Sauvegarde de la sortie standard et création d'une nouvelle
             old_stdout = sys.stdout
@@ -90,10 +100,12 @@ if __name__ == '__main__':
                 pdfs = menu_pdf(element_in_dir)
 
                 os.system("clear")
+            ######################################################################
 
             # Puis, on rebascule sur celle d'origine
             output = sys.stdout.getvalue()
             sys.stdout = old_stdout
+            ######################################################################
 
             if pdfs:
                 t1 = perf_counter()
@@ -111,6 +123,7 @@ if __name__ == '__main__':
                 t2 = perf_counter()
 
                 print(f"\nTemps d'exécution : {round(t2 - t1, 2)} secondes")
+        ######################################################################
 
         else:
             t1 = perf_counter()
@@ -137,6 +150,6 @@ if __name__ == '__main__':
             print("Impossible d'analyser ce pdf.")
             print("Les causes possibles sont un mauvais encoder utilisé pour créer le pdf.\n")
 
-        print("main.py -outputfile [/path/to/the/file.pdf, /path/to/the/dir/]")
+        print("main.py -outputfile [/path/to/the/file.pdf, /path/to/the/dir/] [--all]")
         print("outputfile : -t text")
         print("             -x xml")
