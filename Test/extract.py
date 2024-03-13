@@ -2,7 +2,7 @@ import fitz  # PyMuPDF
 import re
 import os
 import Levenshtein
-
+import affichage
 class TextComparer:
     def __init__(self, resAttendu_path):
         self.resAttendu_path = resAttendu_path
@@ -114,7 +114,7 @@ class TextComparer:
 
                     if found_text is not None:
                         percentage = self.levenshtein_distance_percentage(content, found_text)
-                        print(f"Pourcentage de ressemblance avec le resultat attendu: {percentage:.2f}%")
+                        affichage.afficher_barre_pourcentage(percentage) #print affichage
                     else:
                         print(f"Ignorer {text_file} car le mot-clé n'a pas été trouvé.")
                     print()
