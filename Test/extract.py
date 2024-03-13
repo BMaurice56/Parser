@@ -146,3 +146,9 @@ class TextComparer:
         percentage = (1 - normalized_distance) * 100
 
         return percentage
+
+if __name__ == "__main__":
+    resAttendu_path = "/home/benjamin/PycharmProjects/Parser/Test/solution.txt"
+    comparer = TextComparer(resAttendu_path)
+    folder_path = "/home/benjamin/PycharmProjects/Parser/Corpus_2022/analyse_pdf"
+    comparer.compare_files(folder_path)
