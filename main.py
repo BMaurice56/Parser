@@ -72,8 +72,8 @@ if __name__ == '__main__':
 
             element_in_dir = os.listdir(pathToFile)
 
-            if not element_in_dir:
-                raise Exception("Le dossier fourni est vide.")
+            if not any([elt for elt in element_in_dir if len(elt) > 4 and elt[-4:] == ".pdf"]):
+                raise Exception("Le dossier fourni est vide ou ne contient aucun pdf.")
 
             # Sauvegarde de la sortie standard et création d'une nouvelle
             old_stdout = sys.stdout

@@ -1,131 +1,148 @@
-import os
+import fitz  # PyMuPDF
 import re
+import os
+import Levenshtein
 
-class Extract :
-    def read_text_file(file_path):
+class TextComparer:
+    def __init__(self, resAttendu_path):
+        self.resAttendu_path = resAttendu_path
+
+    def read_text_files_in_directory(self, directory_path):
         """
-            Lit le contenu d'un fichier texte.
+        Méthode qui permet d'extraire les textes du dossier analyse.pdf.
 
-            Paramètre :
-            - file_path (str) : Le chemin d'accès au fichier texte.
+        Args:
+        - directory_path (str): Chemin du répertoire contenant les fichiers .txt creer par le parser.
 
-            Retourne :
-            - str : Le contenu du fichier texte, ou un message d'erreur si une exception se produit.
+        Returns:
+        - dict: Dictionnaire contenant le contenu de chaque fichier texte.
         """
         try:
-            with open(file_path, 'r') as file:
-                content = file.read()
-            return content
+            text_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
+            text_contents = {}
+
+            for text_file in text_files:
+                file_path = os.path.join(directory_path, text_file)
+
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    text_contents[text_file] = content
+
+            return text_contents
         except Exception as e:
-            return f"Une erreur s'est produite lors de la lecture du fichier : {str(e)}"
+            return f"Erreur lors de la lecture des fichiers : {e}"
 
-    def getList(path: str):
+    def extract_text_from_pdf(self, pdf_filename):
         """
-            Obtient une liste de fichiers et répertoires dans le chemin spécifié.
+        Méthode qui extrait le texte du fichier où se situe les resultats attendus.
 
-            Paramètre :
-            - path (str) : Le chemin du répertoire.
+        Args:
+        - pdf_filename (str): Chemin du fichier contenant les resultats attendus.
 
-            Retourne :
-            - list : Une liste de fichiers et répertoires dans le chemin spécifié.
+        Returns:
+        - str: Texte extrait du fichier contenant les résultats attendus.
         """
-        return os.listdir(path)
+        try:
+            doc = fitz.open(pdf_filename)
+            text = ""
 
+            for page_num in range(doc.page_count):
+                page = doc[page_num]
+                text += page.get_text()
 
-    def extract_information(path):
+            return text
+        except Exception as e:
+            return f"Erreur lors de l'extraction du texte : {e}"
+
+    def find_and_display_keyword(self, pdf_filename, keyword):
         """
-            Extrait des informations d'un fichier texte, incluant le nom du fichier PDF, le titre, les auteurs et l'abstract.
+        Méthode qui trouve et affiche un extrait de texte contenant un mot-clé dans le fichier contenant les resultats attendus.
 
-            Paramètre :
-            - path (str) : Le chemin du fichier texte.
+        Args:
+        - pdf_filename (str): Chemin du fichier contenant les resultats attendus.
+        - keyword (str): Mot-clé à rechercher.
 
-            Retourne :
-            - dict : Un dictionnaire contenant les informations extraites.
+        Returns:
+        - str: EXtraction du resultat attendus correspondant au mot-cle entre en parametre.
         """
-        text = Extract.read_text_file(path)
+        extracted_text = self.extract_text_from_pdf(pdf_filename)
 
-        result = {}
+        if keyword.lower() in extracted_text.lower():
+            keyword_start = extracted_text.lower().find(keyword.lower())
+            next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", extracted_text)
 
-        # Extraction du nom du fichier pdf
-        file_match = re.search(r'Nom du fichier pdf : (.+)', text)
-        if file_match:
-            result['Nom du fichier pdf'] = file_match.group(1).strip()
-
-        # Extraction du titre
-        title_match = re.search(r'Titre :\s+(.+)', text)
-        if title_match:
-            result['Titre'] = title_match.group(1).strip()
-
-        # Extraction des auteurs
-        i_t = text.find("Auteurs :") + 10
-
-        if i_t >= 0:
-            auteurs_t = ""
-            while i_t < len(text) - 1 and text[i_t:i_t + 2] != '\n\n':
-                auteurs_t += text[i_t]
-                i_t += 1
-
-            words = auteurs_t.split('\n')
-            filtered_words = [word.strip() for word in words if word.strip() != '']
-            auteurs = ' '.join(filtered_words)
-            result['Auteurs'] = auteurs
-
-
-
-
-        # Extraction de l'abstract
-        abstract_match = re.search(r'Abstract :\s+(.+)', text)
-        if abstract_match:
-            result['Abstract'] = abstract_match.group(1).strip()
-
-        return result
-
-    def isTextFiles(folder_path: str) -> bool:
-        """
-            Vérifie si le dossier contient des fichiers texte ('.txt').
-
-            Paramètre :
-            - folder_path (str) : Chemin du dossier à vérifier.
-
-            Retourne :
-            - Bool : 'True' si des fichiers texte sont présents, 'False' sinon.
-        """
-        # Vérifie si le chemin correspond à un dossier existant
-        if not os.path.isdir(folder_path):
-            raise ValueError("Le chemin spécifié n'est pas un dossier valide.")
-
-        # Liste les fichiers dans le dossier
-        files = os.listdir(folder_path)
-
-        # Vérifie si au moins un fichier a l'extension .txt
-        for file in files:
-            if file.endswith(".txt"):
-                return True
-
-        return False
-
-    def calculate_precision(file_path, extracted_info, expected_info) -> float:
-        """
-            Calcule la précision de l'analyse et l'extraction des données.
-
-            Paramètres :
-            - file_path (str) : Le chemin du fichier analysé.
-            - extracted_info (dict) : Les informations extraites.
-            - expected_info (dict) : Les informations attendues.
-
-            Retourne :
-            - float : La précision
-        """
-        analyse_correcte = 0
-        analyse_incorrecte = 0
-
-        for k in expected_info:
-            if (k in extracted_info[k]) and (extracted_info[k] == expected_info[k]):
-                analyse_correcte += 1
+            if next_filename_match:
+                snippet_end = keyword_start + next_filename_match.end()
             else:
-                analyse_incorrecte += 1
+                snippet_end = len(extracted_text)
 
-        if analyse_correcte + analyse_incorrecte == 0:
-            return 0
+            next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", extracted_text[snippet_end:])
 
-        return analyse_correcte / (analyse_correcte + analyse_incorrecte)
+            if next_filename_match:
+                snippet_end += next_filename_match.start()
+            else:
+                snippet_end = len(extracted_text)
+
+            snippet_start = max(0, keyword_start)
+
+            return extracted_text[snippet_start:snippet_end]
+        else:
+            print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {pdf_filename}.")
+
+    def compare_files(self, directory_path):
+        """
+        Méthode qui compare les fichiers du resultat attendu avec celui du resultat obtenu.
+
+        Args:
+        - directory_path (str): Chemin du répertoire contenant les fichiers .txt creer par le parser.
+
+        Returns:
+        - None
+        """
+        try:
+            text_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
+
+            for text_file in text_files:
+                print(f"Analyse du fichier : {text_file}")
+                file_path = os.path.join(directory_path, text_file)
+
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    keyword = file.readline().strip()
+                    content = file.read()
+
+                    found_text = self.find_and_display_keyword(self.resAttendu_path, keyword)
+
+                    if found_text is not None:
+                        percentage = self.levenshtein_distance_percentage(content, found_text)
+                        print(f"Pourcentage de ressemblance avec le resultat attendu: {percentage:.2f}%")
+                    else:
+                        print(f"Ignorer {text_file} car le mot-clé n'a pas été trouvé.")
+                    print()
+
+        except Exception as e:
+            print(f"Erreur lors de la lecture des fichiers : {e}")
+
+    def levenshtein_distance_percentage(self, s1, s2):
+        """
+        Méthode qui traduit la distance de Levenshtein en pourcentage de ressemblance.
+
+        Args:
+        - s1 (str): Première chaîne de caractères.
+        - s2 (str): Deuxième chaîne de caractères.
+
+        Returns:
+        - float: Pourcentage de ressemblance entre les deux chaînes.
+        """
+        if len(s1) < len(s2):
+            return self.levenshtein_distance_percentage(s2, s1)
+
+        max_length = max(len(s1), len(s2))
+
+        if max_length == 0:
+            return 100
+
+        distance = Levenshtein.distance(s1, s2)
+        normalized_distance = distance / max_length
+        percentage = (1 - normalized_distance) * 100
+
+        return percentage
