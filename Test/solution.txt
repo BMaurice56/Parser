@@ -1,15 +1,15 @@
 Nom du fichier pdf : Boudin-Torres-2006.pdf
 
-Titre:
+Titre :
     A Scalable MMR Approach to Sentence Scoring
 for Multi-Document Update Summarization
 
-Auteurs:
+Auteurs :
+    Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr
     Florian Boudin : florian.boudin@univ-avignon.fr
-    Marc El-Bèze : juan-manuel.torres@univ-avignon.fr
-    Juan-Manuel Torres-Moreno : marc.elbeze@univ-avignon.fr
+    Marc El-Bèze : marc.elbeze@univ-avignon.fr
 
-Abstract:
+Abstract :
     We present S MMR , a scalable sentence
 scoring method for query-oriented up-
 date summarization. Sentences are scored
@@ -21,7 +21,7 @@ is prioritized over query-relevance. We
 show that S MMR achieves promising re-
 sults on the DUC 2007 update corpus.
 
-Bibliographie:
+Bibliographie :
     Boudin, F. and J.M. Torres-Moreno. 2007. A Co-
 sine Maximization-Minimization approach for User-
 Oriented Multi-Document Update Summarization.
@@ -79,15 +79,15 @@ cept links. In Document Understanding Conference
 
 Nom du fichier pdf : Das_Martins.pdf
 
-Titre:
+Titre :
     A Survey on Automatic Text Summarization
 
-Auteurs:
+Auteurs :
     Dipanjan Das : dipanjan@cs.cmu.edu
     André F.T. Martins : afm@cs.cmu.edu
 
 
-Abstract:
+Abstract :
     The increasing availability of online information has necessitated intensive
 research in the area of automatic text summarization within the Natural Lan-
 guage Processing (NLP) community. Over the past half a century, the prob-
@@ -100,7 +100,7 @@ details of the summarization problem are also discussed. Special attention is
 devoted to automatic evaluation of summarization systems, as future research
 on summarization is strongly dependent on progress in this area.
 
-Bibliographie:
+Bibliographie :
     Amari, S.-I. and Nagaoka, H. (2001). Methods of Information Geometry (Transla-
 tions of Mathematical Monographs) . Oxford University Press. [20]
 Aone, C., Okurowski, M. E., Gorlinsky, J., and Larsen, B. (1999). A trainable
@@ -229,15 +229,15 @@ InProceedings of SIGIR '99 , pages 315{316, New York, NY, USA. [18]
 
 Nom du fichier pdf : Gonzalez_2018_Wisebe.pdf
 
-Titre:
+Titre :
     WiSeBE: Window-Based Sentence
 Boundary Evaluation
 
-Auteur:
+Auteurs :
     Carlos-Emiliano González-Gallardo : carlos-emiliano.gonzalez-gallardo@alumni.univ-avignon.fr
     Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr
 
-Abstract:
+Abstract :
     Sentence Boundary Detection (SBD) has been a major
 research topic since Automatic Speech Recognition transcripts have been
 used for further Natural Language Processing tasks like Part of SpeechTagging, Question Answering or Automatic Summarization. But what
@@ -250,7 +250,7 @@ ate and compare the performance of diﬀerent SBD systems over a setof Youtube t
 ble evaluation gives an understanding of how WiSeBE is a more reliable
 metric for the SBD task.
 
-Bibliographie:
+Bibliographie :
     1. Bohac, M., Blavka, K., Kucharova, M., Skodova, S.: Post-processing of the recog-
 nized speech for web presentation of large audio archive. In: 2012 35th International
 Conference on Telecommunications and Signal Processing (TSP), pp. 441–445.IEEE (2012)
@@ -347,15 +347,15 @@ doi.org/10.1007/978-1-4471-5779-3
 
 Nom du fichier pdf : Iria_Juan-Manuel_Gerardo.pdf
 
-Titre:
+Titre :
     On the Development of the RST Spanish Treebank
 
-Auteur:
+Auteurs :
     Iria da Cunha : iria.dacunha@upf.edu
     Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr
     Gerardo Sierra : gsierram@iingen.unam.mx
 
-Abstract:
+Abstract :
     In this article we present the RST Spanish
 Treebank, the first corpus annotated with
 rhetorical relations for this language. We
@@ -367,7 +367,7 @@ show the interface that we have developed
 to carry out searches over the corpus’
 annotated texts.
 
-Bibliographie:
+Bibliographie :
 
 Ron Artstein, and Massimo Poesio. 2008. Survey
 Article: Inter-Coder Agreement for Computational
@@ -516,14 +516,14 @@ Evaluation (LREC'10).
 
 Nom du fichier pdf : jing-cutepaste.pdf
 
-Titre:
+Titre :
     Cut and Paste Based Text Summarization
 
-Auteur:
+Auteurs :
     Hongyan Jing : hjing@cs.columbia.edu
     Kathleen R. McKeown : kathy@cs.columbia.edu
 
-Abstract:
+Abstract :
     We present a cut and paste based text summa-
 rizer, which uses operations derived from an anal-
 ysis of human written abstracts. The summarizer
@@ -536,7 +536,7 @@ a summary originate in the original document, pro-
 ducing an aligned corpus of summaries and articles
 which we used to develop the summarizer.
 
-Bibliographie:
+Bibliographie :
 
 ANSI. 1997. Guidelines for abstracts. Technical Re-
 port Z39.14-1997, NISO Press, Bethesda, Mary-
@@ -601,16 +601,16 @@ ory, 13:260-269.
 
 Nom du fichier pdf : kessler94715.pdf
 
-Titre:
+Titre :
     Extraction of terminology in the ﬁeld of
 construction
 
-Auteur:
+Auteurs :
     Rémy Kessler : remy.kessler@univ-ubs.fr
     Nicolas Béchet : nicolas.bechet@irisa.fr
     Giuseppe Berio : giuseppe.berio@univ-ubs.fr
 
-Abstract:
+Abstract :
     We describe a corpus analysis method to extract
 terminology from a collection of technical speciﬁcations in the
 ﬁeld of construction. Using statistics and word n-grams analysis,
@@ -619,7 +619,7 @@ pruning steps with linguistic patterns and internet queries to
 improve the quality of the ﬁnal terminology. Results are evaluated
 by using a manual evaluation carried out by 6 experts in the ﬁeld.
 
-Bibliographie:
+Bibliographie :
     [1] S. Meignier and T. Merlin, “Lium spkdiarization: an open source toolkit
 for diarization,” in in CMU SPUD Workshop , 2010.
 [2] P. Pauwels and W. Terkaj, “Express to owl for construction industry:
@@ -706,17 +706,17 @@ on Semantic Evaluation . Association for Computational Linguistics,
 
 Nom du fichier pdf : kesslerMETICS-ICDIM2019.PDF
 
-Titre:
+Titre :
     A word embedding approach to explore a collection
 of discussions of people in psychological distress
 
-Auteur:
+Auteurs :
     Rémy Kessler : remy.kessler@univ-ubs.fr
     Nicolas Béchet : nicolas.bechet@irisa.fr
     Gudrun Ledegen : gudrun.ledegen@univ-rennes2.fr
     Frederic Pugnière-Saavedra : frederic.pugniere-saavedra@univ-ubs.fr
 
-Abstract:
+Abstract :
     In order to better adapt to society, an association
 has developed a web chat application that allows anyone to
 express and share their concerns and anguishes. Several thousand
@@ -729,7 +729,7 @@ standard algorithm of the literature on a labeled corpus and
 obtain very good results. An interpretation of the obtained
 clusters collection conﬁrms the interest of the method.
 
-Bibliographie:
+Bibliographie :
     [1] D. Fassin, “Et la souffrance devint sociale,” in Critique . 680(1), 2004,
 pp. 16–29.
 [2] ——, “Souffrir par le social, gouverner par l’écoute,” in Politix . 73(1),
@@ -788,17 +788,17 @@ and A. Culotta, Eds. 23, 2010, pp. 856–864.
 
 Nom du fichier pdf : mikheev J02-3002.pdf
 
-Titre:
+Titre :
     Periods, Capitalized Words, etc.
 
-Auteur:
+Auteurs :
     Andrei Mikheev : mikheev@cogsci.ed.ac.uk
 
-Abstract:
+Abstract :
     In this article we present an approach for tackling three important aspects of text normaliza-
 tion: sentence boundary disambiguation, disambiguation of capitalized words in positions wherecapitalization is expected, and identiﬁcation of abbreviations. As opposed to the two dominanttechniques of computing statistics or writing specialized grammars, our document-centered ap-proach works by considering suggestive local contexts and repetitions of individual words withina document. This approach proved to be robust to domain shifts and new lexica and produced per-formance on the level with the highest reported results. When incorporated into a part-of-speechtagger, it helped reduce the error rate signiﬁcantly on capitalized words and sentence boundaries.We also investigated the portability to other languages and obtained encouraging results.
 
-Bibliographie:
+Bibliographie :
     Aberdeen, John S., John D. Burger, David S.
 Day, Lynette Hirschman, PatriciaRobinson, and Marc Vilain. 1995. “Mitre:Description of the alembic system usedfor MUC-6.” In Proceedings of the Sixth
 Message Understanding Conference (MUC-6) ,
@@ -920,17 +920,17 @@ Association for Computational Linguistics(ACL’95) , pages 189–196.
 
 Nom du fichier pdf : Mikolov.pdf
 
-Titre:
+Titre :
     Efﬁcient Estimation of Word Representations in
 Vector Space
 
-Auteur:
+Auteurs :
     Tomas Mikolov : tmikolov@google.com
     Kai Chen : kaichen@google.com
     Greg Corrado : gcorrado@google.com
     Jeffrey Dean : jeff@google.com
 
-Abstract:
+Abstract :
     We propose two novel model architectures for computing continuous vector repre-
 sentations of words from very large data sets. The quality of these representations
 is measured in a word similarity task, and the results are compared to the previ-
@@ -940,7 +940,7 @@ takes less than a day to learn high quality word vectors from a 1.6 billion word
 data set. Furthermore, we show that these vectors provide state-of-the-art perfor-
 mance on our test set for measuring syntactic and semantic word similarities.
 
-Bibliographie:
+Bibliographie :
     [1] Y . Bengio, R. Ducharme, P. Vincent. A neural probabilistic language model. Journal of Ma-
 chine Learning Research, 3:1137-1155, 2003.
 [2] Y . Bengio, Y . LeCun. Scaling learning algorithms towards AI. In: Large-Scale Kernel Ma-
@@ -1016,18 +1016,18 @@ Research Technical Report MSR-TR-2011-129, 2011.
 
 Nom du fichier pdf : Nasr.pdf
 
-Titre:
+Titre :
     MACAON
 An NLP Tool Suite for Processing Word Lattices
 
-Auteur:
+Auteurs :
     Alexis Nasr : alexis.nasr@lif.univ-mrs.fr
     Frédéric Béchet : frederic.bechet@lif.univ-mrs.fr
     Jean-François Rey : jean-francois.rey@lif.univ-mrs.fr
     Benoı̂t Favre : benoit.favre@lif.univ-mrs.fr
     Joseph Le Roux : joseph.le.roux@lif.univ-mrs.fr
 
-Abstract:
+Abstract :
     MACAON is a tool suite for standard NLP tasks
 developed for French. MACAON has been de-
 signed to process both human-produced text
@@ -1041,7 +1041,7 @@ tocols with external tools are easily deﬁnable.
 MACAON is a fast, modular and open tool, dis-
 tributed under GNU Public License.
 
-Bibliographie:
+Bibliographie :
     Anne Abeillé, Lionel Clément, and François Toussenel.
 2003. Building a treebank for french. In Anne
 Abeillé, editor, Treebanks . Kluwer, Dordrecht.
@@ -1095,18 +1095,18 @@ Research Laboratory, Ltd , 2:2–44.91
 
 Nom du fichier pdf : Torres.pdf
 
-Titre:
+Titre :
     Summary Evaluation
 with and without References
 
-Auteur:
+Auteurs :
     Juan-Manuel Torres-Moreno : juan-manuel.torres@univ-avignon.fr
     Horacio Saggion : horacio.saggion@upf.edu
     Iria da Cunha : iria.dacunha@upf.edu
     Eric SanJuan : eric.sanjuan@univ-avignon.fr
     Patricia Velázquez-Morales : patricia velazquez@yahoo.com
 
-Abstract:
+Abstract :
     We study a new content-based method for
 the evaluation of text summarization systems without
 human models which is used to produce system rankings.
@@ -1121,7 +1121,7 @@ generic multi-document summarization in English and French,
 focus-based multi-document summarization in English and
 generic single-document summarization in French and Spanish.
 
-Bibliographie:
+Bibliographie :
     [1] I. Mani, G. Klein, D. House, L. Hirschman, T. Firmin, and
 B. Sundheim, “Summac: a text summarization evaluation,” Natural
 Language Engineering , vol. 8, no. 1, pp. 43–68, 2002.
@@ -1210,19 +1210,19 @@ AAAI Press; MIT Press; 1999, 2000, pp. 703–710.
 
 Nom du fichier pdf : Torres-moreno1998.pdf
 
-Titre:
+Titre :
     Efﬁcient Adaptive Learning for Classiﬁcation Tasks with
 Binary Units
 
-Auteur:
+Auteurs :
     J. Manuel Torres Moreno : Pas d'adresse mail
     Mirta B. Gordon : Pas d'adresse mail
 
-Abstract:
+Abstract :
     This article presents a new incremental learning algorithm for classi-
 ﬁcation tasks, called NetLines, which is well adapted for both binaryand real-valued input patterns. It generates small, compact feedforwardneural networks with one hidden layer of binary units and binary outputunits. A convergence theorem ensures that solutions with a ﬁnite num-ber of hidden units exist for both binary and real-valued input patterns.An implementation for problems with more than two classes, validfor any binary classiﬁer, is proposed. The generalization error andthe size of the resulting networks are compared to the best publishedresults on well-known classiﬁcation benchmarks. Early stopping is shownto decrease overﬁtting, without improving the generalization perfor-mance.
 
-Bibliographie:
+Bibliographie :
     Alpaydin, E. A. I. (1990). Neural models of supervised and unsupervised learning. Un-
 published doctoral dissertation, Ecole Polytechnique Fédérale de Lausanne,
 Switzerland.
