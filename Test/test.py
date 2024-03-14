@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     os.system(f"python3 {path_dir}/main.py -t {path_dir}/Corpus_2022/ --all")
 
-    resAttendu_path = f"{path}/solution.txt"
+    resAttendu_path = f"{path}/solutionTxt.txt"
     folder_path = f"{path_dir}/Corpus_2022/analyse_pdf/"
 
     comparer = extract.TextComparer(resAttendu_path)
