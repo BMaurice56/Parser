@@ -9,9 +9,11 @@ def afficher_barre_pourcentage(pourcentage):
     pourcentage_entier = int(pourcentage)
 
     # Choisissez la couleur en fonction du pourcentage
-    if pourcentage >= 90:
+    if pourcentage >= 95:
         couleur = Fore.GREEN
-    elif pourcentage >= 75:
+    elif pourcentage >= 85:
+        couleur = Fore.LIGHTYELLOW_EX
+    elif pourcentage >= 70:
         couleur = Fore.YELLOW
     else:
         couleur = Fore.RED
