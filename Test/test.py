@@ -1,6 +1,5 @@
 from Test import extract
 import pathlib
-import sys
 import os
 
 if __name__ == "__main__":
