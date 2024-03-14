@@ -16,6 +16,7 @@ pour installer les modules nécessaires :
 $ pip install --upgrade PyPDF2==3.0.1
 $ pip install --upgrade python-Levenshtein==0.25.0
 $ pip install --upgrade PyTermGUI==7.7.1
+$ pip install --upgrade colorama==0.4.6
 ```
 
 Et enfin réaliser la commande suivante :
