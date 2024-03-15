@@ -387,7 +387,7 @@ class Parser:
                     if len(liste_noms) > taille_mails:
                         difference = len(liste_noms) - taille_mails
 
-                        for i in range(difference):
+                        for _ in range(difference):
                             value = liste_noms.pop()
 
                             liste_noms[-1] = liste_noms[-1] + " " + value
