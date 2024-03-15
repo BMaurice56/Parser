@@ -31,7 +31,7 @@ class TextComparer:
 
             return text_contents
         except Exception as e:
-            return f"Erreur lors de la lecture des fichiers : {e}"
+            raise Exception(f"Erreur lors de la lecture des fichiers:{e}");
 
     def find_and_display_keyword(self, txt_filename, keyword):
         """
@@ -99,7 +99,7 @@ class TextComparer:
                     print()
 
         except Exception as e:
-            print(f"Erreur lors de la lecture des fichiers : {e}")
+            raise Exception(f"Erreur lors de la lecture des fichiers : {e}")
 
     def levenshtein_distance_percentage(self, s1, s2):
         """
