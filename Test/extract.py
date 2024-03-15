@@ -1,4 +1,3 @@
-import fitz  # PyMuPDF
 import re
 import os
 import Levenshtein
@@ -6,6 +5,8 @@ import affichage
 class TextComparer:
     def __init__(self, resAttendu_path):
         self.resAttendu_path = resAttendu_path
+        with open(self.resAttendu_path, "r") as f:
+            self.text = f.read()
 
     def read_text_files_in_directory(self, directory_path):
         """
@@ -32,40 +33,18 @@ class TextComparer:
         except Exception as e:
             return f"Erreur lors de la lecture des fichiers : {e}"
 
-    def extract_text_from_pdf(self, pdf_filename):
-        """
-        Méthode qui extrait le texte du fichier où se situe les resultats attendus.
-
-        Args:
-        - pdf_filename (str): Chemin du fichier contenant les resultats attendus.
-
-        Returns:
-        - str: Texte extrait du fichier contenant les résultats attendus.
-        """
-        try:
-            doc = fitz.open(pdf_filename)
-            text = ""
-
-            for page_num in range(doc.page_count):
-                page = doc[page_num]
-                text += page.get_text()
-
-            return text
-        except Exception as e:
-            return f"Erreur lors de l'extraction du texte : {e}"
-
-    def find_and_display_keyword(self, pdf_filename, keyword):
+    def find_and_display_keyword(self, txt_filename, keyword):
         """
         Méthode qui trouve et affiche un extrait de texte contenant un mot-clé dans le fichier contenant les resultats attendus.
 
         Args:
-        - pdf_filename (str): Chemin du fichier contenant les resultats attendus.
+        - txt_filename (str): Chemin du fichier contenant les resultats attendus.
         - keyword (str): Mot-clé à rechercher.
 
         Returns:
         - str: EXtraction du resultat attendus correspondant au mot-cle entre en parametre.
         """
-        extracted_text = self.extract_text_from_pdf(pdf_filename)
+        extracted_text = self.text
 
         if keyword.lower() in extracted_text.lower():
             keyword_start = extracted_text.lower().find(keyword.lower())
@@ -87,7 +66,7 @@ class TextComparer:
 
             return extracted_text[snippet_start:snippet_end]
         else:
-            print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {pdf_filename}.")
+            print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {txt_filename}.")
 
     def compare_files(self, directory_path):
         """
