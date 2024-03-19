@@ -9,13 +9,14 @@ class TextComparer:
     -Test si le contenu des txt créé par la Parser.py sont corrects
     """
 
-    def __init__(self, resAttendu_path):
-        self.resAttendu_path = resAttendu_path
-        with open(self.resAttendu_path, "r") as f:
+    def __init__(self, res_attendu_path: str):
+        self.res_attendu_path = res_attendu_path
+
+        with open(self.res_attendu_path, "r") as f:
             self.text = f.read()
 
     @staticmethod
-    def read_text_files_in_directory(directory_path):
+    def read_text_files_in_directory(directory_path: str) -> dict:
         """
         Méthode qui permet d'extraire les textes du dossier analyse.pdf.
 
@@ -27,26 +28,25 @@ class TextComparer:
         """
         try:
             # Ouvre un fichier contenu dans analyse_pdf que s'il est au format txt
-            text_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
-            # variable qui va servir de dictionnaire
-            text_contents = {}
+            txt_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
 
-            for text_file in text_files:
-                # Prend un fichier txt qui se trouve dans analyse_pdf
-                file_path = os.path.join(directory_path, text_file)
+            # Dictionnaire nom du fichier - contenu
+            txt_contents = {}
+
+            for txt_file in txt_files:
+                # Chemin du fichier txt en cours
+                file_path = os.path.join(directory_path, txt_file)
 
                 # Ouvre le txt sélectionné
                 with open(file_path, 'r', encoding='utf-8') as file:
-                    # Lit le contenu du txt
-                    content = file.read()
-                    # Ajoute le txt au dictionnaire qui correspond au txt sélectionné
-                    text_contents[text_file] = content
+                    txt_contents[txt_file] = file.read()
 
-            return text_contents
+            return txt_contents
+
         except Exception as e:
             raise Exception(f"Erreur lors de la lecture des fichiers:{e}")
 
-    def find_and_display_keyword(self, txt_filename, keyword):
+    def extract_text_related_to_pdf(self, txt_filename: str, keyword: str) -> str:
         """
         Méthode qui trouve et affiche un extrait de texte contenant un mot-clé dans le fichier
         contenant les résultats attendus.
@@ -58,42 +58,40 @@ class TextComparer:
         Returns :
         - str : Extraction du résultat attendue correspondant au mot cle entre en paramètre.
         """
-        # Text des solutions attendues
-        extracted_text = self.text
+        # Vérifie si la clef est présente dans le texte
+        if keyword.lower() in self.text.lower():
+            # Position du mot clef dans le texte
+            keyword_start = self.text.lower().find(keyword.lower())
 
-        # Met les caractères de cle et le text des solutions attendues en minuscule et vérifie si la cle est presente
-        # dans le text des solutions attendues
-        if keyword.lower() in extracted_text.lower():
-            # Indique à combien de caractères se trouve le début du mot clé dans le txt des solutions attendues
-            keyword_start = extracted_text.lower().find(keyword.lower())
             # Trouve l'occurrence qui correspond au premier nom de fichier présent dans le txt des solutions attendues
-            next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", extracted_text)
+            next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", self.text)
 
             if next_filename_match:
                 # Indique à combien de caractères se trouve la fin du mot cle dans le txt des solutions attendues
                 snippet_end = keyword_start + next_filename_match.end()
             else:
-                snippet_end = len(extracted_text)
+                snippet_end = len(self.text)
 
             # Trouve le prochain nom de fichier, en part du mot clé sélectionné dans le txt des solutions attendues
-            next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", extracted_text[snippet_end:])
+            next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", self.text[snippet_end:])
 
             if next_filename_match:
                 # Indique à combien de caractères se trouve le prochain nom de fichier dans le txt des solutions
                 # attendues
                 snippet_end += next_filename_match.start()
             else:
-                snippet_end = len(extracted_text)
+                snippet_end = len(self.text)
 
             # Prend le max entre 0 et la valeur du début du mot clé
             snippet_start = max(0, keyword_start)
 
             # Retourne le text qui se trouve entre le mot clé et la prochaine nom de fichier
-            return extracted_text[snippet_start:snippet_end]
+            return self.text[snippet_start:snippet_end]
+
         else:
             print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {txt_filename}.")
 
-    def compare_files(self, directory_path):
+    def compare_files(self, directory_path: str) -> None:
         """
         Méthode qui compare les fichiers du résultat attendu avec celui du résultat obtenu.
 
@@ -105,37 +103,35 @@ class TextComparer:
         """
         try:
             # Ouvre un fichier contenu dans analyse_pdf que s'il est au format txt
-            text_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
+            txt_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
 
-            for text_file in text_files:
-                print(f"Analyse du fichier : {text_file}")
-                # Prend un fichier txt qui se trouve dans analyse_pdf
-                file_path = os.path.join(directory_path, text_file)
+            for txt_file in txt_files:
+                print(f"Analyse du fichier : {txt_file}")
+                # Chemin du fichier
+                file_path = os.path.join(directory_path, txt_file)
 
                 # Ouvre le fichier sélectionné
                 with open(file_path, 'r', encoding='utf-8') as file:
-                    # Prend le titre du fichier
-                    keyword = file.readline().strip()
-                    # Contenu du fichier sélectionné
-                    content = file.read()
+                    # Titre du fichier
+                    title = file.readline().strip()
 
                     # Trouve le texte dans le txt des solutions attendues qui correspond au titre du fichier sélectionné
                     # dans analyse_pdf
-                    found_text = self.find_and_display_keyword(self.resAttendu_path, keyword)
+                    found_text = self.extract_text_related_to_pdf(self.res_attendu_path, title)
 
                     if found_text is not None:
                         # Appelle de la methode qui retourne un pourcentage qui correspond à la distance de levenshtein
-                        percentage = self.levenshtein_distance_percentage(content, found_text)
+                        percentage = self.levenshtein_distance_percentage(file.read(), found_text)
                         # Affiche le pourcentage
                         affichage.afficher_barre_pourcentage(percentage)
                     else:
-                        print(f"Ignorer {text_file} car le mot-clé n'a pas été trouvé.")
+                        print(f"Ignorer {txt_file} car le mot-clé n'a pas été trouvé.")
                     print()
 
         except Exception as e:
             raise Exception(f"Erreur lors de la lecture des fichiers : {e}")
 
-    def levenshtein_distance_percentage(self, s1, s2):
+    def levenshtein_distance_percentage(self, s1: str, s2: str) -> float:
         """
         Méthode qui traduit la distance de Levenshtein en pourcentage de ressemblance.
 
@@ -158,8 +154,10 @@ class TextComparer:
 
         # Appelle de la distance de Levenshtein
         distance = Levenshtein.distance(s1, s2)
+
         # Normalise la distance en la divisant par la taille maximum sélectionnée
         normalized_distance = distance / max_length
+
         # Change la distance en pourcentage
         percentage = (1 - normalized_distance) * 100
 
