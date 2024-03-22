@@ -1,0 +1,12 @@
+Amélioration : (3 tâches)
+
+- Restructuration du code
+- Restructuration des tests
+- Ajout d’articles scientifiques à notre Corpus
+
+Rendu et artéfacts : (3 tâches)
+
+- Rendre le programme sur le Moodle
+
+- Faire le tableau Excel et le détails des tâches du Sprint 4 - Partie 2
+- Faire le rapport de la deuxième partie du Sprint 4
