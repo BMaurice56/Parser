@@ -1,7 +1,8 @@
-Amélioration : (3 tâches)
+Amélioration : (4 tâches)
 
-- Restructuration du code
+- Amélioration du code
 - Restructuration des tests
+- Aspect visuel des tests dans le terminal
 - Ajout d’articles scientifiques à notre Corpus
 
 Rendu et artéfacts : (3 tâches)
