@@ -1,4 +1,4 @@
-from Test import extract
+from extract import TextComparer
 import pathlib
 import sys
 import os
@@ -26,5 +26,5 @@ if __name__ == "__main__":
 
     os.system(f"python3 {path_paser}/main.py {argv} {path_paser}/Corpus_2022/ --all")
 
-    comparer = extract.TextComparer(res_attendu_path)
+    comparer = TextComparer(res_attendu_path, argv)
     comparer.compare_files(folder_path)
