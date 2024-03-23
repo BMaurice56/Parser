@@ -1,4 +1,5 @@
 # Fichier contenant des fonctions utiles
+import pathlib
 import json
 import os
 
@@ -12,7 +13,10 @@ class Utils:
         :param: texte string à checker
         :return: texte corrigé
         """
-        with open("src/letters_accent.json", "r") as f:
+        path = str(pathlib.Path(__file__).parent.resolve())
+        path_dir = path[:path.rfind('/')]
+
+        with open(f"{path_dir}/src/letters_accent.json", "r") as f:
             dictionnaire_lettre = json.load(f)
 
             if type(texte) is list:

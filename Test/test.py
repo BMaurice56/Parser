@@ -1,15 +1,30 @@
-from Test import extract
+from extract import TextComparer
+import pathlib
 import sys
+import os
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        resAttendu_path = sys.argv[1]
-        folder_path = sys.argv[2]
+    if len(sys.argv) > 2:
+        raise ValueError("Erreur nombre argument")
 
-        comparer = extract.TextComparer(resAttendu_path)
-        comparer.compare_files(folder_path)
-    elif len(sys.argv) != 3:
-        print(f"Vous n'avez pas rentre le bon nombre d'argument, vous en avez rentre {len(sys.argv)-1} et non 2, voici le modele d'utilisation:")
-        print("test.py [/path/to/the/resAttendu.txt, /path/to/the/analyse_pdf/]")
+    argv = sys.argv[1]
+    if argv != "-t" and argv != "-x":
+        raise ValueError("Erreur argument rentré")
 
+    # Chemin du dossier
+    path_test = str(pathlib.Path(__file__).parent.resolve())
+    path_paser = path_test[:path_test.rfind('/')]
 
+    res_attendu_path = f"{path_test}/solution"
+    folder_path = f"{path_paser}/Corpus_2022/analyse_pdf/"
+
+    if argv == "-t":
+        res_attendu_path += "Txt.txt"
+
+    elif argv == "-x":
+        res_attendu_path += "Xml.xml"
+
+    os.system(f"python3 {path_paser}/main.py {argv} {path_paser}/Corpus_2022/ --all")
+
+    comparer = TextComparer(res_attendu_path, argv)
+    comparer.compare_files(folder_path)

@@ -9,7 +9,20 @@ import io
 
 
 class Parser:
+    """
+    Classe Parser :
+        - Analyse un pdf donner en argument dans le constructeur
+        - Ressort une analyse sous forme .txt ou .xml des différentes sections du pdf
+    """
+
     def __init__(self, path: str, nom_fichier: str, directory_txt_file: str = None):
+        """
+        Constructeur
+
+        :param path: Chemin du fichier ou dossier
+        :param nom_fichier: Nom du fichier du pdf
+        :param directory_txt_file: Emplacement du dossier de sortie si plusieurs pdfs analysés
+        """
         self.__pdf_file_obj = io.TextIOWrapper
         self.__directoryTxtFile = ""
         self.__titre = ""
@@ -374,7 +387,7 @@ class Parser:
                     if len(liste_noms) > taille_mails:
                         difference = len(liste_noms) - taille_mails
 
-                        for i in range(difference):
+                        for _ in range(difference):
                             value = liste_noms.pop()
 
                             liste_noms[-1] = liste_noms[-1] + " " + value
