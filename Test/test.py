@@ -1,13 +1,9 @@
-import sys
-
 from Test import extract
 import pathlib
+import sys
 import os
 
 if __name__ == "__main__":
-    path_test = str(pathlib.Path(__file__).parent.resolve())
-    path_paser = path_test[:path_test.rfind('/')]
-
     if len(sys.argv) > 2:
         raise ValueError("Erreur nombre argument")
 
@@ -15,22 +11,20 @@ if __name__ == "__main__":
     if argv != "-t" and argv != "-x":
         raise ValueError("Erreur argument rentré")
 
+    # Chemin du dossier
+    path_test = str(pathlib.Path(__file__).parent.resolve())
+    path_paser = path_test[:path_test.rfind('/')]
+
+    res_attendu_path = f"{path_test}/solution"
+    folder_path = f"{path_paser}/Corpus_2022/analyse_pdf/"
+
     if argv == "-t":
+        res_attendu_path += "Txt.txt"
 
-        os.system(f"python3 {path_paser}/main.py -t {path_paser}/Corpus_2022/ --all")
+    elif argv == "-x":
+        res_attendu_path += "Xml.xml"
 
-        resAttendu_path = f"{path_test}/solutionTxt.txt"
-        folder_path = f"{path_paser}/Corpus_2022/analyse_pdf/"
+    os.system(f"python3 {path_paser}/main.py {argv} {path_paser}/Corpus_2022/ --all")
 
-        comparer = extract.TextComparer(resAttendu_path)
-        comparer.compare_files(folder_path)
-
-    if argv == "-x":
-
-        os.system(f"python3 {path_paser}/main.py -x {path_paser}/Corpus_2022/ --all")
-
-        resAttendu_path = f"{path_test}/solutionXml.xml"
-        folder_path = f"{path_paser}/Corpus_2022/analyse_pdf/"
-
-        comparer = extract.TextComparer(resAttendu_path)
-        comparer.compare_files(folder_path)
+    comparer = extract.TextComparer(res_attendu_path)
+    comparer.compare_files(folder_path)
