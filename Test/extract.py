@@ -2,6 +2,7 @@ import re
 import os
 import Levenshtein
 import affichage
+from xml.dom.minidom import parse
 
 
 class TextComparer:
@@ -154,14 +155,18 @@ class TextComparer:
 
                 # Ouvre le fichier sélectionné
                 with open(file_path, 'r', encoding='utf-8') as file:
+                    # Indique à combien de caractères se trouve le début le titre du xml
                     start_index = xml_file.find('<preamble>') + 1
+                    # Indique à combien de caractères se trouve la fin du titre du xml
                     end_index = xml_file.find('</preamble>') - 3
+                    # Permet de construire correctement le titre
                     title = '<preamble>' + xml_file[start_index:end_index] + '.pdf</preamble>'
 
                     # Trouve le texte dans le xml des solutions attendues qui correspond au titre du fichier sélectionné
                     # dans analyse_pdf
                     found_text = self.extract_text_xml_related_to_pdf(self.res_attendu_path, title)
 
+                    # Enlève la balise <article>
                     file_content = file.read().replace('<article>', '').replace('</article>', '')
 
                     if found_text is not None:
