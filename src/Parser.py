@@ -1090,7 +1090,7 @@ class Parser:
                 ######################################################################
 
             else:
-                self.__conclusion = "Aucune conclusion"
+                self.__conclusion = "N/A"
 
     def _get_discussion(self) -> None:
         """
@@ -1122,7 +1122,7 @@ class Parser:
                 ######################################################################
 
             else:
-                self.__discussion = "Aucune discussion"
+                self.__discussion = "N/A"
 
     def _get_references(self) -> None:
         """
@@ -1141,7 +1141,7 @@ class Parser:
                 self.__references = f"{self.__text_rest[pos_references + len('references'):word_after - 1]}"
 
             else:
-                self.__references = "Aucune bibliographie"
+                self.__references = "N/A"
 
     def pdf_to_file(self, type_output_file: str) -> None:
         """

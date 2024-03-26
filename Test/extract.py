@@ -114,7 +114,62 @@ class TextComparer:
         else:
             print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {xml_filename}.")
 
-    def compare_files(self, directory_path: str) -> None:
+    @staticmethod
+    def extract_element_xml(xml_filename: str) -> tuple[str, str, str, str, str, str, str, str]:
+
+        start_title = xml_filename.find('<titre>')
+
+        end_title = xml_filename.find('<auteurs>')
+
+        title = xml_filename[start_title:end_title]
+
+        start_autor = xml_filename.find('<auteurs>')
+
+        end_autor = xml_filename.find('<abstract>')
+
+        autor = xml_filename[start_autor:end_autor]
+
+        start_abstract = xml_filename.find('<abstract>')
+
+        end_abstract = xml_filename.find('<introduction>')
+
+        abstract = xml_filename[start_abstract:end_abstract]
+
+        start_introduction = xml_filename.find('<introduction>')
+
+        end_introduction = xml_filename.find('<corps>')
+
+        introduction = xml_filename[start_introduction:end_introduction]
+
+        start_corps = xml_filename.find('<corps>')
+
+        end_corps = xml_filename.find('<conclusion>')
+
+        corps = xml_filename[start_corps:end_corps]
+
+        start_conclusion = xml_filename.find('<conclusion>')
+
+        end_conclusion = xml_filename.find('<discussion>')
+
+        conclusion = xml_filename[start_conclusion:end_conclusion]
+
+        start_discussion = xml_filename.find('<discussion>')
+
+        end_discussion = xml_filename.find('<bibliographie>')
+
+        discussion = xml_filename[start_discussion:end_discussion]
+
+        start_bibliographie = xml_filename.find('<bibliographie>')
+
+        end_bibliographie = xml_filename.find('</bibliographie>')
+
+        bibliographie = xml_filename[start_bibliographie:end_bibliographie] + "</bibliographie>"
+
+        # print(title, autor, abstract, introduction, corps, conclusion, discussion, bibliographie)
+
+        return title, autor, abstract, introduction, corps, conclusion, discussion, bibliographie
+
+    def compare_files(self, directory_path: str) -> dict:
         """
         Méthode qui compare les fichiers du résultat attendu avec celui du résultat obtenu.
 
@@ -129,6 +184,8 @@ class TextComparer:
 
         elif self.type_file == "-x":
             self.compares_xml_files(directory_path)
+
+        return {}
 
     def compares_txt_files(self, directory_path: str) -> None:
         """
@@ -191,19 +248,137 @@ class TextComparer:
 
                 # Ouvre le fichier sélectionné
                 with open(file_path, 'r', encoding='utf-8') as file:
+                    # Indique à combien de caractères se trouve le début le titre du xml
                     start_index = xml_file.find('<preamble>') + 1
+                    # Indique à combien de caractères se trouve la fin du titre du xml
                     end_index = xml_file.find('</preamble>') - 3
+                    # Permet de construire correctement le titre
                     title = '<preamble>' + xml_file[start_index:end_index] + '.pdf</preamble>'
 
                     # Trouve le texte dans le xml des solutions attendues qui correspond au titre du fichier sélectionné
                     # dans analyse_pdf
                     found_text = self.extract_text_xml_related_to_pdf(self.res_attendu_path, title)
 
+                    # Enlève la balise <article>
                     file_content = file.read().replace('<article>', '').replace('</article>', '')
+
+
+                    start_title = found_text.find('<titre>')
+
+                    end_title = found_text.find('<auteurs>')
+
+                    title_sol = found_text[start_title:end_title]
+
+                    start_autor = found_text.find('<auteurs>')
+
+                    end_autor = found_text.find('<abstract>')
+
+                    autor_sol = found_text[start_autor:end_autor]
+
+                    start_abstract = found_text.find('<abstract>')
+
+                    end_abstract = found_text.find('<introduction>')
+
+                    abstract_sol = found_text[start_abstract:end_abstract]
+
+                    start_introduction = found_text.find('<introduction>')
+
+                    end_introduction = found_text.find('<corps>')
+
+                    introduction_sol = found_text[start_introduction:end_introduction]
+
+                    start_corps = found_text.find('<corps>')
+
+                    end_corps = found_text.find('<conclusion>')
+
+                    corps_sol = found_text[start_corps:end_corps]
+
+                    start_conclusion = found_text.find('<conclusion>')
+
+                    end_conclusion = found_text.find('<discussion>')
+
+                    conclusion_sol = found_text[start_conclusion:end_conclusion]
+
+                    start_discussion = found_text.find('<discussion>')
+
+                    end_discussion = found_text.find('<bibliographie>')
+
+                    discussion_sol = found_text[start_discussion:end_discussion]
+
+                    start_bibliographie = found_text.find('<bibliographie>')
+
+                    end_bibliographie = found_text.find('</bibliographie>')
+
+                    bibliographie_sol = found_text[start_bibliographie:end_bibliographie] + "</bibliographie>"
+
+                    start_title = file_content.find('<titre>')
+
+                    end_title = file_content.find('<auteurs>')
+
+                    title = file_content[start_title:end_title]
+
+                    start_autor = file_content.find('<auteurs>')
+
+                    end_autor = file_content.find('<abstract>')
+
+                    autor = file_content[start_autor:end_autor]
+
+                    start_abstract = file_content.find('<abstract>')
+
+                    end_abstract = file_content.find('<introduction>')
+
+                    abstract = file_content[start_abstract:end_abstract]
+
+                    start_introduction = file_content.find('<introduction>')
+
+                    end_introduction = file_content.find('<corps>')
+
+                    introduction = file_content[start_introduction:end_introduction]
+
+                    start_corps = file_content.find('<corps>')
+
+                    end_corps = file_content.find('<conclusion>')
+
+                    corps = file_content[start_corps:end_corps]
+
+                    start_conclusion = file_content.find('<conclusion>')
+
+                    end_conclusion = file_content.find('<discussion>')
+
+                    conclusion = file_content[start_conclusion:end_conclusion]
+
+                    start_discussion = file_content.find('<discussion>')
+
+                    end_discussion = file_content.find('<bibliographie>')
+
+                    discussion = file_content[start_discussion:end_discussion]
+
+                    start_bibliographie = file_content.find('<bibliographie>')
+
+                    end_bibliographie = file_content.find('</bibliographie>')
+
+                    bibliographie = file_content[start_bibliographie:end_bibliographie] + "</bibliographie>"
+
+                    percentage_title = self.levenshtein_distance_percentage(title, title_sol)
+
+                    percentage_autor = self.levenshtein_distance_percentage(autor, autor_sol)
+
+                    percentage_abstract = self.levenshtein_distance_percentage(abstract, abstract_sol)
+
+                    percentage_introduction = self.levenshtein_distance_percentage(introduction, introduction_sol)
+
+                    percentage_corps = self.levenshtein_distance_percentage(corps, corps_sol)
+
+                    percentage_conclusion = self.levenshtein_distance_percentage(conclusion, conclusion_sol)
+
+                    percentage_discussion = self.levenshtein_distance_percentage(discussion, discussion_sol)
+
+                    percentage_bibliographie = self.levenshtein_distance_percentage(bibliographie, bibliographie_sol)
 
                     if found_text is not None:
                         # Appelle de la methode qui retourne un pourcentage qui correspond à la distance de levenshtein
                         percentage = self.levenshtein_distance_percentage(file_content, found_text)
+
                         # Affiche le pourcentage
                         affichage.afficher_barre_pourcentage(percentage)
                     else:
@@ -242,5 +417,7 @@ class TextComparer:
 
         # Change la distance en pourcentage
         percentage = (1 - normalized_distance) * 100
+
+        print(percentage)
 
         return percentage
