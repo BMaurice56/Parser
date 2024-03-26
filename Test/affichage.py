@@ -52,6 +52,3 @@ def afficher_barre_pourcentage(pourcentages: dict) -> None:
     barre_texte += f'{round(total, 2)}% \n |{"■" * pourcentage_entier}{"_" * (100 - pourcentage_entier)}|'
     print(f"{couleur}{barre_texte} {Style.RESET_ALL}")
 
-
-
-afficher_barre_pourcentage({"Intro": 51, "Corps": 10, "conclusion": 100})
