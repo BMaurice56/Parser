@@ -9,20 +9,20 @@ class TextComparer:
     -Test si le contenu des txt créé par la Parser.py sont corrects
     """
 
-    def __init__(self, res_attendu_path: str, type_file: str):
+    def __init__(self, chemin_fichier_solution: str, type_file: str):
         """
         Constructeur
 
-        :param res_attendu_path: Emplacement du fichier des solutions
+        :param chemin_fichier_solution: Emplacement du fichier des solutions
         :param type_file: Type de fichier à analyser (-t ou -x)
         """
-        self.res_attendu_path = res_attendu_path
+        self.chemin_fichier_solution = chemin_fichier_solution
         self.type_file = type_file
 
-        with open(self.res_attendu_path, "r") as f:
-            self.text = f.read()
+        with open(self.chemin_fichier_solution, "r") as f:
+            self.text = f.read().replace('<article>', '').replace('</article>', '')
 
-    def extract_text_txt_related_to_pdf(self, txt_filename: str, keyword: str) -> str:
+    def extract_text_txt_related_to_pdf(self, txt_filename: str, nom_fichier: str) -> str:
         """
         Méthode qui trouve et affiche un extrait de texte contenant un mot-clé dans le fichier
         contenant les résultats attendus.
@@ -35,9 +35,9 @@ class TextComparer:
         :return: Extraction du résultat attendue correspondant au mot cle entre en paramètre.
         """
         # Vérifie si la clef est présente dans le texte
-        if keyword.lower() in self.text.lower():
+        if nom_fichier.lower() in self.text.lower():
             # Position du mot clef dans le texte
-            keyword_start = self.text.lower().find(keyword.lower())
+            keyword_start = self.text.lower().find(nom_fichier.lower())
 
             # Trouve l'occurrence qui correspond au premier nom de fichier présent dans le txt des solutions attendues
             next_filename_match = re.search(r"Nom du fichier pdf : (.+?)\n", self.text)
@@ -65,179 +65,68 @@ class TextComparer:
             return self.text[snippet_start:snippet_end]
 
         else:
-            print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {txt_filename}.")
+            print(f"Le mot clé '{nom_fichier}' n'a pas été trouvé dans {txt_filename}.")
 
-    def extract_text_xml_related_to_pdf(self, xml_filename: str, keyword: str) -> str:
+    def extract_text_xml_related_to_pdf(self, nom_fichier_preamble: str) -> str:
         """
         Méthode qui trouve et affiche un extrait de texte contenant un mot-clé dans le fichier
         contenant les résultats attendus.
 
         Args :
-        :param: txt_filename Chemin du fichier contenant les résultats attendus
-        :param: keyword Mot-clé à rechercher
+        :param: nom_fichier_preamble Mot-clé à rechercher
 
         Returns :
         :return: Extraction du résultat attendue correspondant au mot cle entre en paramètre.
         """
-        # Vérifie si la clef est présente dans le texte
-        if keyword.lower() in self.text.lower():
-            # Position du mot clef dans le texte
-            keyword_start = self.text.lower().find(keyword.lower())
+        # Position du nom du fichier pdf dans celui des solutions
+        position_nom = self.text.find(nom_fichier_preamble)
 
-            self.text = self.text.replace('<article>', '').replace('</article>', '')
-
-            # Trouve l'occurrence qui correspond au premier nom de fichier présent dans le xml des solutions attendues
-            next_filename_match = re.search("<preamble>", self.text)
-
-            if next_filename_match:
-                # Indique à combien de caractères se trouve la fin du mot cle dans le xml des solutions attendues
-                snippet_end = keyword_start + next_filename_match.end()
-            else:
-                snippet_end = len(self.text)
-
-            # Trouve le prochain nom de fichier, en part du mot clé sélectionné dans le xml des solutions attendues
-            next_filename_match = re.search("<preamble>", self.text[snippet_end:])
-
-            if next_filename_match:
-                # Indique à combien de caractères se trouve le prochain nom de fichier dans le xml des solutions
-                # attendues
-                snippet_end += next_filename_match.start()
-            else:
-                snippet_end = len(self.text)
-
-            # Prend le max entre 0 et la valeur du début du mot clé
-            snippet_start = max(0, keyword_start)
+        if position_nom != -1:
+            second_file_solution = self.text.find("<preamble>", position_nom + len(nom_fichier_preamble))
 
             # Retourne le text qui se trouve entre le mot clé et la prochaine nom de fichier
-            return self.text[snippet_start:snippet_end]
+            return self.text[position_nom:second_file_solution]
 
         else:
-            print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {xml_filename}.")
+            print(f"Le mot clé '{nom_fichier_preamble}' n'a pas été trouvé dans {self.chemin_fichier_solution}.")
 
-    @staticmethod
-    def extract_element_xml(self, xml_filename_1: str, xml_filename_2: str) -> dict:
+    def percentage_difference_each_section_xml(self, solution: str, file_content: str) -> dict:
+        """
+        Renvoi un dictionnaire des différences en pourcentage de chaque section
 
-        list_start = ['<titre>','<auteurs>','<abstract>','<introduction>']
+        :param solution: solution à avoir
+        :param file_content: contenu généré par le parser
+        :return: dictionnaire des pourcentages
+        """
+        elements = ["titre", "auteurs", "abstract", "introduction", "corps", "conclusion", "discussion",
+                    "bibliographie", "/bibliographie"]
 
-        found_text = xml_filename_1
+        # Dictionnaire contenant la position de chaque titre de section
+        pos_element_solution = {}
+        pos_element_file_content = {}
+        previous_pos_solution = 0
+        previous_pos_file_content = 0
 
-        file_content = xml_filename_2
+        for elt in elements:
+            previous_pos_solution = solution.find(elt, previous_pos_solution)
+            previous_pos_file_content = file_content.find(elt, previous_pos_file_content)
 
-        start_title = found_text.find('<titre>')
+            pos_element_solution[elt] = previous_pos_solution
+            pos_element_file_content[elt] = previous_pos_file_content
+        ######################################################################
 
-        end_title = found_text.find('<auteurs>')
+        results = {}
+        for i, elt in enumerate(elements):
+            if i == len(elements) - 1:
+                break
+            else:
+                # Récupération des deux sections à comparer
+                texte1 = solution[pos_element_solution[elt]:pos_element_solution[elements[i + 1]]]
+                texte2 = file_content[pos_element_file_content[elt]: pos_element_file_content[elements[i + 1]]]
 
-        title_sol = found_text[start_title:end_title]
+                results[elt] = self.levenshtein_distance_percentage(texte1, texte2)
 
-        start_autor = found_text.find('<auteurs>')
-
-        end_autor = found_text.find('<abstract>')
-
-        autor_sol = found_text[start_autor:end_autor]
-
-        start_abstract = found_text.find('<abstract>')
-
-        end_abstract = found_text.find('<introduction>')
-
-        abstract_sol = found_text[start_abstract:end_abstract]
-
-        start_introduction = found_text.find('<introduction>')
-
-        end_introduction = found_text.find('<corps>')
-
-        introduction_sol = found_text[start_introduction:end_introduction]
-
-        start_corps = found_text.find('<corps>')
-
-        end_corps = found_text.find('<conclusion>')
-
-        corps_sol = found_text[start_corps:end_corps]
-
-        start_conclusion = found_text.find('<conclusion>')
-
-        end_conclusion = found_text.find('<discussion>')
-
-        conclusion_sol = found_text[start_conclusion:end_conclusion]
-
-        start_discussion = found_text.find('<discussion>')
-
-        end_discussion = found_text.find('<bibliographie>')
-
-        discussion_sol = found_text[start_discussion:end_discussion]
-
-        start_bibliographie = found_text.find('<bibliographie>')
-
-        end_bibliographie = found_text.find('</bibliographie>')
-
-        bibliographie_sol = found_text[start_bibliographie:end_bibliographie] + "</bibliographie>"
-
-        start_title = file_content.find('<titre>')
-
-        end_title = file_content.find('<auteurs>')
-
-        title = file_content[start_title:end_title]
-
-        start_autor = file_content.find('<auteurs>')
-
-        end_autor = file_content.find('<abstract>')
-
-        autor = file_content[start_autor:end_autor]
-
-        start_abstract = file_content.find('<abstract>')
-
-        end_abstract = file_content.find('<introduction>')
-
-        abstract = file_content[start_abstract:end_abstract]
-
-        start_introduction = file_content.find('<introduction>')
-
-        end_introduction = file_content.find('<corps>')
-
-        introduction = file_content[start_introduction:end_introduction]
-
-        start_corps = file_content.find('<corps>')
-
-        end_corps = file_content.find('<conclusion>')
-
-        corps = file_content[start_corps:end_corps]
-
-        start_conclusion = file_content.find('<conclusion>')
-
-        end_conclusion = file_content.find('<discussion>')
-
-        conclusion = file_content[start_conclusion:end_conclusion]
-
-        start_discussion = file_content.find('<discussion>')
-
-        end_discussion = file_content.find('<bibliographie>')
-
-        discussion = file_content[start_discussion:end_discussion]
-
-        start_bibliographie = file_content.find('<bibliographie>')
-
-        end_bibliographie = file_content.find('</bibliographie>')
-
-        bibliographie = file_content[start_bibliographie:end_bibliographie] + "</bibliographie>"
-
-        percentage_title = self.levenshtein_distance_percentage(title, title_sol)
-
-        percentage_autor = self.levenshtein_distance_percentage(autor, autor_sol)
-
-        percentage_abstract = self.levenshtein_distance_percentage(abstract, abstract_sol)
-
-        percentage_introduction = self.levenshtein_distance_percentage(introduction, introduction_sol)
-
-        percentage_corps = self.levenshtein_distance_percentage(corps, corps_sol)
-
-        percentage_conclusion = self.levenshtein_distance_percentage(conclusion, conclusion_sol)
-
-        percentage_discussion = self.levenshtein_distance_percentage(discussion, discussion_sol)
-
-        percentage_bibliographie = self.levenshtein_distance_percentage(bibliographie, bibliographie_sol)
-
-        return {"titre": percentage_title, "auteurs": percentage_autor, "abstract": percentage_abstract,
-                "intro": percentage_introduction, "corps": percentage_corps, "conclusion": percentage_conclusion,
-                "discussion": percentage_discussion, "bibliographie": percentage_bibliographie}
+        return results
 
     def compare_files(self, directory_path: str) -> None:
         """
@@ -281,7 +170,7 @@ class TextComparer:
 
                     # Trouve le texte dans le txt des solutions attendues qui correspond au titre du fichier sélectionné
                     # dans analyse_pdf
-                    found_text = self.extract_text_txt_related_to_pdf(self.res_attendu_path, title)
+                    found_text = self.extract_text_txt_related_to_pdf(self.chemin_fichier_solution, title)
 
                     if found_text is not None:
                         # Appelle de la methode qui retourne un pourcentage qui correspond à la distance de levenshtein
@@ -316,29 +205,19 @@ class TextComparer:
 
                 # Ouvre le fichier sélectionné
                 with open(file_path, 'r', encoding='utf-8') as file:
-                    # Indique à combien de caractères se trouve le début le titre du xml
-                    start_index = xml_file.find('<preamble>') + 1
-                    # Indique à combien de caractères se trouve la fin du titre du xml
-                    end_index = xml_file.find('</preamble>') - 3
-                    # Permet de construire correctement le titre
-                    title = '<preamble>' + xml_file[start_index:end_index] + '.pdf</preamble>'
-
-                    # Trouve le texte dans le xml des solutions attendues qui correspond au titre du fichier sélectionné
-                    # dans analyse_pdf
-                    found_text = self.extract_text_xml_related_to_pdf(self.res_attendu_path, title)
-
-                    # Enlève la balise <article>
+                    # Contenu du fichier
                     file_content = file.read().replace('<article>', '').replace('</article>', '')
 
-                    percentage_dict_element = self.extract_element_xml(self, found_text, file_content)
+                    # nom du fichier
+                    nom_fichier = f"<preamble>{xml_file[:-4]}.pdf</preamble>"
+
+                    # Récupère la solution correspondant au pdf actuel
+                    found_text = self.extract_text_xml_related_to_pdf(nom_fichier)
+
+                    # Dictionnaire des pourcentages
+                    percentage_dict_element = self.percentage_difference_each_section_xml(found_text, file_content)
 
                     if found_text is not None:
-                        # Appelle de la methode qui retourne un pourcentage qui correspond à la distance de levenshtein
-                        percentage = self.levenshtein_distance_percentage(file_content, found_text)
-
-                        # Affiche le pourcentage
-
-
                         affichage.afficher_barre_pourcentage(percentage_dict_element)
                     else:
                         print(f"Ignorer {xml_file} car le mot-clé n'a pas été trouvé.")
