@@ -1,0 +1,13 @@
+Prise de note de la réunion du 25 Mars :
+
+- Nous sommes invités à faire une branche par version afin de ne pas avoir de problèmes lors de la démonstration avec le client.
+
+- C'est normal qu'il manque des sections, le site n'est pas parfait mais il permet déjà d'avoir un aperçu de l'efficacité de notre méthode d'extraction.
+
+- Le but du Sprint est de passer les fichiers PDF du Corpus qu'on a déjà, de générer un fichier XML et de passer ce fichier XML sur le site. On doit donc sortir un évaluable pour le site.
+
+- Le but du Sprint n'est pas d'optimiser notre code, mais bien de vérifier que notre programme est le plus dynamique possible. Ceci, en vue d'avoir le meilleur évaluable possible la semaine prochaine.
+
+- Un nouveau Corpus nous sera donné la semaine prochaine. C'est l'extraction des informations des fichiers PDF de ce Corpus qui sera évalué.
+
+Date de rendu de Sprint 5 fixé au 31 MARS à 23H59.
