@@ -1,9 +1,7 @@
-import re
-import os
-from typing import Tuple
-
 import Levenshtein
 import affichage
+import re
+import os
 
 
 class TextComparer:
@@ -11,8 +9,15 @@ class TextComparer:
     -Test si le contenu des txt créé par la Parser.py sont corrects
     """
 
-    def __init__(self, res_attendu_path: str):
+    def __init__(self, res_attendu_path: str, type_file: str):
+        """
+        Constructeur
+
+        :param res_attendu_path: Emplacement du fichier des solutions
+        :param type_file: Type de fichier à analyser (-t ou -x)
+        """
         self.res_attendu_path = res_attendu_path
+        self.type_file = type_file
 
         with open(self.res_attendu_path, "r") as f:
             self.text = f.read()
@@ -23,11 +28,11 @@ class TextComparer:
         contenant les résultats attendus.
 
         Args :
-        - txt_filename (str) : Chemin du fichier contenant les résultats attendus.
-        - keyword (str) : Mot-clé à rechercher.
+        :param: txt_filename Chemin du fichier contenant les résultats attendus
+        :param: keyword Mot-clé à rechercher
 
         Returns :
-        - str : Extraction du résultat attendue correspondant au mot cle entre en paramètre.
+        :return: Extraction du résultat attendue correspondant au mot cle entre en paramètre.
         """
         # Vérifie si la clef est présente dans le texte
         if keyword.lower() in self.text.lower():
@@ -68,11 +73,11 @@ class TextComparer:
         contenant les résultats attendus.
 
         Args :
-        - txt_filename (str) : Chemin du fichier contenant les résultats attendus.
-        - keyword (str) : Mot-clé à rechercher.
+        :param: txt_filename Chemin du fichier contenant les résultats attendus
+        :param: keyword Mot-clé à rechercher
 
         Returns :
-        - str : Extraction du résultat attendue correspondant au mot cle entre en paramètre.
+        :return: Extraction du résultat attendue correspondant au mot cle entre en paramètre.
         """
         # Vérifie si la clef est présente dans le texte
         if keyword.lower() in self.text.lower():
@@ -160,26 +165,41 @@ class TextComparer:
 
         bibliographie = xml_filename[start_bibliographie:end_bibliographie] + "</bibliographie>"
 
-        #print(title, autor, abstract, introduction, corps, conclusion, discussion, bibliographie)
+        # print(title, autor, abstract, introduction, corps, conclusion, discussion, bibliographie)
 
         return title, autor, abstract, introduction, corps, conclusion, discussion, bibliographie
 
-    def compare_files(self, directory_path: str) -> str:
+    def compare_files(self, directory_path: str) -> dict:
         """
         Méthode qui compare les fichiers du résultat attendu avec celui du résultat obtenu.
 
         Args :
-        - directory_path (str) : Chemin du répertoire contenant les fichiers .txt ou xml créer par le parser.
+        :param: directory_path Chemin du répertoire contenant les fichiers .txt ou xml créer par le parser.
 
         Returns :
-        - None
+        :return: None
+        """
+        if self.type_file == "-t":
+            self.compares_txt_files(directory_path)
+
+        elif self.type_file == "-x":
+            self.compares_xml_files(directory_path)
+
+        return {}
+
+    def compares_txt_files(self, directory_path: str) -> None:
+        """
+        Compare les fichiers txt du résultat attendu avec celui du résultat obtenu.
+
+        Args :
+        :param: directory_path Chemin du répertoire contenant les fichiers .txt ou xml créer par le parser.
+
+        Returns :
+        :return: None
         """
         try:
             # Ouvre un fichier contenu dans analyse_pdf que s'il est au format txt
             txt_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
-
-            # Ouvre un fichier contenu dans analyse_pdf que s'il est au format xml
-            xml_files = [f for f in os.listdir(directory_path) if f.endswith('.xml')]
 
             for txt_file in txt_files:
                 print(f"Analyse du fichier : {txt_file}")
@@ -204,6 +224,23 @@ class TextComparer:
                         print(f"Ignorer {txt_file} car le mot-clé n'a pas été trouvé.")
                     print()
 
+        except Exception as e:
+            raise Exception(f"Erreur lors de la lecture des fichiers : {e}")
+
+    def compares_xml_files(self, directory_path: str) -> None:
+        """
+        Compare les fichiers xml du résultat attendu avec celui du résultat obtenu.
+
+        Args :
+        :param: directory_path Chemin du répertoire contenant les fichiers .txt ou xml créer par le parser.
+
+        Returns :
+        :return: None
+        """
+        try:
+            # Ouvre un fichier contenu dans analyse_pdf que s'il est au format xml
+            xml_files = [f for f in os.listdir(directory_path) if f.endswith('.xml')]
+
             for xml_file in xml_files:
                 print(f"Analyse du fichier : {xml_file}")
                 # Chemin du fichier
@@ -224,7 +261,7 @@ class TextComparer:
 
                     # Enlève la balise <article>
                     file_content = file.read().replace('<article>', '').replace('</article>', '')
-    
+
 
                     start_title = found_text.find('<titre>')
 
