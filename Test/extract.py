@@ -115,61 +115,131 @@ class TextComparer:
             print(f"Le mot clé '{keyword}' n'a pas été trouvé dans {xml_filename}.")
 
     @staticmethod
-    def extract_element_xml(xml_filename: str) -> tuple[str, str, str, str, str, str, str, str]:
+    def extract_element_xml(self, xml_filename_1: str, xml_filename_2: str) -> dict:
 
-        start_title = xml_filename.find('<titre>')
+        list_start = ['<titre>','<auteurs>','<abstract>','<introduction>']
 
-        end_title = xml_filename.find('<auteurs>')
+        found_text = xml_filename_1
 
-        title = xml_filename[start_title:end_title]
+        file_content = xml_filename_2
 
-        start_autor = xml_filename.find('<auteurs>')
+        start_title = found_text.find('<titre>')
 
-        end_autor = xml_filename.find('<abstract>')
+        end_title = found_text.find('<auteurs>')
 
-        autor = xml_filename[start_autor:end_autor]
+        title_sol = found_text[start_title:end_title]
 
-        start_abstract = xml_filename.find('<abstract>')
+        start_autor = found_text.find('<auteurs>')
 
-        end_abstract = xml_filename.find('<introduction>')
+        end_autor = found_text.find('<abstract>')
 
-        abstract = xml_filename[start_abstract:end_abstract]
+        autor_sol = found_text[start_autor:end_autor]
 
-        start_introduction = xml_filename.find('<introduction>')
+        start_abstract = found_text.find('<abstract>')
 
-        end_introduction = xml_filename.find('<corps>')
+        end_abstract = found_text.find('<introduction>')
 
-        introduction = xml_filename[start_introduction:end_introduction]
+        abstract_sol = found_text[start_abstract:end_abstract]
 
-        start_corps = xml_filename.find('<corps>')
+        start_introduction = found_text.find('<introduction>')
 
-        end_corps = xml_filename.find('<conclusion>')
+        end_introduction = found_text.find('<corps>')
 
-        corps = xml_filename[start_corps:end_corps]
+        introduction_sol = found_text[start_introduction:end_introduction]
 
-        start_conclusion = xml_filename.find('<conclusion>')
+        start_corps = found_text.find('<corps>')
 
-        end_conclusion = xml_filename.find('<discussion>')
+        end_corps = found_text.find('<conclusion>')
 
-        conclusion = xml_filename[start_conclusion:end_conclusion]
+        corps_sol = found_text[start_corps:end_corps]
 
-        start_discussion = xml_filename.find('<discussion>')
+        start_conclusion = found_text.find('<conclusion>')
 
-        end_discussion = xml_filename.find('<bibliographie>')
+        end_conclusion = found_text.find('<discussion>')
 
-        discussion = xml_filename[start_discussion:end_discussion]
+        conclusion_sol = found_text[start_conclusion:end_conclusion]
 
-        start_bibliographie = xml_filename.find('<bibliographie>')
+        start_discussion = found_text.find('<discussion>')
 
-        end_bibliographie = xml_filename.find('</bibliographie>')
+        end_discussion = found_text.find('<bibliographie>')
 
-        bibliographie = xml_filename[start_bibliographie:end_bibliographie] + "</bibliographie>"
+        discussion_sol = found_text[start_discussion:end_discussion]
 
-        # print(title, autor, abstract, introduction, corps, conclusion, discussion, bibliographie)
+        start_bibliographie = found_text.find('<bibliographie>')
 
-        return title, autor, abstract, introduction, corps, conclusion, discussion, bibliographie
+        end_bibliographie = found_text.find('</bibliographie>')
 
-    def compare_files(self, directory_path: str) -> dict:
+        bibliographie_sol = found_text[start_bibliographie:end_bibliographie] + "</bibliographie>"
+
+        start_title = file_content.find('<titre>')
+
+        end_title = file_content.find('<auteurs>')
+
+        title = file_content[start_title:end_title]
+
+        start_autor = file_content.find('<auteurs>')
+
+        end_autor = file_content.find('<abstract>')
+
+        autor = file_content[start_autor:end_autor]
+
+        start_abstract = file_content.find('<abstract>')
+
+        end_abstract = file_content.find('<introduction>')
+
+        abstract = file_content[start_abstract:end_abstract]
+
+        start_introduction = file_content.find('<introduction>')
+
+        end_introduction = file_content.find('<corps>')
+
+        introduction = file_content[start_introduction:end_introduction]
+
+        start_corps = file_content.find('<corps>')
+
+        end_corps = file_content.find('<conclusion>')
+
+        corps = file_content[start_corps:end_corps]
+
+        start_conclusion = file_content.find('<conclusion>')
+
+        end_conclusion = file_content.find('<discussion>')
+
+        conclusion = file_content[start_conclusion:end_conclusion]
+
+        start_discussion = file_content.find('<discussion>')
+
+        end_discussion = file_content.find('<bibliographie>')
+
+        discussion = file_content[start_discussion:end_discussion]
+
+        start_bibliographie = file_content.find('<bibliographie>')
+
+        end_bibliographie = file_content.find('</bibliographie>')
+
+        bibliographie = file_content[start_bibliographie:end_bibliographie] + "</bibliographie>"
+
+        percentage_title = self.levenshtein_distance_percentage(title, title_sol)
+
+        percentage_autor = self.levenshtein_distance_percentage(autor, autor_sol)
+
+        percentage_abstract = self.levenshtein_distance_percentage(abstract, abstract_sol)
+
+        percentage_introduction = self.levenshtein_distance_percentage(introduction, introduction_sol)
+
+        percentage_corps = self.levenshtein_distance_percentage(corps, corps_sol)
+
+        percentage_conclusion = self.levenshtein_distance_percentage(conclusion, conclusion_sol)
+
+        percentage_discussion = self.levenshtein_distance_percentage(discussion, discussion_sol)
+
+        percentage_bibliographie = self.levenshtein_distance_percentage(bibliographie, bibliographie_sol)
+
+        return {"titre": percentage_title, "auteurs": percentage_autor, "abstract": percentage_abstract,
+                "intro": percentage_introduction, "corps": percentage_corps, "conclusion": percentage_conclusion,
+                "discussion": percentage_discussion, "bibliographie": percentage_bibliographie}
+
+    def compare_files(self, directory_path: str) -> None:
         """
         Méthode qui compare les fichiers du résultat attendu avec celui du résultat obtenu.
 
@@ -184,8 +254,6 @@ class TextComparer:
 
         elif self.type_file == "-x":
             self.compares_xml_files(directory_path)
-
-        return {}
 
     def compares_txt_files(self, directory_path: str) -> None:
         """
@@ -262,127 +330,19 @@ class TextComparer:
                     # Enlève la balise <article>
                     file_content = file.read().replace('<article>', '').replace('</article>', '')
 
-
-                    start_title = found_text.find('<titre>')
-
-                    end_title = found_text.find('<auteurs>')
-
-                    title_sol = found_text[start_title:end_title]
-
-                    start_autor = found_text.find('<auteurs>')
-
-                    end_autor = found_text.find('<abstract>')
-
-                    autor_sol = found_text[start_autor:end_autor]
-
-                    start_abstract = found_text.find('<abstract>')
-
-                    end_abstract = found_text.find('<introduction>')
-
-                    abstract_sol = found_text[start_abstract:end_abstract]
-
-                    start_introduction = found_text.find('<introduction>')
-
-                    end_introduction = found_text.find('<corps>')
-
-                    introduction_sol = found_text[start_introduction:end_introduction]
-
-                    start_corps = found_text.find('<corps>')
-
-                    end_corps = found_text.find('<conclusion>')
-
-                    corps_sol = found_text[start_corps:end_corps]
-
-                    start_conclusion = found_text.find('<conclusion>')
-
-                    end_conclusion = found_text.find('<discussion>')
-
-                    conclusion_sol = found_text[start_conclusion:end_conclusion]
-
-                    start_discussion = found_text.find('<discussion>')
-
-                    end_discussion = found_text.find('<bibliographie>')
-
-                    discussion_sol = found_text[start_discussion:end_discussion]
-
-                    start_bibliographie = found_text.find('<bibliographie>')
-
-                    end_bibliographie = found_text.find('</bibliographie>')
-
-                    bibliographie_sol = found_text[start_bibliographie:end_bibliographie] + "</bibliographie>"
-
-                    start_title = file_content.find('<titre>')
-
-                    end_title = file_content.find('<auteurs>')
-
-                    title = file_content[start_title:end_title]
-
-                    start_autor = file_content.find('<auteurs>')
-
-                    end_autor = file_content.find('<abstract>')
-
-                    autor = file_content[start_autor:end_autor]
-
-                    start_abstract = file_content.find('<abstract>')
-
-                    end_abstract = file_content.find('<introduction>')
-
-                    abstract = file_content[start_abstract:end_abstract]
-
-                    start_introduction = file_content.find('<introduction>')
-
-                    end_introduction = file_content.find('<corps>')
-
-                    introduction = file_content[start_introduction:end_introduction]
-
-                    start_corps = file_content.find('<corps>')
-
-                    end_corps = file_content.find('<conclusion>')
-
-                    corps = file_content[start_corps:end_corps]
-
-                    start_conclusion = file_content.find('<conclusion>')
-
-                    end_conclusion = file_content.find('<discussion>')
-
-                    conclusion = file_content[start_conclusion:end_conclusion]
-
-                    start_discussion = file_content.find('<discussion>')
-
-                    end_discussion = file_content.find('<bibliographie>')
-
-                    discussion = file_content[start_discussion:end_discussion]
-
-                    start_bibliographie = file_content.find('<bibliographie>')
-
-                    end_bibliographie = file_content.find('</bibliographie>')
-
-                    bibliographie = file_content[start_bibliographie:end_bibliographie] + "</bibliographie>"
-
-                    percentage_title = self.levenshtein_distance_percentage(title, title_sol)
-
-                    percentage_autor = self.levenshtein_distance_percentage(autor, autor_sol)
-
-                    percentage_abstract = self.levenshtein_distance_percentage(abstract, abstract_sol)
-
-                    percentage_introduction = self.levenshtein_distance_percentage(introduction, introduction_sol)
-
-                    percentage_corps = self.levenshtein_distance_percentage(corps, corps_sol)
-
-                    percentage_conclusion = self.levenshtein_distance_percentage(conclusion, conclusion_sol)
-
-                    percentage_discussion = self.levenshtein_distance_percentage(discussion, discussion_sol)
-
-                    percentage_bibliographie = self.levenshtein_distance_percentage(bibliographie, bibliographie_sol)
+                    percentage_dict_element = self.extract_element_xml(self, found_text, file_content)
 
                     if found_text is not None:
                         # Appelle de la methode qui retourne un pourcentage qui correspond à la distance de levenshtein
                         percentage = self.levenshtein_distance_percentage(file_content, found_text)
 
                         # Affiche le pourcentage
-                        affichage.afficher_barre_pourcentage(percentage)
+
+
+                        affichage.afficher_barre_pourcentage(percentage_dict_element)
                     else:
                         print(f"Ignorer {xml_file} car le mot-clé n'a pas été trouvé.")
+
                     print()
 
         except Exception as e:
@@ -417,7 +377,5 @@ class TextComparer:
 
         # Change la distance en pourcentage
         percentage = (1 - normalized_distance) * 100
-
-        print(percentage)
 
         return percentage
