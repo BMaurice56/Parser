@@ -254,6 +254,7 @@ class Parser:
         if len(emails3) != 0:
             if "," in emails3[0]:
                 self.__type_mail = 1
+                emails = []
 
                 emails3_separer = emails3[0].split(",")
                 dernier_mail, nom_domaine = emails3_separer[-1].split("@")
@@ -268,6 +269,7 @@ class Parser:
         if len(emails4) != 0:
             if "," in emails4[0]:
                 self.__type_mail = 1
+                emails = []
 
                 emails4_separer = emails4[0].split(",")
                 dernier_mail, nom_domaine = emails4_separer[-1].split("@")
@@ -282,6 +284,8 @@ class Parser:
         if not emails and len(emails5) > 0:
             if "," in emails5[0]:
                 self.__type_mail = 1
+                emails = []
+
                 emails5_separer = emails5[0].split(",")
                 dernier_mail, nom_domaine = emails5_separer[-1].split("Q")
 
@@ -303,6 +307,15 @@ class Parser:
         for element in emails:
             if len(element.split("@")[0]) < 2:
                 emails.remove(element)
+        ######################################################################
+
+        # Si présence d'un f au début et un g à la fin (problème d'encodeur avec les {}), on les enlève
+        if self.__type_mail == 1 and len(emails) > 0:
+            nom, domaine = emails[-1].split("@")
+            if emails[0][0] == "f" and nom[-1] == "g":
+                emails[0] = emails[0][1:]
+
+                emails[-1] = f"{nom[:-1]}@{domaine}"
         ######################################################################
 
         return emails
