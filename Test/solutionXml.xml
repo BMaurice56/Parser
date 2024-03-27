@@ -303,7 +303,7 @@ SMMR 0.36323 0.10223 0.13886
 Worst human 0.40497 0.10511 0.14779
 Table 1: R OUGE average recall scores computed
 on the DUC 2007 update corpus.</corps>
-  <conclusion>Aucune conclusion</conclusion>
+  <conclusion>N/A</conclusion>
   <discussion>In this paper we have described S MMR , a scal-
 able sentence scoring method based on MMR that
 achieves very promising results. An important as-
@@ -1624,7 +1624,7 @@ manual evaluations suggest that the future of this research area heavily depends
 the ability to find efficient ways of automatically evaluating these systems and on
 the development of measures that are objective enough to be commonly accepted
 by the research community.</conclusion>
-  <discussion>Aucune discussion</discussion>
+  <discussion>N/A</discussion>
   <bibliographie>Amari, S.-I. and Nagaoka, H. (2001). Methods of Information Geometry (Transla-
 tions of Mathematical Monographs) . Oxford University Press. [20]
 Aone, C., Okurowski, M. E., Gorlinsky, J., and Larsen, B. (1999). A trainable
@@ -3023,7 +3023,7 @@ specialized texts, and new domains and genres.
 g) To annotate all the texts by 3 people, to get a
 representative gold-standard for Spanish (this aim
 will depend on the funding of the project).</conclusion>
-  <discussion>Aucune discussion</discussion>
+  <discussion>N/A</discussion>
   <bibliographie>
 Ron Artstein, and Massimo Poesio. 2008. Survey
 Article: Inter-Coder Agreement for Computational
@@ -3825,7 +3825,7 @@ bility of the system by testing it on another corpus.
 We will also extend the system to query-based sum-
 marization and investigate whether the system can
 be modified for multiple document summarization.</conclusion>
-  <discussion>Aucune discussion</discussion>
+  <discussion>N/A</discussion>
   <bibliographie>
 ANSI. 1997. Guidelines for abstracts. Technical Re-
 port Z39.14-1997, NISO Press, Bethesda, Mary-
@@ -4267,7 +4267,7 @@ for extracting taxonomical and non-taxonomical relationships.
 For the both purposes, we are currently working on SemEval
 collection [26]. Applying our method to other domain corpora
 and datasets is another future direction for this research.</conclusion>
-  <discussion>Aucune discussion</discussion>
+  <discussion>N/A</discussion>
   <bibliographie>[1] S. Meignier and T. Merlin, “Lium spkdiarization: an open source toolkit
 for diarization,” in in CMU SPUD Workshop , 2010.
 [2] P. Pauwels and W. Terkaj, “Express to owl for construction industry:
@@ -4677,7 +4677,7 @@ reveal its inner workings. This entry by the discursive routines
 is only one example which will then make it possible to
 approach other explorations with a particular focus on the
 argumentative forms and on the forms of intensity.</conclusion>
-  <discussion>Aucune discussion</discussion>
+  <discussion>N/A</discussion>
   <bibliographie>[1] D. Fassin, “Et la souffrance devint sociale,” in Critique . 680(1), 2004,
 pp. 16–29.
 [2] ——, “Souffrir par le social, gouverner par l’écoute,” in Politix . 73(1),
@@ -5252,7 +5252,7 @@ UK). The abbreviation recognizer for these purposes is allowed to overgenerate s
 icantly. There is no harm (apart from the performance issues) in proposing too manycandidate abbreviations, because only those that can be linked to their deﬁnitions willbe retained. Therefore the abbreviation recognizer treats as a candidate any token oftwo to ten characters that contains at least one capital letter. Candidates then are ﬁl-tered through a set of known common words and proper names. At the same timemany good abbreviations and acronyms are ﬁltered out because not for all of themwill deﬁnitions exist in the current document.
 In our task we are interested in ﬁnding all and only abbreviations that end with
 a period (proper abbreviations rather than acronyms), regardless of whether they canbe linked to their deﬁnitions in the current document or not. Therefore, in our methodwe cannot tolerate candidate overgeneration or excessive ﬁltering and had to developmore selective methods for ﬁnding abbreviations in text.</corps>
-  <conclusion>Aucune conclusion</conclusion>
+  <conclusion>N/A</conclusion>
   <discussion>In this article we presented an approach that tackles three important aspects of text nor-
 malization: sentence boundary disambiguation, disambiguation of capitalized wordswhen they are used in positions where capitalization is expected, and identiﬁcation ofabbreviations. The major distinctive features of our approach can be summarized asfollows:
 •We tackle the sentence boundary task only after we have fully
@@ -5860,7 +5860,7 @@ interesting to compare our techniques to Latent Relational Analysis [30] and oth
 our comprehensive test set will help the research community to improve the existing techniques for
 estimating the word vectors. We also expect that high quality word vectors will become an important
 building block for future NLP applications.</conclusion>
-  <discussion>Aucune discussion</discussion>
+  <discussion>N/A</discussion>
   <bibliographie>[1] Y . Bengio, R. Ducharme, P. Vincent. A neural probabilistic language model. Journal of Ma-
 chine Learning Research, 3:1137-1155, 2003.
 [2] Y . Bengio, Y . LeCun. Scaling learning algorithms towards AI. In: Large-Scale Kernel Ma-
@@ -6406,7 +6406,7 @@ ASR or an MT system. Several evolutions are cur-
 rently under development, such as a named entity
 recognizer component and an interface with a de-
 pendency parser.</conclusion>
-  <discussion>Aucune discussion</discussion>
+  <discussion>N/A</discussion>
   <bibliographie>Anne Abeillé, Lionel Clément, and François Toussenel.
 2003. Building a treebank for french. In Anne
 Abeillé, editor, Treebanks . Kluwer, Dordrecht.
@@ -7679,7 +7679,7 @@ the condition of zero training errors is reached. This decreases overﬁtting, a
 smaller networks (with less parameters) are thus generated. However, theprediction quality (measured by the generalization error) of the classiﬁersgenerated with NetLines is not improved by early stopping.
 Our results were obtained without cross-validation or any data manip-
 ulation like boosting, bagging, or arcing (Breiman, 1994; Drucker, Schapire,&amp; Simard, 1993). Those costly procedures combine results of very largenumbers of classiﬁers, with the aim of improving the generalization perfor-mance through the reduction of the variance. Because NetLines is a stableclassiﬁer, presenting small variance, we do not expect that such techniqueswould signiﬁcantly improve our results.</conclusion>
-  <discussion>Aucune discussion</discussion>
+  <discussion>N/A</discussion>
   <bibliographie>Alpaydin, E. A. I. (1990). Neural models of supervised and unsupervised learning. Un-
 published doctoral dissertation, Ecole Polytechnique Fédérale de Lausanne,
 Switzerland.
