@@ -140,7 +140,12 @@ class Parser:
                     content_around_word = self.__text_rest[
                                           pos_word - 8:pos_word]
 
-                    check_title = "\n" in content_around_word or f".{first_letter}" in content_around_word
+                    pos_word_in_content_around = content_around_word.find(word)
+
+                    check_title = "\n" in content_around_word or f".{first_letter}" in content_around_word or \
+                                  content_around_word[pos_word_in_content_around - 1].isdigit() or (
+                                          content_around_word[pos_word_in_content_around - 2].isdigit() and
+                                          content_around_word[pos_word_in_content_around - 1].isspace())
 
                     if check_title and content_around_word.find(first_letter) != -1:
                         self.__position_title_keywords[word] = pos_word
@@ -239,8 +244,9 @@ class Parser:
                 for mail, mail2 in zip(emails, emails2):
                     if mail != mail2:
                         if mail[-5:] == ".univ" or mail[-6:] == ".univ-" or len(mail) < len(mail2):
+                            pos = list(position_emails.keys())[list(position_emails.values()).index(emails[i])]
                             emails[i] = mail2
-                            position_emails[i] = mail2
+                            position_emails[pos] = mail2
 
                     i += 1
 
