@@ -52,6 +52,7 @@ class Parser:
         self.__text_rest = ""
         self.__text_rest_lower = ""
         self.__auteurs_deux_lignes = False
+        self.__no_introduction = False
         self.__type_pdf = -1
         self.__type_mail = -1
         """
@@ -578,8 +579,8 @@ class Parser:
 
             # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
             pos_asterisk = section_auteurs.find("∗")
-            if pos_asterisk != -1:
 
+            if pos_asterisk != -1:
                 # Si les mails sont sur une seule ligne, pdf de type 1
                 if self.__type_mail == 1:
                     self.__type_pdf = 1
@@ -886,6 +887,9 @@ class Parser:
                 for elt in parties_tries:
                     self.__titre += elt
 
+                    if elt[-1] != "\n":
+                        break
+
                 return
             ######################################################################
 
@@ -917,8 +921,7 @@ class Parser:
         """
         if self.__abstract == "":
             # Récupération du texte
-            content = self.__text_first_page
-            content_copy = content[:].lower()
+            content_copy = self.__text_first_page[:].lower()
             ######################################################################
 
             # Position des mots clefs
@@ -948,24 +951,35 @@ class Parser:
             # Si trouvé, alors on peut renvoyer l'abstract
             if pos_abstract != -1 and pos_introduction != -1:
                 swift = 1
-                if content[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
+                if self.__text_first_page[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
                     swift += 1
 
-                self.__abstract = content[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
+                self.__abstract = self.__text_first_page[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
             ######################################################################
 
             # Sinon absence du mot abstract
             elif pos_abstract == -1 and pos_introduction != -1:
-                dernier_point = content[:pos_introduction - 2].rfind(".")
+                dernier_point = self.__text_first_page[:pos_introduction - 2].rfind(".")
 
                 i = 0
 
                 for i in range(dernier_point, 1, -1):
-                    if ord(content[i]) < 20:
-                        if ord(content[i - 1]) != 45:
+                    if ord(self.__text_first_page[i]) < 20:
+                        if ord(self.__text_first_page[i - 1]) != 45:
                             break
 
-                self.__abstract = content[i + 1:dernier_point]
+                self.__abstract = self.__text_first_page[i + 1:dernier_point]
+            ######################################################################
+
+            # Sinon il n'y a pas d'introduction
+            elif pos_abstract != -1 and pos_introduction == -1:
+                self.__no_introduction = True
+
+                pos_first_title = max(self.__text_first_page.find("\n1 "), self.__text_first_page.find("\nI."),
+                                      self.__text_first_page.find("\nI "))
+
+                if pos_first_title != -1:
+                    self.__abstract = self.__text_first_page[pos_abstract + len("abstract"):pos_first_title].strip()
             ######################################################################
 
             # Si présence du 1 de l'introduction, on l'enlève
@@ -1013,65 +1027,73 @@ class Parser:
             ######################################################################
 
             # Position du mot introduction
-            pos_introduction = texte_lower.find("ntroduction")
-            ######################################################################
+            if not self.__no_introduction:
+                pos_introduction = texte_lower.find("ntroduction")
+                ######################################################################
 
-            # Ajoute une marge à cause de la présence d'espace dans le titre
-            add_margin_cause_space = 0
-            ######################################################################
+                # Ajoute une marge à cause de la présence d'espace dans le titre
+                add_margin_cause_space = 0
+                ######################################################################
 
-            # Si présence d'un espace entre le I et ntroduction, on l'enlève
-            if texte_lower[pos_introduction - 1] == " ":
-                pos_introduction -= 1
-                add_margin_cause_space += 1
-            ######################################################################
+                # Si présence d'un espace entre le I et ntroduction, on l'enlève
+                if texte_lower[pos_introduction - 1] == " ":
+                    pos_introduction -= 1
+                    add_margin_cause_space += 1
+                ######################################################################
 
-            # On vérifie s'il y a un point
-            add_point = False
+                # On vérifie s'il y a un point
+                add_point = False
 
-            if texte_lower[pos_introduction - 3] == ".":
-                pos_introduction -= 1
-                add_margin_cause_space += 1
-                add_point = True
-            ######################################################################
+                if texte_lower[pos_introduction - 3] == ".":
+                    pos_introduction -= 1
+                    add_margin_cause_space += 1
+                    add_point = True
+                ######################################################################
 
-            # On regarde si c'est un chiffre ou en lettre
-            if texte_lower[pos_introduction - 3] == "1":
-                type_indices = "2"
-            else:
-                type_indices = "II"
-            ######################################################################
+                # On regarde si c'est un chiffre ou en lettre
+                if texte_lower[pos_introduction - 3] == "1":
+                    type_indices = "2"
+                else:
+                    type_indices = "II"
+                ######################################################################
 
-            # On rajoute le point si nécessaire
-            if add_point:
-                type_indices += ". "
-            else:
-                type_indices += " "
-            ######################################################################
+                # On rajoute le point si nécessaire
+                if add_point:
+                    type_indices += ". "
+                else:
+                    type_indices += " "
+                ######################################################################
 
-            # On vient rechercher le deuxième titre dans le texte
-            pos_second_title_word = 0
+                # On vient rechercher le deuxième titre dans le texte
+                pos_second_title_word = 0
 
-            while pos_second_title_word != -1:
-                pos_second_title_word = texte.find(type_indices, pos_second_title_word)
+                while pos_second_title_word != -1:
+                    pos_second_title_word = texte.find(type_indices, pos_second_title_word)
 
-                if pos_second_title_word != -1:
-                    if texte[pos_second_title_word + len(type_indices) + 2].isdigit():
-                        pos_second_title_word += 2
-                    else:
-                        newline_in_texte = "\n" in texte[pos_second_title_word - 2:pos_second_title_word]
-                        domaine_name = any(
-                            re.findall("[.][a-zA-Z]+", texte[pos_second_title_word - 5: pos_second_title_word]))
-
-                        if newline_in_texte or domaine_name:
-                            break
-                        else:
+                    if pos_second_title_word != -1:
+                        if texte[pos_second_title_word + len(type_indices) + 2].isdigit():
                             pos_second_title_word += 2
-            ######################################################################
+                        else:
+                            newline_in_texte = "\n" in texte[pos_second_title_word - 2:pos_second_title_word]
+                            domaine_name = any(
+                                re.findall("[.][a-zA-Z]+", texte[pos_second_title_word - 5: pos_second_title_word]))
 
-            # Récupération de l'introduction et du corps du texte
-            self.__introduction = texte[
-                                  pos_introduction + len("ntroduction") + add_margin_cause_space: pos_second_title_word]
+                            if newline_in_texte or domaine_name:
+                                break
+                            else:
+                                pos_second_title_word += 2
+                ######################################################################
+
+                # Récupération de l'introduction et du corps du texte
+                self.__introduction = texte[
+                                      pos_introduction + len(
+                                          "ntroduction") + add_margin_cause_space: pos_second_title_word]
+                ######################################################################
+
+            else:
+                pos_second_title_word = -2
+
+                self.__introduction = "N/A"
 
             self.__corps = texte[pos_second_title_word + 2:]
             self.__corps = self.__corps[self.__corps.find("\n"):]
