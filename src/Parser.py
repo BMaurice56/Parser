@@ -996,7 +996,7 @@ class Parser:
 
             # Permet d'enlever les espaces et retour à la ligne à la fin pour vérifier la présence du point
             if self.__abstract != "":
-                while self.__abstract[-1] in ["\n", " "]:
+                while self.__abstract[-1] in ["\n", " ", "I"]:
                     self.__abstract = self.__abstract[:-1]
 
                 if self.__abstract[-1] != ".":
