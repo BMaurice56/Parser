@@ -10,4 +10,4 @@ Prise de note de la réunion du 25 Mars :
 
 - Un nouveau Corpus nous sera donné la semaine prochaine. C'est l'extraction des informations des fichiers PDF de ce Corpus qui sera évalué.
 
-Date de rendu de Sprint 5 fixé au 31 MARS à 23H59.
+Date de rendu du Sprint 5 fixé au 31 MARS à 23H59.
