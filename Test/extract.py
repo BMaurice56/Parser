@@ -98,8 +98,8 @@ class TextComparer:
         :param file_content: contenu généré par le parser
         :return: dictionnaire des pourcentages
         """
-        elements = ["titre", "auteurs", "abstract", "introduction", "corps", "conclusion", "discussion",
-                    "bibliographie", "/bibliographie"]
+        elements = ["titre", "auteurs", "abstract", "introduction", "body", "conclusion", "discussion",
+                    "biblio", "/biblio"]
 
         # Dictionnaire contenant la position de chaque titre de section
         pos_element_solution = {}
