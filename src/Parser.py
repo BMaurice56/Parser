@@ -501,7 +501,7 @@ class Parser:
                     distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
 
                     # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
-                    if distance_in_dict[1] >= distance and not mail_in_dict(mail, dico_nom_mail_distance):
+                    if distance_in_dict[1] > distance and not mail_in_dict(mail, dico_nom_mail_distance):
                         dico_nom_mail_distance[nom] = [mail, distance]
                     ######################################################################
                 ######################################################################
