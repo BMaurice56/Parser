@@ -514,7 +514,7 @@ class Parser:
             # Soit il y a qu'un seul mail → mail de l'équipe
             # Soit on n'en a pas trouvé
             else:
-                mention = "Pas d'adresse mail"
+                mention = "N/A"
                 if len(self.__emails) == 1:
                     mention = self.__emails[0]
 
@@ -579,6 +579,11 @@ class Parser:
 
             # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
             pos_asterisk = section_auteurs.find("∗")
+
+            # Si jamais il y a d'autres auteurs à la suite, on continue dans la fonction
+            if pos_asterisk != -1 and section_auteurs[pos_asterisk + 1] == ",":
+                pos_asterisk = -1
+            ##F####################################################################
 
             if pos_asterisk != -1:
                 # Si les mails sont sur une seule ligne, pdf de type 1
