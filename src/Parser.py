@@ -219,7 +219,7 @@ class Parser:
         # Récupération des emails
         emails = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)]
         emails2 = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
-        emails3 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+@[a-z0-9.\n\- +_]+\.[a-z]+", texte)]
+        emails3 = [x.strip() for x in re.findall(r"[({a-zA-Z0-9., \-+_})]+@[a-z0-9.\n\- +_]+\.[a-z]+", texte)]
         emails4 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+\n@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
         emails5 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+Q[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
         ######################################################################
@@ -583,7 +583,7 @@ class Parser:
             # Si jamais il y a d'autres auteurs à la suite, on continue dans la fonction
             if pos_asterisk != -1 and section_auteurs[pos_asterisk + 1] == ",":
                 pos_asterisk = -1
-            ##F####################################################################
+            ######################################################################
 
             if pos_asterisk != -1:
                 # Si les mails sont sur une seule ligne, pdf de type 1
@@ -1257,7 +1257,7 @@ class Parser:
                 ######################################################################
 
                 # Ajout de l'introduction
-                corps = ETree.SubElement(tree, 'corps')
+                corps = ETree.SubElement(tree, 'body')
                 corps.text = self.__corps
                 ######################################################################
 
@@ -1272,7 +1272,7 @@ class Parser:
                 ######################################################################
 
                 # Ajout de la bibliographie
-                abstract = ETree.SubElement(tree, 'bibliographie')
+                abstract = ETree.SubElement(tree, 'biblio')
                 abstract.text = self.__references
                 ######################################################################
 
