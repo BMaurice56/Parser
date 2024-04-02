@@ -102,7 +102,7 @@ rest of the paper is organized as follows. Section 2 introduces our proposed sen
 and Section 3 presents experiments and evaluates
 our approach.
 </introduction>
-  <corps>The underlying idea of our method is that as the
+  <body>The underlying idea of our method is that as the
 number of sentences in the history increases, the
 likelihood to have redundant information within
 candidate sentences also increases. We propose
@@ -302,7 +302,7 @@ SMMR 0.36323 0.10223 0.13886
 1stsystem 0.37032 0.11189 0.14306
 Worst human 0.40497 0.10511 0.14779
 Table 1: R OUGE average recall scores computed
-on the DUC 2007 update corpus.</corps>
+on the DUC 2007 update corpus.</body>
   <conclusion>N/A</conclusion>
   <discussion>In this paper we have described S MMR , a scal-
 able sentence scoring method based on MMR that
@@ -449,7 +449,7 @@ useful in the future of summarization research. Section 5 elaborates a few eval-
 uation techniques and describes some of the standards for evaluating summaries
 automatically. Finally, Section 6 concludes the survey.
 </introduction>
-  <corps>Usually, the
+  <body>Usually, the
 ow of information in a given document is not uniform, which means
 that some parts are more important than others. The major challenge in summa-
 rization lies in distinguishing the more informative parts of a document from the
@@ -1599,7 +1599,7 @@ ing, JS without smoothing, and KL divergence) against manual evaluation; the bes
 performance was achieved by JS without smoothing. This is not surprising since, as
 seen above, the JS divergence is bounded, unlike the KL divergence, and so it does
 not require smoothing. Smoothing has the effect of pulling the two distributions
-more close to the uniform distribution.</corps>
+more close to the uniform distribution.</body>
   <conclusion>The rate of information growth due to the World Wide Web has called for a need
 to develop efficient and accurate summarization systems. Although research on
 summarization started about 50 years ago, there is still a long trail to walk in
@@ -1802,7 +1802,7 @@ SBD and how it is normally evaluated. WiSeBE is formally described in Sect. 3,
 followed by a multi-reference evaluation in Sect. 4. Further analysis of WiSeBE
 and discussion over the method and alternative multi-reference evaluation ispresented in Sect. 5. Finally, Sect. 6concludes the paper.
 </introduction>
-  <corps>Sentence Boundary Detection (SBD) has been a major research topic science
+  <body>Sentence Boundary Detection (SBD) has been a major research topic science
 ASR moved to more general domains as conversational speech [ 17,24,26]. Per-
 formance of ASR systems has improved over the years with the inclusion andcombination of new Deep Neural Networks methods [ 5,9,33]. As a general rule,
 the output of ASR systems lacks of any syntactic information such as capital-
@@ -2071,7 +2071,7 @@ Mean scores S1 — 0.520 — 0.510 — 0.404 — 0.481
 S2 — 0.543 — 0.554 — 0.433 — 0.510
 An important remark is the behavior of S1 and S2 concerning v6. If evalu-
 ated without considering any (dis)agreement between references ( F1mean), S2
-overperforms S1; this is inverted once the systems are evaluated with WiSeBE .</corps>
+overperforms S1; this is inverted once the systems are evaluated with WiSeBE .</body>
   <conclusion>In this paper we presented WiSeBE, a semi-automatic multi-reference sentence
 boundary evaluation protocol based on the necessity of having a more reliable
 way for evaluating the SBD task. We showed how WiSeBE is an inclusive metric
@@ -2332,7 +2332,7 @@ Treebank. In Section 4, we show the search
 interface we have developed. In Section 5, we
 establish some conclusions and future work.
 </introduction>
-  <corps>The most known RST corpus is the RST Discourse
+  <body>The most known RST corpus is the RST Discourse
 Treebank, for English (Carlson et al., 2002a,
 2002b). It includes 385 texts of the journalistic
 domain, extracted from the Penn Treebank
@@ -2979,7 +2979,7 @@ subcorpora. The only requirement is to use the
 relations and the segmentation and annotation
 criteria of our project. Once the texts are sent, t he
 RST Spanish Treebank data manager will verify if
-the annotation corresponds to these criteria.</corps>
+the annotation corresponds to these criteria.</body>
   <conclusion>We think that this work means an important step
 for the RST research in Spanish, and that the RST
 Spanish Treebank will be useful to carry out
@@ -3288,7 +3288,7 @@ Summary sentence: The V-chip will give par-
 ents a device to block out programs they don't
 want their children to see.
 </introduction>
-  <corps>2.1 Related work in professional
+  <body>2.1 Related work in professional
 summarizing
 Professionals take two opposite positions on whether
 a summary should be produced by cutting and past-
@@ -3803,7 +3803,7 @@ operations and combination rules that we derived
 from corpus analysis are significantly different from
 those used in the above system, which mostly came
 from operations in traditional natural language gen-
-eration.</corps>
+eration.</body>
   <conclusion>This paper presents a novel architecture for text
 summarization using cut and paste techniques ob-
 served in human-written abstracts. In order to auto-
@@ -3968,7 +3968,7 @@ veloped for extracting relevant terms from collected resources.
 The details about the evaluation are presented in Section VI-A
 and results obtained, are given in Section VI-B.
 </introduction>
-  <corps>Figure 1 presents the context of this work in VOCA-
+  <body>Figure 1 presents the context of this work in VOCA-
 GEN project. Our industrial partner Script&amp;Go1develop an
 application for the construction management dedicated to
 touch devices and wishes to set up an oral dialogue module
@@ -4247,7 +4247,7 @@ machine on the building sites is reported in every CCTP. The
 difﬁculty of assessing class of some terms such as “absence de
 remise” which has 2 distinct meanings in French (no outhouse
 and no discount). The ﬁrst meaning is relevant in the ﬁeld of
-construction but not the second.</corps>
+construction but not the second.</body>
   <conclusion>The paper reports our experiments and results for building
 a precise and large terminology for the construction domain.
 Collecting terminology is indeed the ﬁrst step towards a
@@ -4427,7 +4427,7 @@ the experimental protocol, an evaluation of our system and an
 interpretation of the ﬁnal results on the collection of human
 distress.
 </introduction>
-  <corps>The main characteristic of the approach presented in this
+  <body>The main characteristic of the approach presented in this
 paper is to only have to provide the labels of the classes to
 be predicted. This method does not need to have a tagged
 data set to predict the different classes, so it is closer to an
@@ -4657,7 +4657,7 @@ and constructing spheres of meanings around these pivotal
 words? Conversely, with a lower rank, but also signiﬁcant, the
 designations of thing, difﬁcult, and problem are more vague,
 but more reformulating to take up the elements involved in
-writing what is wrong.Fig. 5. Distribution of discursive routines by cluster.</corps>
+writing what is wrong.Fig. 5. Distribution of discursive routines by cluster.</body>
   <conclusion>In this article, we presented an unsupervised approach to
 exploring a collection of stories about human distress. This
 approach uses a word embedding model to build vectors
@@ -4785,7 +4785,7 @@ words, and abbreviations in a uniform way through a document-centered approach.A
 proach disambiguates capitalized words and abbreviations by considering suggestive
 local contexts and repetitions of individual words within a document. It then appliesthis information to identify sentence boundaries using a small set of rules.
 </introduction>
-  <corps>A standard practice for measuring the performance of a system for the class of tasks
+  <body>A standard practice for measuring the performance of a system for the class of tasks
 with which we are concerned in this article is to calculate its error rate :
 error
 rate=incorrectly assigned
@@ -5251,7 +5251,7 @@ tions and their deﬁnitions. This method ﬁrst applies an “abbreviation reco
 UK). The abbreviation recognizer for these purposes is allowed to overgenerate signif-
 icantly. There is no harm (apart from the performance issues) in proposing too manycandidate abbreviations, because only those that can be linked to their deﬁnitions willbe retained. Therefore the abbreviation recognizer treats as a candidate any token oftwo to ten characters that contains at least one capital letter. Candidates then are ﬁl-tered through a set of known common words and proper names. At the same timemany good abbreviations and acronyms are ﬁltered out because not for all of themwill deﬁnitions exist in the current document.
 In our task we are interested in ﬁnding all and only abbreviations that end with
-a period (proper abbreviations rather than acronyms), regardless of whether they canbe linked to their deﬁnitions in the current document or not. Therefore, in our methodwe cannot tolerate candidate overgeneration or excessive ﬁltering and had to developmore selective methods for ﬁnding abbreviations in text.</corps>
+a period (proper abbreviations rather than acronyms), regardless of whether they canbe linked to their deﬁnitions in the current document or not. Therefore, in our methodwe cannot tolerate candidate overgeneration or excessive ﬁltering and had to developmore selective methods for ﬁnding abbreviations in text.</body>
   <conclusion>N/A</conclusion>
   <discussion>In this article we presented an approach that tackles three important aspects of text nor-
 malization: sentence boundary disambiguation, disambiguation of capitalized wordswhen they are used in positions where capitalization is expected, and identiﬁcation ofabbreviations. The major distinctive features of our approach can be summarized asfollows:
@@ -5495,7 +5495,7 @@ architectures were signiﬁcantly more computationally expensive for training th
 in [13], with the exception of certain version of log-bilinear model where diagonal weight matrices
 are used [23].
 </introduction>
-  <corps>Many different types of models were proposed for estimating continuous representations of words,
+  <body>Many different types of models were proposed for estimating continuous representations of words,
 including the well-known Latent Semantic Analysis (LSA) and Latent Dirichlet Allocation (LDA).
 In this paper, we focus on distributed representations of words learned by neural networks, as it was
 previously shown that they perform signiﬁcantly better than LSA for preserving linear regularities
@@ -5838,7 +5838,7 @@ of accuracy of our best models by about 10% absolutely on the semantic-syntactic
 It is also possible to apply the vector operations to solve different tasks. For example, we have
 observed good accuracy for selecting out-of-the-list words, by computing average vector for a list of
 words, and ﬁnding the most distant word vector. This is a popular type of problems in certain human
-intelligence tests. Clearly, there is still a lot of discoveries to be made using these techniques.</corps>
+intelligence tests. Clearly, there is still a lot of discoveries to be made using these techniques.</body>
   <conclusion>In this paper we studied the quality of vector representations of words derived by various models on
 a collection of syntactic and semantic language tasks. We observed that it is possible to train high
 quality word vectors using very simple model architectures, compared to the popular neural network
@@ -6079,7 +6079,7 @@ standards for exchanging linguistic data.
 8www.tei-c.org/P5
 9www.xml-ces.org
 10www.ilc.cnr.it/eagles/home.html</introduction>
-  <corps>The MACAON exchange format is based on four con-
+  <body>The MACAON exchange format is based on four con-
 cepts: segment ,attribute ,annotation level andseg-
 mentation .
 A segment refers to a segment of the text or
@@ -6398,7 +6398,7 @@ the n-best results of the annotation.
 ﬁnd all the word sequences that are compatible with
 this analysis.
 Figure 2 shows the interface that can be used to
-see the output of the pipeline.</corps>
+see the output of the pipeline.</body>
   <conclusion>In this paper we have presented MACAON , an NLP
 tool suite which allows to process native text as well
 as several hypotheses automatically produced by an
@@ -6619,7 +6619,7 @@ carried out together with the results. Section V discusses the
 results and Section VI concludes the paper and identiﬁes future
 work.
 </introduction>
-  <corps>One of the ﬁrst works to use content-based measures in
+  <body>One of the ﬁrst works to use content-based measures in
 text summarization evaluation is due to [5], who presented an
 evaluation framework to compare rankings of summarization
 systems produced by recall and cosine-based measures. They
@@ -6959,7 +6959,7 @@ generic multi-document summarization in French, in this
 case correlation scores are lower than correlation scores for
 single-document summarization in French, a result which may
 be expected given the diversity of input in multi-document
-summarization.</corps>
+summarization.</body>
   <conclusion>This paper has presented a series of experiments in
 content-based measures that do not rely on the use of model
 summaries for comparison purposes. We have carried out
@@ -7208,7 +7208,7 @@ for problems with binary or continuous inputs. It is best suited for problemsreq
 In section 2, we give the basic deﬁnitions and present a simple example
 of our strategy, followed by the formal presentation of the growth heuristicsand the perceptron learning algorithm used to train the individual units.In section 3 we compare NetLines to other growth strategies. The construc-tion of trees of networks for multiclass problems is presented in section 4.A comparison of the generalization error and the network’s size, with re-sults obtained with other learning procedures, is presented in section 5. Theconclusions are set out in section 6.
 </introduction>
-  <corps>2.1 Deﬁnitions. We are given a training set of Pinput-output examples
+  <body>2.1 Deﬁnitions. We are given a training set of Pinput-output examples
 fE»„;¿„g, where„D1;2;:::; P. The inputsE»„D.1;»„
 1;»„
 2;:::;»„
@@ -7655,7 +7655,7 @@ valued attributes. The database of DD150 patterns contains 50 examples
 of each class. Networks were trained with PD149 patterns, and the gener-
 alization error is the mean value of all the 150 leave-one-out possible tests.Results of†
 gare displayed as a function of the number of weights in Figure 7.
-Error bars are available for only our own results. In this difﬁcult problem,the vote of the three possible TONs trained with the three possible classsequences (see section 4) improves the generalization performance.</corps>
+Error bars are available for only our own results. In this difﬁcult problem,the vote of the three possible TONs trained with the three possible classsequences (see section 4) improves the generalization performance.</body>
   <conclusion>We presented an incremental learning algorithm for classiﬁcation, which we
 call NetLines. It generates small feedforward neural networks with a singlehidden layer of binary units connected to a binary output neuron. NetLinesallows for an automatic adaptation of the neural network to the complexityof the particular task. This is achieved by coupling an error-correcting strat-egy for the successive addition of hidden neurons with Minimerror, a very
 /G14/G13 /G14/G13/G13/G13/G11/G13/G13/G13/G11/G13/G15/G13/G11/G13/G17/G13/G11/G13/G19/G13/G11/G13/G1B/G13/G11/G14/G13
