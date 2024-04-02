@@ -1,0 +1,16 @@
+Négociation : (1 tâche)
+
+- Uniformisation des balises XML avec le client
+
+Amélioration : (2 tâches)
+
+- Amélioration du code
+- Ajout d'un fichier "solution" en XML
+
+Rendu et artéfacts : (4 tâches)
+
+- Rendre le programme sur le Moodle
+
+- Faire le tableau Excel et le détail des tâches du Sprint 6
+- Faire un document sur les scores de l'ensemble du Corpus
+- Faire un rapport de fin de Sprint
