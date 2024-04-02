@@ -53,6 +53,7 @@ class Parser:
         self.__pos_last_character_first_page = -1
         self.__auteurs_deux_lignes = False
         self.__no_introduction = False
+        self.__index_first_page = 0
         self.__type_pdf = -1
         self.__type_mail = -1
         """
@@ -107,12 +108,17 @@ class Parser:
 
         :return: None
         """
-        premiere_page = self.__pdfReader.pages[0].extract_text()
+        premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
+
+        if premiere_page.startswith("This article") and not self.__find_emails(premiere_page):
+            self.__index_first_page += 1
+            premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
 
         self.__pos_last_character_first_page = len(premiere_page) - 1
 
         self.__text = premiere_page + "".join(
-            self.__pdfReader.pages[x].extract_text() for x in range(1, len(self.__pdfReader.pages)))
+            self.__pdfReader.pages[x].extract_text() for x in
+            range(self.__index_first_page + 1, len(self.__pdfReader.pages)))
 
         self.__text = Utils.replace_accent(self.__text)
 
@@ -825,9 +831,10 @@ class Parser:
                     value = value.split(nom_mail)[0]
                 ######################################################################
 
-                # Si présence d'une étoile, on l'enlève
-                if "*" in value:
-                    value = value[:value.find("*")]
+                # Si présence de ces éléments, on les enlève
+                for elt in ["*", self.__abstract, "article history"]:
+                    if elt.lower() in value.lower():
+                        value = value[:value.lower().find(elt)]
                 ######################################################################
 
                 result = ""
@@ -839,12 +846,17 @@ class Parser:
                             element = element[1:]
                         ######################################################################
 
+                        # Si présence d'un ; à la fin, on l'enlève
+                        if element[-1] == ";":
+                            element = element[:-1]
+                        ######################################################################
+
                         result = f"{result}\n{element}"
 
                 self.__dico_nom_univ[key] = result.strip()
             ######################################################################
 
-    def _get_title(self, minimum_y: int = 650, maximum_y: int = 770) -> None:
+    def _get_title(self, minimum_y: int = 640, maximum_y: int = 770) -> None:
         """
         Renvoie le titre du pdf
 
@@ -853,7 +865,7 @@ class Parser:
         :return: None
         """
         if self.__titre == "":
-            page = self.__pdfReader.pages[0]
+            page = self.__pdfReader.pages[self.__index_first_page]
 
             parties = []
             parties_tries = []
@@ -926,17 +938,14 @@ class Parser:
         :return: None
         """
         if self.__abstract == "":
-            # Récupération du texte
-            content_copy = self.__text[:].lower()
-            ######################################################################
-
             # Position des mots clefs
-            pos_abstract = max(content_copy.find("abstract"), content_copy.find("bstract") - 1)
-            pos_introduction = max(content_copy.find("introduction"), content_copy.find("ntroduction") - 1)
-            pos_keywords = max(content_copy.find("keyword"), content_copy.find("eyword") - 1,
-                               content_copy.find("ey-word") - 1)
-            pos_index_terms = max(content_copy.find("index terms"), content_copy.find("ndex terms") - 1)
-            pos_mot_clefs = max(content_copy.find("mots-cl"), content_copy.find("mots cl"))
+            pos_abstract = max(self.__text_lower.find("abstract"), self.__text_lower.find("bstract") - 1)
+            pos_introduction = max(self.__text_lower.find("introduction"), self.__text_lower.find("ntroduction") - 1)
+            pos_keywords = max(self.__text_lower.find("keyword"), self.__text_lower.find("eyword") - 1,
+                               self.__text_lower.find("ey-word") - 1)
+            pos_index_terms = max(self.__text_lower.find("index terms"), self.__text_lower.find("ndex terms") - 1)
+            pos_mot_clefs = max(self.__text_lower.find("mots-cl"), self.__text_lower.find("mots cl"))
+            pos_abbreviation = self.__text_lower.find("\nabbreviation")
             ######################################################################
 
             # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
@@ -952,6 +961,11 @@ class Parser:
             # S'il y a une section mots clefs dans le débt du pdf, on l'enlève
             if 0 < pos_mot_clefs < pos_introduction and pos_mot_clefs > pos_abstract:
                 pos_introduction = pos_mot_clefs
+            ######################################################################
+
+            # S'il y a une section abbreviations dans le débt du pdf, on l'enlève
+            if 0 < pos_abbreviation < pos_introduction and pos_abbreviation > pos_abstract:
+                pos_introduction = pos_abbreviation
             ######################################################################
 
             # Si trouvé, alors on peut renvoyer l'abstract
