@@ -48,9 +48,9 @@ class Parser:
                                  "ollow-up work": "F"}
 
         self.__position_title_keywords = {}
-        self.__text_first_page = ""
-        self.__text_rest = ""
-        self.__text_rest_lower = ""
+        self.__text = ""
+        self.__text_lower = ""
+        self.__pos_last_character_first_page = -1
         self.__auteurs_deux_lignes = False
         self.__no_introduction = False
         self.__type_pdf = -1
@@ -107,21 +107,23 @@ class Parser:
 
         :return: None
         """
-        self.__text_first_page = self.__pdfReader.pages[0].extract_text()
-        self.__text_rest = "".join(
+        premiere_page = self.__pdfReader.pages[0].extract_text()
+
+        self.__pos_last_character_first_page = len(premiere_page) - 1
+
+        self.__text = premiere_page + "".join(
             self.__pdfReader.pages[x].extract_text() for x in range(1, len(self.__pdfReader.pages)))
 
-        self.__text_first_page = Utils.replace_accent(self.__text_first_page)
-        self.__text_rest = Utils.replace_accent(self.__text_rest)
+        self.__text = Utils.replace_accent(self.__text)
 
         # Filtre les caractères pour ne conserver que les caractères ASCII
-        chaine_normalisee = unicodedata.normalize('NFD', self.__text_rest.lower())
+        chaine_normalisee = unicodedata.normalize('NFD', self.__text.lower())
 
-        self.__text_rest_lower = ''.join(c for c in chaine_normalisee if unicodedata.category(c) != 'Mn')
+        self.__text_lower = ''.join(c for c in chaine_normalisee if unicodedata.category(c) != 'Mn')
         ######################################################################
 
         # Remplace le mot clef pour mieux le retrouver
-        self.__text_rest_lower = self.__text_rest_lower.replace("cknowledgement", "cknowledgment ")
+        self.__text_lower = self.__text_lower.replace("cknowledgement", "cknowledgment ")
         ######################################################################
 
     def __localisation_keywords(self) -> None:
@@ -134,11 +136,11 @@ class Parser:
 
         for word, first_letter in self.__title_keywords.items():
             while pos_word != -1:
-                pos_word = self.__text_rest_lower[:pos_word].rfind(word)
+                pos_word = self.__text_lower[:pos_word].rfind(word)
 
                 if pos_word != -1:
                     # On regarde s'il y a un \n devant ou un . + présence de la lettre en majuscule (titre)
-                    content_around_word = self.__text_rest[
+                    content_around_word = self.__text[
                                           pos_word - 8:pos_word]
 
                     pos_word_in_content_around = content_around_word.find(word)
@@ -539,16 +541,16 @@ class Parser:
         """
         if not self.__auteurs and self.__dico_nom_mail == {}:
             # Position des éléments dans le texte
-            pos_titre = self.__text_first_page.find(self.__titre)
-            pos_abstract = self.__text_first_page.find(self.__abstract[:20])
-            pos_resume = max(self.__text_first_page.find("ésumé") - 1, self.__text_first_page.find("esume") - 1)
+            pos_titre = self.__text.find(self.__titre)
+            pos_abstract = self.__text.find(self.__abstract[:20])
+            pos_resume = max(self.__text.find("ésumé") - 1, self.__text.find("esume") - 1)
 
             if 0 < pos_resume < pos_abstract:
                 pos_abstract = pos_resume
             ######################################################################
 
             # On garde que la section correspondant aux auteurs
-            section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract]
+            section_auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract]
             ######################################################################
 
             # Enlèvement des mots clefs
@@ -567,7 +569,7 @@ class Parser:
             self.__emails = self.__find_emails(section_auteurs)
 
             if not self.__emails:
-                self.__emails = self.__find_emails(self.__text_first_page)
+                self.__emails = self.__find_emails(self.__text)
 
                 # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
                 if self.__emails:
@@ -669,7 +671,7 @@ class Parser:
                 elif self.__type_mail == 2:
                     self.__type_pdf = 0
 
-                auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].split("\n")
+                auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract].split("\n")
 
                 for aut in auteurs:
                     if aut == "":
@@ -691,16 +693,16 @@ class Parser:
         :return: None
         """
         if self.__dico_nom_univ == {}:
-            pos_titre = self.__text_first_page.find(self.__titre)
-            pos_abstract = self.__text_first_page.find(self.__abstract[1:10])
-            pos_resume = max(self.__text_first_page.find("ésumé") - 1, self.__text_first_page.find("esume") - 1)
+            pos_titre = self.__text.find(self.__titre)
+            pos_abstract = self.__text.find(self.__abstract[1:10])
+            pos_resume = max(self.__text.find("ésumé") - 1, self.__text.find("esume") - 1)
 
             if 0 < pos_resume < pos_abstract:
                 pos_abstract = pos_resume
             ######################################################################
 
             # On garde que la section correspondant aux auteurs
-            section_auteurs = self.__text_first_page[pos_titre + len(self.__titre): pos_abstract].strip()
+            section_auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract].strip()
             ######################################################################
 
             # Enlèvement des mots clefs
@@ -723,17 +725,16 @@ class Parser:
                     # Position du nom ainsi que du mail
                     # Si mail de type 2 (mail dans le corps) → rechercher le nom de l'auteur en partant de la fin
                     if self.__type_mail == 2:
-                        pos_key = self.__text_first_page.rfind(key)
+                        pos_key = self.__text.rfind(key, 0, self.__pos_last_character_first_page)
                     else:
-                        pos_key = self.__text_first_page.find(key)
+                        pos_key = self.__text.find(key)
                     ######################################################################
-
                     # On localise la position du mail
-                    pos_value = self.__text_first_page.find(value.split("@")[0])
+                    pos_value = self.__text.find(value.split("@")[0])
                     ######################################################################
 
                     # Puis, on ne garde que l'établissement correspondant à l'auteur
-                    result = self.__text_first_page[pos_key + len(key):pos_value]
+                    result = self.__text[pos_key + len(key):pos_value]
                     ######################################################################
 
                     # On regarde s'il y a un \n a la fin et on le retire
@@ -926,7 +927,7 @@ class Parser:
         """
         if self.__abstract == "":
             # Récupération du texte
-            content_copy = self.__text_first_page[:].lower()
+            content_copy = self.__text[:].lower()
             ######################################################################
 
             # Position des mots clefs
@@ -956,35 +957,35 @@ class Parser:
             # Si trouvé, alors on peut renvoyer l'abstract
             if pos_abstract != -1 and pos_introduction != -1:
                 swift = 1
-                if self.__text_first_page[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
+                if self.__text[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
                     swift += 1
 
-                self.__abstract = self.__text_first_page[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
+                self.__abstract = self.__text[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
             ######################################################################
 
             # Sinon absence du mot abstract
             elif pos_abstract == -1 and pos_introduction != -1:
-                dernier_point = self.__text_first_page[:pos_introduction - 2].rfind(".")
+                dernier_point = self.__text[:pos_introduction - 2].rfind(".")
 
                 i = 0
 
                 for i in range(dernier_point, 1, -1):
-                    if ord(self.__text_first_page[i]) < 20:
-                        if ord(self.__text_first_page[i - 1]) != 45:
+                    if ord(self.__text[i]) < 20:
+                        if ord(self.__text[i - 1]) != 45:
                             break
 
-                self.__abstract = self.__text_first_page[i + 1:dernier_point]
+                self.__abstract = self.__text[i + 1:dernier_point]
             ######################################################################
 
             # Sinon il n'y a pas d'introduction
             elif pos_abstract != -1 and pos_introduction == -1:
                 self.__no_introduction = True
 
-                pos_first_title = max(self.__text_first_page.find("\n1 "), self.__text_first_page.find("\nI."),
-                                      self.__text_first_page.find("\nI "))
+                pos_first_title = max(self.__text.find("\n1 "), self.__text.find("\nI."),
+                                      self.__text.find("\nI "))
 
                 if pos_first_title != -1:
-                    self.__abstract = self.__text_first_page[pos_abstract + len("abstract"):pos_first_title].strip()
+                    self.__abstract = self.__text[pos_abstract + len("abstract"):pos_first_title].strip()
             ######################################################################
 
             # Si présence du 1 de l'introduction, on l'enlève
@@ -1013,7 +1014,7 @@ class Parser:
         """
         if self.__introduction == "" and self.__corps == "":
             # Position de l'abstract
-            pos_abstract = self.__text_first_page.find(self.__abstract)
+            pos_abstract = self.__text.find(self.__abstract)
             ######################################################################
 
             # Récupération des positions des mots par ordre croisant != -1
@@ -1027,7 +1028,7 @@ class Parser:
             ######################################################################
 
             # Récupération du texte en entier
-            texte = self.__text_first_page[pos_abstract + len(self.__abstract):] + self.__text_rest[:pos_first_keyword]
+            texte = self.__text[pos_abstract + len(self.__abstract):pos_first_keyword]
             texte_lower = texte.lower()
             ######################################################################
 
@@ -1120,7 +1121,7 @@ class Parser:
                 pos_word_after = self.__get_pos_word_after(onclusion_word)
 
                 # Récupération du texte
-                self.__conclusion = self.__text_rest[pos_conclusion + len(onclusion_word):pos_word_after].strip()
+                self.__conclusion = self.__text[pos_conclusion + len(onclusion_word):pos_word_after].strip()
 
                 # Si présence d'un "and", on le retire
                 if self.__conclusion[:4].lower() == "and " or self.__conclusion[:6].lower() == "s and ":
@@ -1155,7 +1156,7 @@ class Parser:
                 ######################################################################
 
                 # Récupération du texte
-                self.__discussion = self.__text_rest[pos_discussion + len(iscussion_word):pos_word_after].strip()
+                self.__discussion = self.__text[pos_discussion + len(iscussion_word):pos_word_after].strip()
                 ######################################################################
 
                 # Si présence d'un "and", on le retire
@@ -1184,7 +1185,7 @@ class Parser:
             ######################################################################
 
             if pos_references != -1:
-                self.__references = f"{self.__text_rest[pos_references + len('references'):word_after - 1]}"
+                self.__references = f"{self.__text[pos_references + len('references'):word_after - 1]}"
 
             else:
                 self.__references = "N/A"
