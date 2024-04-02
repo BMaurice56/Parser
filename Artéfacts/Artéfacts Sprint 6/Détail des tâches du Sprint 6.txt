@@ -5,7 +5,7 @@ Négociation : (1 tâche)
 Amélioration : (2 tâches)
 
 - Amélioration du code
-- Ajout d'un fichier "solution" en XML
+- Ajout d'un fichier "solution" en XML pour le nouveau Corpus
 
 Rendu et artéfacts : (4 tâches)
 
