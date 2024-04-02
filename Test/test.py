@@ -16,7 +16,7 @@ if __name__ == "__main__":
     path_paser = path_test[:path_test.rfind('/')]
 
     res_attendu_path = f"{path_test}/solution"
-    folder_path = f"{path_paser}/Corpus_2022/analyse_pdf/"
+    folder_path = f"{path_paser}/Corpus_2023_FINAL/analyse_pdf/"
 
     if argv == "-t":
         res_attendu_path += "Txt.txt"
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     elif argv == "-x":
         res_attendu_path += "Xml.xml"
 
-    os.system(f"python3 {path_paser}/main.py {argv} {path_paser}/Corpus_2022/ --all")
+    os.system(f"python3 {path_paser}/main.py {argv} {path_paser}/Corpus_2023_FINAL/ --all")
 
     comparer = TextComparer(res_attendu_path, argv)
     comparer.compare_files(folder_path)
