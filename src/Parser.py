@@ -455,6 +455,12 @@ class Parser:
                     self.__auteurs.remove(elt)
             ######################################################################
 
+            # On retire les caractères inutiles
+            for elt in self.__auteurs:
+                if len(elt) <= 1:
+                    self.__auteurs.remove(elt)
+            ######################################################################
+
             return
 
         return wrapper
@@ -684,6 +690,11 @@ class Parser:
                         auteurs.remove(aut)
 
                 self.__auteurs.append(auteurs[0].strip())
+
+                # Si présence d'une virgule à la fin, on rajoute la deuxième ligne des auteurs
+                if auteurs[0][-1] == ",":
+                    self.__auteurs.append(auteurs[1].strip())
+                ######################################################################
 
                 # Si on a beaucoup de mails → auteurs sur deux lignes
                 if len(self.__emails) >= 6:
