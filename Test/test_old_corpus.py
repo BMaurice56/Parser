@@ -24,7 +24,7 @@ if __name__ == "__main__":
     elif argv == "-x":
         res_attendu_path += "Xml.xml"
 
-    os.system(f"python3 {path_paser}/main.py {argv} {path_paser}/Corpus_2022/ --all")
+    os.system(f"python3.10 {path_paser}/main.py {argv} {path_paser}/Corpus_2022/ --all")
 
     comparer = TextComparer(res_attendu_path, argv)
     comparer.compare_files(folder_path)
