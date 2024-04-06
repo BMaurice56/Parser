@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ETree
 from functools import wraps
 from src.Utils import Utils
+from src.mail import Mail
 import Levenshtein
 import unicodedata
 import PyPDF2
@@ -110,7 +111,7 @@ class Parser:
         """
         premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
 
-        if premiere_page.startswith("This article") and not self.__find_emails(premiere_page):
+        if premiere_page.startswith("This article") and not Mail.find_emails(premiere_page)[0]:
             self.__index_first_page += 1
             premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
 
@@ -214,126 +215,6 @@ class Parser:
 
         except IndexError:
             return -1
-
-    def __find_emails(self, texte: str) -> list:
-        """
-        Trouve les mails dans le texte donné
-
-        :param texte: texte contenant des mails
-        :return: Liste des mails
-        """
-        self.__emails = []
-
-        # Récupération des emails
-        emails = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)]
-        emails2 = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
-        emails3 = [x.strip() for x in re.findall(r"[({a-zA-Z0-9., \-+_})]+@[a-z0-9.\n\- +_]+\.[a-z]+", texte)]
-        emails4 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+\n@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
-        emails5 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+Q[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
-        ######################################################################
-
-        # Dictionnaire qui permet de retrouver l'ordre après tri
-        position_emails = dict((x, y) for x, y in enumerate(emails, 0))
-        position_emails2 = dict((x, y) for x, y in enumerate(emails2, 0))
-        ######################################################################
-
-        # Tri les listes pour pouvoir les comparer
-        emails.sort()
-        emails2.sort()
-        ######################################################################
-
-        if emails and emails != emails2:
-            self.__type_mail = 0
-            if len(emails) < len(emails2):
-                Utils.retrieve_previous_order(emails, position_emails2)
-            elif len(emails) > len(emails2):
-                Utils.retrieve_previous_order(emails, position_emails)
-            else:
-                i = 0
-                for mail, mail2 in zip(emails, emails2):
-                    if mail != mail2:
-                        if mail[-5:] == ".univ" or mail[-6:] == ".univ-" or len(mail) < len(mail2):
-                            pos = list(position_emails.keys())[list(position_emails.values()).index(emails[i])]
-                            emails[i] = mail2
-                            position_emails[pos] = mail2
-
-                    i += 1
-
-                Utils.retrieve_previous_order(emails, position_emails)
-
-        else:
-            self.__type_mail = 0
-            Utils.retrieve_previous_order(emails, position_emails)
-
-        # S'il y a des mails dans la troisième regex, on regarde s'il y a plusieurs mails
-        if len(emails3) != 0:
-            if "," in emails3[0]:
-                self.__type_mail = 1
-                emails = []
-
-                emails3_separer = emails3[0].split(",")
-                dernier_mail, nom_domaine = emails3_separer[-1].split("@")
-
-                for elt in emails3_separer[:-1]:
-                    emails.append(f"{elt.strip()}@{nom_domaine}")
-
-                emails.append(f"{dernier_mail}@{nom_domaine}")
-        ######################################################################
-
-        # S'il y a des mails dans la quatrième regex, on regarde s'il y a plusieurs mails
-        if len(emails4) != 0:
-            if "," in emails4[0]:
-                self.__type_mail = 1
-                emails = []
-
-                emails4_separer = emails4[0].split(",")
-                dernier_mail, nom_domaine = emails4_separer[-1].split("@")
-
-                for elt in emails4_separer[:-1]:
-                    emails.append(f"{elt.strip()}@{nom_domaine}")
-
-                emails.append(f"{dernier_mail}@{nom_domaine}")
-        ######################################################################
-
-        # Soit, le @ a été lu comme un Q et donc on sépare les mails
-        if not emails and len(emails5) > 0:
-            if "," in emails5[0]:
-                self.__type_mail = 1
-                emails = []
-
-                emails5_separer = emails5[0].split(",")
-                dernier_mail, nom_domaine = emails5_separer[-1].split("Q")
-
-                for elt in emails5_separer[:-1]:
-                    emails.append(f"{elt.strip()}@{nom_domaine}")
-
-                emails.append(f"{dernier_mail}@{nom_domaine}")
-        ######################################################################
-
-        # Pour chaque mail, on enlève différents caractères
-        for i in range(len(emails)):
-            emails[i] = emails[i].replace("\n", "")
-            emails[i] = emails[i].replace("(", "").replace(")", "")
-            emails[i] = emails[i].replace("{", "").replace("}", "")
-            emails[i] = emails[i].strip()
-        ######################################################################
-
-        # Si le mail est trop petit(erreur) -> on l'enlève
-        for element in emails:
-            if len(element.split("@")[0]) < 2:
-                emails.remove(element)
-        ######################################################################
-
-        # Si présence d'un f au début et un g à la fin (problème d'encodeur avec les {}), on les enlève
-        if self.__type_mail == 1 and len(emails) > 0:
-            nom, domaine = emails[-1].split("@")
-            if emails[0][0] == "f" and nom[-1] == "g":
-                emails[0] = emails[0][1:]
-
-                emails[-1] = f"{nom[:-1]}@{domaine}"
-        ######################################################################
-
-        return emails
 
     def __separate_authors(f):
         """
@@ -578,10 +459,10 @@ class Parser:
             ######################################################################
 
             # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
-            self.__emails = self.__find_emails(section_auteurs)
+            self.__emails, self.__type_mail = Mail.find_emails(section_auteurs)
 
             if not self.__emails:
-                self.__emails = self.__find_emails(self.__text)
+                self.__emails, self.__type_mail = Mail.find_emails(self.__text)
 
                 # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
                 if self.__emails:
@@ -835,7 +716,7 @@ class Parser:
                 ######################################################################
 
                 # Si présence de mail, on l'enlève
-                emails = self.__find_emails(value)
+                emails = Mail.find_emails(value)[0]
 
                 if emails:
                     nom_mail = emails[0].split("@")[0]
