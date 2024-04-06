@@ -925,7 +925,8 @@ class Parser:
             # Soit, on commence à itérer sur le texte et à ce moment-là, on ne garde que les premières lignes
             elif len(parties_tries) > 10:
                 self.__titre += parties_tries[0]
-                if parties_tries[0][-1] == "\n":
+
+                if parties_tries[0][-1] == "\n" and (not parties_tries[1][0].isupper() or len(parties_tries[1]) >= 15):
                     self.__titre += parties_tries[1]
 
                     # Si titre sur trois lignes, on récupère le bout manquant
