@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ETree
 from src.content_pdf import Content
+from src.abstract import Abstract
 from src.authors import Author
 from src.Utils import Utils
 from src.title import Title
@@ -87,8 +88,8 @@ class Parser:
         """
         pos_word = -2
 
-        texte = self.content.get_text()
-        texte_lower = self.content.get_text_lower()
+        texte = self.__content.get_text()
+        texte_lower = self.__content.get_text_lower()
 
         for word, first_letter in self.__title_keywords.items():
             while pos_word != -1:
@@ -129,13 +130,22 @@ class Parser:
         :return: None
         """
         # !!! ORDRE A CONSERVER
-        self.content = Content(self.__pdfReader)
-        self.__index_first_page = self.content.get_index_first_page()
+        self.__content = Content(self.__pdfReader)
+        self.__index_first_page = self.__content.get_index_first_page()
         self.__localisation_keywords()
         self.__titre = Title(self.__pdfReader, self.__index_first_page).get_title()
-        self._get_abstract()
-        auteurs = Author(self.content, self.__titre, self.__abstract, self.__school_words)
+
+        # Abstract
+        abstract = Abstract(self.__content)
+        self.__abstract = abstract.get_abstract()
+        self.__no_introduction = abstract.get_presence_introduction()
+        ######################################################################
+
+        # Auteurs
+        auteurs = Author(self.__content, self.__titre, self.__abstract, self.__school_words)
         self.__auteurs, self.__dico_nom_mail, self.__dico_nom_univ = auteurs.get_authors()
+        ######################################################################
+
         self._get_introduction_and_corps()
         self._get_discussion()
         self._get_conclusion()
@@ -164,97 +174,6 @@ class Parser:
         except IndexError:
             return -1
 
-    def _get_abstract(self) -> None:
-        """
-        Renvoie l'abstract du pdf
-
-        :return: None
-        """
-        if self.__abstract == "":
-            texte = self.content.get_text()
-            texte_lower = self.content.get_text_lower()
-
-            # Position des mots clefs
-            pos_abstract = max(texte_lower.find("abstract"), texte_lower.find("bstract") - 1)
-            pos_introduction = max(texte_lower.find("introduction"), texte_lower.find("ntroduction") - 1)
-            pos_keywords = max(texte_lower.find("keyword"), texte_lower.find("eyword") - 1,
-                               texte_lower.find("ey-word") - 1)
-            pos_index_terms = max(texte_lower.find("index terms"), texte_lower.find("ndex terms") - 1)
-            pos_mot_clefs = max(texte_lower.find("mots-cl"), texte_lower.find("mots cl"))
-            pos_abbreviation = texte_lower.find("\nabbreviation")
-            ######################################################################
-
-            # S'il y a une section mot-clefs dans le début du pdf, on l'enlève
-            if 0 < pos_keywords < pos_introduction and pos_keywords > pos_abstract:
-                pos_introduction = pos_keywords
-            ######################################################################
-
-            # S'il y a une section index terms dans le début du pdf, on l'enlève
-            if 0 < pos_index_terms < pos_introduction and pos_index_terms > pos_abstract:
-                pos_introduction = pos_index_terms
-            ######################################################################
-
-            # S'il y a une section mots clefs dans le débt du pdf, on l'enlève
-            if 0 < pos_mot_clefs < pos_introduction and pos_mot_clefs > pos_abstract:
-                pos_introduction = pos_mot_clefs
-            ######################################################################
-
-            # S'il y a une section abbreviations dans le débt du pdf, on l'enlève
-            if 0 < pos_abbreviation < pos_introduction and pos_abbreviation > pos_abstract:
-                pos_introduction = pos_abbreviation
-            ######################################################################
-
-            # Si trouvé, alors on peut renvoyer l'abstract
-            if pos_abstract != -1 and pos_introduction != -1:
-                swift = 1
-                if texte[pos_abstract + len("Abstract") + swift] in [" ", "\n", "-", "—"]:
-                    swift += 1
-
-                self.__abstract = texte[pos_abstract + len("Abstract") + swift:pos_introduction - 2]
-            ######################################################################
-
-            # Sinon absence du mot abstract
-            elif pos_abstract == -1 and pos_introduction != -1:
-                dernier_point = texte[:pos_introduction - 2].rfind(".")
-
-                i = 0
-
-                for i in range(dernier_point, 1, -1):
-                    if ord(texte[i]) < 20:
-                        if ord(texte[i - 1]) != 45:
-                            break
-
-                self.__abstract = texte[i + 1:dernier_point]
-            ######################################################################
-
-            # Sinon il n'y a pas d'introduction
-            elif pos_abstract != -1 and pos_introduction == -1:
-                self.__no_introduction = True
-
-                pos_first_title = max(texte.find("\n1 "), texte.find("\nI."), texte.find("\nI "))
-
-                if pos_first_title != -1:
-                    self.__abstract = texte[pos_abstract + len("abstract"):pos_first_title].strip()
-            ######################################################################
-
-            # Si présence du 1 de l'introduction, on l'enlève
-            pos_i_introduction = self.__abstract.rfind("I.")
-
-            if pos_i_introduction != -1:
-                self.__abstract = self.__abstract[:pos_i_introduction - 1]
-            ######################################################################
-
-            # Permet d'enlever les espaces et retour à la ligne à la fin pour vérifier la présence du point
-            if self.__abstract != "":
-                while self.__abstract[-1] in ["\n", " ", "I"]:
-                    self.__abstract = self.__abstract[:-1]
-
-                if self.__abstract[-1] != ".":
-                    self.__abstract += "."
-            else:
-                raise ValueError("Abstract non trouvé")
-            ######################################################################
-
     def _get_introduction_and_corps(self) -> None:
         """
         Récupère l'introduction et le corps du texte
@@ -262,7 +181,7 @@ class Parser:
         :return: None
         """
         if self.__introduction == "" and self.__corps == "":
-            texte_pdf = self.content.get_text()
+            texte_pdf = self.__content.get_text()
 
             # Position de l'abstract
             pos_abstract = texte_pdf.find(self.__abstract)
@@ -372,7 +291,8 @@ class Parser:
                 pos_word_after = self.__get_pos_word_after(onclusion_word)
 
                 # Récupération du texte
-                self.__conclusion = self.content.get_text()[pos_conclusion + len(onclusion_word):pos_word_after].strip()
+                self.__conclusion = self.__content.get_text()[
+                                    pos_conclusion + len(onclusion_word):pos_word_after].strip()
 
                 # Si présence d'un "and", on le retire
                 if self.__conclusion[:4].lower() == "and " or self.__conclusion[:6].lower() == "s and ":
@@ -407,7 +327,8 @@ class Parser:
                 ######################################################################
 
                 # Récupération du texte
-                self.__discussion = self.content.get_text()[pos_discussion + len(iscussion_word):pos_word_after].strip()
+                self.__discussion = self.__content.get_text()[
+                                    pos_discussion + len(iscussion_word):pos_word_after].strip()
                 ######################################################################
 
                 # Si présence d'un "and", on le retire
@@ -436,7 +357,7 @@ class Parser:
             ######################################################################
 
             if pos_references != -1:
-                self.__references = f"{self.content.get_text()[pos_references + len('references'):word_after - 1]}"
+                self.__references = f"{self.__content.get_text()[pos_references + len('references'):word_after - 1]}"
 
             else:
                 self.__references = "N/A"
