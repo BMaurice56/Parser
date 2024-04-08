@@ -35,6 +35,9 @@ class Author:
         2 : normal mais dans la page et non au niveau des auteurs
         """
 
+        self._get_author()
+        self._get_affiliation()
+
     def _get_affiliation(self) -> None:
         """
         Récupère les universités des différents auteurs
@@ -573,7 +576,5 @@ class Author:
 
         :return: liste et dictionnaires des informations (nom, pair nom-mail, pair nom-univ)
         """
-        self._get_author()
-        self._get_affiliation()
 
         return self.__auteurs, self.__dico_nom_mail, self.__dico_nom_univ

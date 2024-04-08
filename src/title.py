@@ -8,6 +8,8 @@ class Title:
         self.__titre = ""
         self.__index_first_page = index_first_page
 
+        self._get_title()
+
     def _get_title(self, minimum_y: int = 640, maximum_y: int = 770) -> None:
         """
         Renvoie le titre du pdf
@@ -90,6 +92,5 @@ class Title:
 
         :return: string valeur
         """
-        self._get_title()
 
         return self.__titre

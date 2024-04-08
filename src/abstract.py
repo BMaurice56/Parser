@@ -8,6 +8,8 @@ class Abstract:
         self.__abstract = ""
         self.__no_introduction = False
 
+        self._get_abstract()
+
     def _get_abstract(self) -> None:
         """
         Renvoie l'abstract du pdf
@@ -105,14 +107,16 @@ class Abstract:
 
         :return: string valeur
         """
-        self._get_abstract()
 
         return self.__abstract
 
     def get_presence_introduction(self) -> bool:
         """
         Renvoi s'il y a présence d'une introduction sur le pdf
+        True → présence d'une introduction
+        False → absence
 
         :return: boolean valeur
         """
-        return self.__no_introduction
+
+        return not self.__no_introduction
