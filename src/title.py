@@ -32,7 +32,7 @@ class Title:
         # Extraction des premières lignes
         page.extract_text(visitor_text=visitor_body)
 
-        word_to_avoid = ["letter", "communicated by", "article", "published", "/"]
+        word_to_avoid = ["letter", "communicated by", "article", "published"]
 
         for elt in parties:
             value = elt.lower().strip()
