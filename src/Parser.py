@@ -29,7 +29,6 @@ class Parser:
         self.__auteurs = []
         self.__dico_nom_mail = {}
         self.__dico_nom_univ = {}
-        self.__no_introduction = False
         self.__abstract = ""
         self.__introduction = ""
         self.__corps = ""
@@ -140,7 +139,6 @@ class Parser:
         # Abstract
         abstract = Abstract(content)
         self.__abstract = abstract.get_abstract()
-        self.__no_introduction = abstract.get_presence_introduction()
         ######################################################################
 
         # Auteurs
