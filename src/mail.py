@@ -11,6 +11,8 @@ class Mail:
         :param texte: texte contenant des mails
         :return: Liste des mails
         """
+        emails_copy = []
+
         # Récupération des emails
         emails = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9\n\-+_]+\.[a-z]+", texte)]
         emails2 = [x.strip() for x in re.findall(r"[a-z0-9.\-+_]+@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
@@ -56,6 +58,9 @@ class Mail:
         if len(emails3) != 0:
             if "," in emails3[0]:
                 type_mail = 1
+                if emails:
+                    emails_copy[:] = emails[:]
+
                 emails = []
 
                 emails3_separer = emails3[0].split(",")
@@ -71,6 +76,9 @@ class Mail:
         if len(emails4) != 0:
             if "," in emails4[0]:
                 type_mail = 1
+                if emails:
+                    emails_copy[:] = emails[:]
+
                 emails = []
 
                 emails4_separer = emails4[0].split(",")
@@ -86,6 +94,9 @@ class Mail:
         if not emails and len(emails5) > 0:
             if "," in emails5[0]:
                 type_mail = 1
+                if emails:
+                    emails_copy[:] = emails[:]
+
                 emails = []
 
                 emails5_separer = emails5[0].split(",")
@@ -105,10 +116,10 @@ class Mail:
             emails[i] = emails[i].strip()
         ######################################################################
 
-        # Si le mail est trop petit(erreur) -> on l'enlève
-        for element in emails:
-            if len(element.split("@")[0]) < 2:
-                emails.remove(element)
+        # Si on a des mails trouvés grâce à la première regex, on les rajoute
+        for element in emails_copy:
+            if element not in emails:
+                emails.insert(len(emails) // 2, element)
         ######################################################################
 
         # Si présence d'un f au début et un g à la fin (problème d'encodeur avec les {}), on les enlève
@@ -117,7 +128,13 @@ class Mail:
             if emails[0][0] == "f" and nom[-1] == "g":
                 emails[0] = emails[0][1:]
 
-                emails[-1] = f"{nom[:-1]}@{domaine}"
+                emails[-1] = f"{nom[:-1].strip()}@{domaine}"
+        ######################################################################
+
+        # Si le mail est trop petit(erreur) -> on l'enlève
+        for element in emails:
+            if len(element.split("@")[0]) < 2:
+                emails.remove(element)
         ######################################################################
 
         return emails, type_mail
