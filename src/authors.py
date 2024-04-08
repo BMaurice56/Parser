@@ -46,163 +46,162 @@ class Author:
 
         :return: None
         """
-        if self.__dico_nom_univ == {}:
-            pos_titre = self.__text.find(self.__titre.get_title())
-            pos_abstract = self.__text.find(self.__abstract.get_abstract()[1:10])
-            pos_resume = max(self.__text.find("ésumé") - 1, self.__text.find("esume") - 1)
+        pos_titre = self.__text.find(self.__titre.get_title())
+        pos_abstract = self.__text.find(self.__abstract.get_abstract()[1:10])
+        pos_resume = max(self.__text.find("ésumé") - 1, self.__text.find("esume") - 1)
 
-            if 0 < pos_resume < pos_abstract:
-                pos_abstract = pos_resume
-            ######################################################################
+        if 0 < pos_resume < pos_abstract:
+            pos_abstract = pos_resume
+        ######################################################################
 
-            # On garde que la section correspondant aux auteurs
-            section_auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract].strip()
-            ######################################################################
+        # On garde que la section correspondant aux auteurs
+        section_auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract].strip()
+        ######################################################################
 
-            # Enlèvement des mots clefs
-            if "bstract" in section_auteurs:
-                section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
-            ######################################################################
+        # Enlèvement des mots clefs
+        if "bstract" in section_auteurs:
+            section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
+        ######################################################################
 
-            # Si présence d'un résumé avant l'abstract, on l'enlève
-            if pos_resume != -1:
-                word = "ésumé"
+        # Si présence d'un résumé avant l'abstract, on l'enlève
+        if pos_resume != -1:
+            word = "ésumé"
 
-                if word not in section_auteurs:
-                    word = "esume"
+            if word not in section_auteurs:
+                word = "esume"
 
-                section_auteurs = section_auteurs[:section_auteurs.find(word) - 1].strip()
-            ######################################################################
+            section_auteurs = section_auteurs[:section_auteurs.find(word) - 1].strip()
+        ######################################################################
 
-            if self.__type_pdf == 0:
-                for key, value in self.__dico_nom_mail.items():
-                    # Position du nom ainsi que du mail
-                    # Si mail de type 2 (mail dans le corps) → rechercher le nom de l'auteur en partant de la fin
-                    if self.__type_mail == 2:
-                        pos_key = self.__text.rfind(key, 0, self.__pos_last_character_first_page)
-                    else:
-                        pos_key = self.__text.find(key)
-                    ######################################################################
-                    # On localise la position du mail
-                    pos_value = self.__text.find(value.split("@")[0])
-                    ######################################################################
-
-                    # Puis, on ne garde que l'établissement correspondant à l'auteur
-                    result = self.__text[pos_key + len(key):pos_value]
-                    ######################################################################
-
-                    # On regarde s'il y a un \n a la fin et on le retire
-                    last_new_line = result.rfind("\n")
-
-                    if len(result) - 10 < last_new_line:
-                        result = result[:last_new_line]
-                    ######################################################################
-
-                    self.__dico_nom_univ[key] = result.strip()
-
-            elif self.__type_pdf == 1:
-                first_new_line = section_auteurs.find("\n")
-
-                # Si auteurs sur deux lignes, on ressaute une ligne
-                if self.__auteurs_deux_lignes:
-                    first_new_line = section_auteurs[first_new_line + 1:].find("\n") + first_new_line
-                ######################################################################
-
-                # Si présence d'un @, on récupère la position du dernier \n
-                first_at = section_auteurs.find("@")
-                ######################################################################
-
-                if first_at != -1:
-                    # Si le @ est précédé d'un \n, on refait une recherche d'un \n avant celui-ci
-                    if section_auteurs[first_at - 1] == "\n":
-                        first_at -= 2
-                    ######################################################################
-
-                    second_new_line = section_auteurs[:first_at].rfind("\n")
+        if self.__type_pdf == 0:
+            for key, value in self.__dico_nom_mail.items():
+                # Position du nom ainsi que du mail
+                # Si mail de type 2 (mail dans le corps) → rechercher le nom de l'auteur en partant de la fin
+                if self.__type_mail == 2:
+                    pos_key = self.__text.rfind(key, 0, self.__pos_last_character_first_page)
                 else:
-                    second_new_line = section_auteurs.rfind("\n")
+                    pos_key = self.__text.find(key)
+                ######################################################################
+                # On localise la position du mail
+                pos_value = self.__text.find(value.split("@")[0])
                 ######################################################################
 
-                # Récupération de l'établissement
-                school = section_auteurs[first_new_line:second_new_line].strip()
+                # Puis, on ne garde que l'établissement correspondant à l'auteur
+                result = self.__text[pos_key + len(key):pos_value]
                 ######################################################################
 
-                for key in self.__dico_nom_mail.keys():
-                    self.__dico_nom_univ[key] = school
+                # On regarde s'il y a un \n a la fin et on le retire
+                last_new_line = result.rfind("\n")
 
-            else:
-                section_auteurs_separate = section_auteurs.split("\n")
-
-                school = ""
-
-                for element in section_auteurs_separate:
-                    name_in_element = any(element.find(nom) != -1 for nom in self.__auteurs)
-                    mail_in_element = any(element.find(nom) != -1 for nom in self.__emails)
-                    link_in_element = any(element.find(link) != -1 for link in ["http", "www"])
-
-                    if not name_in_element and not mail_in_element and not link_in_element:
-                        # Si présence d'un chiffre devant, on le remplace
-                        if element[0].isdigit() and not element[1].isdigit():
-                            element = f"\n{element[1:]}"
-                        ######################################################################
-
-                        school = f"{school}{element}"
-
-                for key in self.__dico_nom_mail.keys():
-                    self.__dico_nom_univ[key] = school
-
-            words_to_remove = ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2",
-                               "(B)", "  ", "(1)", "(2)", "(1,2)"]
-
-            # On enlève les caractères inutiles aux affiliations
-            for key, value in self.__dico_nom_univ.items():
-                for element in words_to_remove:
-                    value = value.replace(element, "")
-
-                # Si présence d'un retour à la ligne au début, on l'enlève
-                first_new_line = value.find("\n")
-
-                if 0 < first_new_line < 4:
-                    value = value[first_new_line:]
+                if len(result) - 10 < last_new_line:
+                    result = result[:last_new_line]
                 ######################################################################
-
-                # Si présence de "and" (nom composé) → on l'enlève
-                if "and " in value and any(value.find(x) != -1 for x in self.__auteurs):
-                    value = value[value.find("\n"):]
-                ######################################################################
-
-                # Si présence de mail, on l'enlève
-                emails = Mail.find_emails(value)[0]
-
-                if emails:
-                    nom_mail = emails[0].split("@")[0]
-                    value = value.split(nom_mail)[0]
-                ######################################################################
-
-                # Si présence de ces éléments, on les enlève
-                for elt in ["*", self.__abstract.get_abstract(), "article history"]:
-                    if elt.lower() in value.lower():
-                        value = value[:value.lower().find(elt)]
-                ######################################################################
-
-                result = ""
-
-                for element in value.split("\n"):
-                    if len(element) > 1:
-                        # Si présence d'un chiffre devant, on l'enlève
-                        if element[0].isdigit() and not element[1].isdigit():
-                            element = element[1:]
-                        ######################################################################
-
-                        # Si présence d'un ; à la fin, on l'enlève
-                        if element[-1] == ";":
-                            element = element[:-1]
-                        ######################################################################
-
-                        result = f"{result}\n{element}"
 
                 self.__dico_nom_univ[key] = result.strip()
+
+        elif self.__type_pdf == 1:
+            first_new_line = section_auteurs.find("\n")
+
+            # Si auteurs sur deux lignes, on ressaute une ligne
+            if self.__auteurs_deux_lignes:
+                first_new_line = section_auteurs[first_new_line + 1:].find("\n") + first_new_line
             ######################################################################
+
+            # Si présence d'un @, on récupère la position du dernier \n
+            first_at = section_auteurs.find("@")
+            ######################################################################
+
+            if first_at != -1:
+                # Si le @ est précédé d'un \n, on refait une recherche d'un \n avant celui-ci
+                if section_auteurs[first_at - 1] == "\n":
+                    first_at -= 2
+                ######################################################################
+
+                second_new_line = section_auteurs[:first_at].rfind("\n")
+            else:
+                second_new_line = section_auteurs.rfind("\n")
+            ######################################################################
+
+            # Récupération de l'établissement
+            school = section_auteurs[first_new_line:second_new_line].strip()
+            ######################################################################
+
+            for key in self.__dico_nom_mail.keys():
+                self.__dico_nom_univ[key] = school
+
+        else:
+            section_auteurs_separate = section_auteurs.split("\n")
+
+            school = ""
+
+            for element in section_auteurs_separate:
+                name_in_element = any(element.find(nom) != -1 for nom in self.__auteurs)
+                mail_in_element = any(element.find(nom) != -1 for nom in self.__emails)
+                link_in_element = any(element.find(link) != -1 for link in ["http", "www"])
+
+                if not name_in_element and not mail_in_element and not link_in_element:
+                    # Si présence d'un chiffre devant, on le remplace
+                    if element[0].isdigit() and not element[1].isdigit():
+                        element = f"\n{element[1:]}"
+                    ######################################################################
+
+                    school = f"{school}{element}"
+
+            for key in self.__dico_nom_mail.keys():
+                self.__dico_nom_univ[key] = school
+
+        words_to_remove = ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2",
+                           "(B)", "  ", "(1)", "(2)", "(1,2)"]
+
+        # On enlève les caractères inutiles aux affiliations
+        for key, value in self.__dico_nom_univ.items():
+            for element in words_to_remove:
+                value = value.replace(element, "")
+
+            # Si présence d'un retour à la ligne au début, on l'enlève
+            first_new_line = value.find("\n")
+
+            if 0 < first_new_line < 4:
+                value = value[first_new_line:]
+            ######################################################################
+
+            # Si présence de "and" (nom composé) → on l'enlève
+            if "and " in value and any(value.find(x) != -1 for x in self.__auteurs):
+                value = value[value.find("\n"):]
+            ######################################################################
+
+            # Si présence de mail, on l'enlève
+            emails = Mail.find_emails(value)[0]
+
+            if emails:
+                nom_mail = emails[0].split("@")[0]
+                value = value.split(nom_mail)[0]
+            ######################################################################
+
+            # Si présence de ces éléments, on les enlève
+            for elt in ["*", self.__abstract.get_abstract(), "article history"]:
+                if elt.lower() in value.lower():
+                    value = value[:value.lower().find(elt)]
+            ######################################################################
+
+            result = ""
+
+            for element in value.split("\n"):
+                if len(element) > 1:
+                    # Si présence d'un chiffre devant, on l'enlève
+                    if element[0].isdigit() and not element[1].isdigit():
+                        element = element[1:]
+                    ######################################################################
+
+                    # Si présence d'un ; à la fin, on l'enlève
+                    if element[-1] == ";":
+                        element = element[:-1]
+                    ######################################################################
+
+                    result = f"{result}\n{element}"
+
+            self.__dico_nom_univ[key] = result.strip()
+        ######################################################################
 
     def __separate_authors(f):
         """
@@ -420,157 +419,157 @@ class Author:
 
         :return: None
         """
-        if not self.__auteurs and self.__dico_nom_mail == {}:
-            # Position des éléments dans le texte
-            pos_titre = self.__text.find(self.__titre.get_title())
-            pos_abstract = self.__text.find(self.__abstract.get_abstract()[:20])
-            pos_resume = max(self.__text.find("ésumé") - 1, self.__text.find("esume") - 1)
 
-            if 0 < pos_resume < pos_abstract:
-                pos_abstract = pos_resume
-            ######################################################################
+        # Position des éléments dans le texte
+        pos_titre = self.__text.find(self.__titre.get_title())
+        pos_abstract = self.__text.find(self.__abstract.get_abstract()[:20])
+        pos_resume = max(self.__text.find("ésumé") - 1, self.__text.find("esume") - 1)
 
-            # On garde que la section correspondant aux auteurs
-            section_auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract]
-            ######################################################################
+        if 0 < pos_resume < pos_abstract:
+            pos_abstract = pos_resume
+        ######################################################################
 
-            # Enlèvement des mots clefs
-            if "bstract" in section_auteurs.strip():
-                section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
-            ######################################################################
+        # On garde que la section correspondant aux auteurs
+        section_auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract]
+        ######################################################################
 
-            # Enlèvement des caractères spéciaux
-            for string in ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)",
-                           "  "]:
-                if string in section_auteurs:
-                    section_auteurs = section_auteurs.replace(string, " ")
-            ######################################################################
+        # Enlèvement des mots clefs
+        if "bstract" in section_auteurs.strip():
+            section_auteurs = section_auteurs[:section_auteurs.find("bstract") - 1].strip()
+        ######################################################################
 
-            # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
-            self.__emails, self.__type_mail = Mail.find_emails(section_auteurs)
+        # Enlèvement des caractères spéciaux
+        for string in ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)",
+                       "  "]:
+            if string in section_auteurs:
+                section_auteurs = section_auteurs.replace(string, " ")
+        ######################################################################
 
-            if not self.__emails:
-                self.__emails, self.__type_mail = Mail.find_emails(self.__text)
+        # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
+        self.__emails, self.__type_mail = Mail.find_emails(section_auteurs)
 
-                # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
-                if self.__emails:
-                    self.__type_mail += 2
-                else:
-                    self.__type_pdf = 3
-                ######################################################################
-            ######################################################################
+        if not self.__emails:
+            self.__emails, self.__type_mail = Mail.find_emails(self.__text)
 
-            # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
-            pos_asterisk = section_auteurs.find("∗")
-
-            # Si jamais il y a d'autres auteurs à la suite, on continue dans la fonction
-            if pos_asterisk != -1 and section_auteurs[pos_asterisk + 1] == ",":
-                pos_asterisk = -1
-            ######################################################################
-
-            if pos_asterisk != -1:
-                # Si les mails sont sur une seule ligne, pdf de type 1
-                if self.__type_mail == 1:
-                    self.__type_pdf = 1
-                else:
-                    self.__type_pdf = 2
-                ######################################################################
-
-                self.__auteurs = [section_auteurs[:pos_asterisk]]
-                return
-            ######################################################################
-
-            # Stock temporairement les auteurs
-            auteurs = []
-            ######################################################################
-
-            # S'il y a 0 mail, on récupère les auteurs à tatillon
-            if len(self.__emails) == 0:
-                auth = section_auteurs.split("\n")
-
+            # Si on a bien trouvé de mails dans le reste de la page, on ajuste la valeur du type de mail
+            if self.__emails:
+                self.__type_mail += 2
+            else:
                 self.__type_pdf = 3
+            ######################################################################
+        ######################################################################
 
-                # Si apparition de l'affiliation → arrêt
-                for elt in auth:
-                    value = elt.strip()
+        # Si ce caractère est trouvé, les auteurs sont sur une seule ligne
+        pos_asterisk = section_auteurs.find("∗")
 
-                    if any(value.find(place) != -1 for place in self.__school_words):
-                        break
+        # Si jamais il y a d'autres auteurs à la suite, on continue dans la fonction
+        if pos_asterisk != -1 and section_auteurs[pos_asterisk + 1] == ",":
+            pos_asterisk = -1
+        ######################################################################
 
-                    else:
-                        auteurs.append(value)
-                ######################################################################
+        if pos_asterisk != -1:
+            # Si les mails sont sur une seule ligne, pdf de type 1
+            if self.__type_mail == 1:
+                self.__type_pdf = 1
+            else:
+                self.__type_pdf = 2
             ######################################################################
 
-            # Sinon, on ne récupère que le seul auteur
-            elif len(self.__emails) == 1:
-                auteurs.append(section_auteurs.split("\n")[0])
-            ######################################################################
+            self.__auteurs = [section_auteurs[:pos_asterisk]]
+            return
+        ######################################################################
 
-            # Sinon, on parcourt les mails et on sépare les auteurs
-            elif self.__type_mail == 0:
-                """
-                En général, les articles sont sous la forme :
-                - nom
-                - université
-                - mail
-                et les auteurs se suivent
-                Donc on vient séparer le texte des auteurs selon les mails en gardant le nom
-                Et enfin on garde le bloc de texte avec le nom et mails en moins du précédent auteur
-                """
+        # Stock temporairement les auteurs
+        auteurs = []
+        ######################################################################
+
+        # S'il y a 0 mail, on récupère les auteurs à tatillon
+        if len(self.__emails) == 0:
+            auth = section_auteurs.split("\n")
+
+            self.__type_pdf = 3
+
+            # Si apparition de l'affiliation → arrêt
+            for elt in auth:
+                value = elt.strip()
+
+                if any(value.find(place) != -1 for place in self.__school_words):
+                    break
+
+                else:
+                    auteurs.append(value)
+            ######################################################################
+        ######################################################################
+
+        # Sinon, on ne récupère que le seul auteur
+        elif len(self.__emails) == 1:
+            auteurs.append(section_auteurs.split("\n")[0])
+        ######################################################################
+
+        # Sinon, on parcourt les mails et on sépare les auteurs
+        elif self.__type_mail == 0:
+            """
+            En général, les articles sont sous la forme :
+            - nom
+            - université
+            - mail
+            et les auteurs se suivent
+            Donc on vient séparer le texte des auteurs selon les mails en gardant le nom
+            Et enfin on garde le bloc de texte avec le nom et mails en moins du précédent auteur
+            """
+            self.__type_pdf = 0
+            for mail in self.__emails:
+                if mail in section_auteurs.strip():
+                    result = section_auteurs.split(mail)
+                    auteurs.append(result[0].split("\n")[0].strip())
+
+                    pos_mail = section_auteurs.find(mail)
+                    section_auteurs = section_auteurs[pos_mail + len(mail):].strip()
+        ######################################################################
+
+        # On ne garde que les informations pertinentes
+        for auteur in auteurs:
+            if auteur and auteur[-1] == ",":
+                auteur = auteur[:-1].strip()
+
+            if len(auteur) > 1 and "@" not in auteur and "1,2" not in auteur and "1" not in auteur:
+                self.__auteurs.append(auteur)
+        ######################################################################
+
+        # Si on a moins d'auteurs que de mails, il est probable que les noms soient sur une seule ligne
+        if len(self.__auteurs) == 1 and len(self.__auteurs) < len(self.__emails):
+            if self.__type_mail != 2:
+                self.__type_pdf = 1
+        ######################################################################
+
+        # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
+        # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
+        if not self.__auteurs:
+            if self.__type_mail == 1:
+                self.__type_pdf = 1
+
+            elif self.__type_mail == 2:
                 self.__type_pdf = 0
-                for mail in self.__emails:
-                    if mail in section_auteurs.strip():
-                        result = section_auteurs.split(mail)
-                        auteurs.append(result[0].split("\n")[0].strip())
 
-                        pos_mail = section_auteurs.find(mail)
-                        section_auteurs = section_auteurs[pos_mail + len(mail):].strip()
+            auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract].split("\n")
+
+            for aut in auteurs:
+                if aut == "":
+                    auteurs.remove(aut)
+
+            self.__auteurs.append(auteurs[0].strip())
+
+            # Si présence d'une virgule à la fin, on rajoute la deuxième ligne des auteurs
+            if auteurs[0][-1] == ",":
+                self.__auteurs.append(auteurs[1].strip())
             ######################################################################
 
-            # On ne garde que les informations pertinentes
-            for auteur in auteurs:
-                if auteur and auteur[-1] == ",":
-                    auteur = auteur[:-1].strip()
-
-                if len(auteur) > 1 and "@" not in auteur and "1,2" not in auteur and "1" not in auteur:
-                    self.__auteurs.append(auteur)
+            # Si on a beaucoup de mails → auteurs sur deux lignes
+            if len(self.__emails) >= 6:
+                self.__auteurs_deux_lignes = True
+                self.__auteurs.append(auteurs[1].strip())
             ######################################################################
-
-            # Si on a moins d'auteurs que de mails, il est probable que les noms soient sur une seule ligne
-            if len(self.__auteurs) == 1 and len(self.__auteurs) < len(self.__emails):
-                if self.__type_mail != 2:
-                    self.__type_pdf = 1
-            ######################################################################
-
-            # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
-            # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
-            if not self.__auteurs:
-                if self.__type_mail == 1:
-                    self.__type_pdf = 1
-
-                elif self.__type_mail == 2:
-                    self.__type_pdf = 0
-
-                auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract].split("\n")
-
-                for aut in auteurs:
-                    if aut == "":
-                        auteurs.remove(aut)
-
-                self.__auteurs.append(auteurs[0].strip())
-
-                # Si présence d'une virgule à la fin, on rajoute la deuxième ligne des auteurs
-                if auteurs[0][-1] == ",":
-                    self.__auteurs.append(auteurs[1].strip())
-                ######################################################################
-
-                # Si on a beaucoup de mails → auteurs sur deux lignes
-                if len(self.__emails) >= 6:
-                    self.__auteurs_deux_lignes = True
-                    self.__auteurs.append(auteurs[1].strip())
-                ######################################################################
-            ######################################################################
+        ######################################################################
 
     def get_authors(self) -> (list, dict, dict):
         """
