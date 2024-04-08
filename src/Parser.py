@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ETree
 from src.content_pdf import Content
 from src.abstract import Abstract
+from src.section import Section
 from src.authors import Author
 from src.Utils import Utils
 from src.title import Title
@@ -77,7 +78,7 @@ class Parser:
         """
         self.__pdf_file_obj.close()
 
-    def __localisation_keywords(self) -> None:
+    def __localisation_keywords(self, content: Content) -> None:
         """
         Localise la position des mots clefs
 
@@ -85,8 +86,8 @@ class Parser:
         """
         pos_word = -2
 
-        texte = self.__content.get_text()
-        texte_lower = self.__content.get_text_lower()
+        texte = content.get_text()
+        texte_lower = content.get_text_lower()
 
         for word, first_letter in self.__title_keywords.items():
             while pos_word != -1:
@@ -129,7 +130,7 @@ class Parser:
         # !!! ORDRE A CONSERVER
         content = Content(self.__pdfReader)
         self.__index_first_page = content.get_index_first_page()
-        self.__localisation_keywords()
+        self.__localisation_keywords(content)
 
         # Titre
         titre = Title(self.__pdfReader, self.__index_first_page)
@@ -153,118 +154,11 @@ class Parser:
         self.__corps = body.get_corps()
         ######################################################################
 
-        self._get_discussion()
-        self._get_conclusion()
-        self._get_references()
-
-    def __get_pos_word_after(self, mot: str) -> int:
-        """
-        Fonction qui renvoi l'indice dans le text du mot à suivre
-        dans le dictionnaire des mots clefs
-
-        :param mot: Mot de base
-        :return: int Position du mot d'après, -1 si aucun mot après
-        """
-        try:
-            # Récupération des clefs + indice du mot suivant
-            keys = list(self.__position_title_keywords.keys())
-            pos_word_after_plus_one = keys.index(mot) + 1
-            ######################################################################
-
-            # Récupération du mot + son indice dans le texte
-            word_after = keys[pos_word_after_plus_one]
-
-            return self.__position_title_keywords[word_after]
-            ######################################################################
-
-        except IndexError:
-            return -1
-
-    def _get_conclusion(self) -> None:
-        """
-        Récupère la conclusion
-
-        :return: None
-        """
-        if self.__conclusion == "":
-            onclusion_word = "onclusion"
-
-            pos_conclusion = self.__position_title_keywords[onclusion_word]
-
-            if pos_conclusion != -1:
-                pos_word_after = self.__get_pos_word_after(onclusion_word)
-
-                # Récupération du texte
-                self.__conclusion = self.__content.get_text()[
-                                    pos_conclusion + len(onclusion_word):pos_word_after].strip()
-
-                # Si présence d'un "and", on le retire
-                if self.__conclusion[:4].lower() == "and " or self.__conclusion[:6].lower() == "s and ":
-                    self.__conclusion = self.__conclusion[self.__conclusion.find("\n"):]
-                ######################################################################
-
-                # On retire le "s" de conclusion s'il y en a un
-                if self.__conclusion[0].lower() == "s":
-                    self.__conclusion = self.__conclusion[1:]
-
-                # On enlève les caractères du titre suivant la discussion
-                self.__conclusion = self.__conclusion[:self.__conclusion.rfind("\n")].strip()
-                ######################################################################
-
-            else:
-                self.__conclusion = "N/A"
-
-    def _get_discussion(self) -> None:
-        """
-        Récupère la discussion dans le texte
-
-        :return: None
-        """
-        if self.__discussion == "":
-            iscussion_word = "iscussion"
-
-            pos_discussion = self.__position_title_keywords[iscussion_word]
-
-            if pos_discussion != -1:
-                # Récupération de l'indice du mot après dans le texte
-                pos_word_after = self.__get_pos_word_after(iscussion_word)
-                ######################################################################
-
-                # Récupération du texte
-                self.__discussion = self.__content.get_text()[
-                                    pos_discussion + len(iscussion_word):pos_word_after].strip()
-                ######################################################################
-
-                # Si présence d'un "and", on le retire
-                if self.__discussion[:4] == "and ":
-                    self.__discussion = self.__discussion[self.__discussion.find("\n"):]
-                ######################################################################
-
-                # On enlève les caractères du titre suivant la discussion
-                self.__discussion = self.__discussion[:self.__discussion.rfind("\n")].strip()
-                ######################################################################
-
-            else:
-                self.__discussion = "N/A"
-
-    def _get_references(self) -> None:
-        """
-        Renvoie la bibliographie de l'article
-
-        :return: None
-        """
-        if self.__references == "":
-            pos_references = self.__position_title_keywords["eferences"]
-
-            # On vérifie s'il y a des éléments après
-            word_after = self.__get_pos_word_after("eferences")
-            ######################################################################
-
-            if pos_references != -1:
-                self.__references = f"{self.__content.get_text()[pos_references + len('references'):word_after - 1]}"
-
-            else:
-                self.__references = "N/A"
+        # Sections du pdf
+        section = Section(content, self.__position_title_keywords)
+        self.__conclusion = section.get_conclusion()
+        self.__discussion = section.get_discussion()
+        self.__references = section.get_references()
 
     def pdf_to_file(self, type_output_file: str) -> None:
         """
