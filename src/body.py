@@ -122,6 +122,7 @@ class Body:
 
         :return: string valeur
         """
+
         return self.__introduction
 
     def get_corps(self) -> str:

@@ -127,24 +127,28 @@ class Parser:
         :return: None
         """
         # !!! ORDRE A CONSERVER
-        self.__content = Content(self.__pdfReader)
-        self.__index_first_page = self.__content.get_index_first_page()
+        content = Content(self.__pdfReader)
+        self.__index_first_page = content.get_index_first_page()
         self.__localisation_keywords()
-        self.__titre = Title(self.__pdfReader, self.__index_first_page).get_title()
+
+        # Titre
+        titre = Title(self.__pdfReader, self.__index_first_page)
+        self.__titre = titre.get_title()
+        ######################################################################
 
         # Abstract
-        abstract = Abstract(self.__content)
+        abstract = Abstract(content)
         self.__abstract = abstract.get_abstract()
         self.__no_introduction = abstract.get_presence_introduction()
         ######################################################################
 
         # Auteurs
-        auteurs = Author(self.__content, self.__titre, self.__abstract, self.__school_words)
+        auteurs = Author(content, titre, abstract, self.__school_words)
         self.__auteurs, self.__dico_nom_mail, self.__dico_nom_univ = auteurs.get_authors()
         ######################################################################
 
         # Introduction et corps
-        body = Body(self.__content, abstract, self.__position_title_keywords)
+        body = Body(content, abstract, self.__position_title_keywords)
         self.__introduction = body.get_introduction()
         self.__corps = body.get_corps()
         ######################################################################

@@ -92,5 +92,12 @@ class Title:
 
         :return: string valeur
         """
-
         return self.__titre
+
+    def __len__(self) -> int:
+        """
+        Renvoi la longueur du titre
+
+        :return: int valeur
+        """
+        return len(self.__titre)

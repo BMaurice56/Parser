@@ -1,13 +1,15 @@
 from src.content_pdf import Content
 from functools import wraps
+from src.title import Title
 from src.mail import Mail
+from src.abstract import Abstract
 import Levenshtein
 import re
 
 
 class Author:
 
-    def __init__(self, content: Content, titre: str, abstract: str, school_word: list):
+    def __init__(self, content: Content, titre: Title, abstract: Abstract, school_word: list):
         self.__text = content.get_text()
         self.__pos_last_character_first_page = content.get_pos_last_character_first_page()
         self.__titre = titre
@@ -45,8 +47,8 @@ class Author:
         :return: None
         """
         if self.__dico_nom_univ == {}:
-            pos_titre = self.__text.find(self.__titre)
-            pos_abstract = self.__text.find(self.__abstract[1:10])
+            pos_titre = self.__text.find(self.__titre.get_title())
+            pos_abstract = self.__text.find(self.__abstract.get_abstract()[1:10])
             pos_resume = max(self.__text.find("ésumé") - 1, self.__text.find("esume") - 1)
 
             if 0 < pos_resume < pos_abstract:
@@ -178,7 +180,7 @@ class Author:
                 ######################################################################
 
                 # Si présence de ces éléments, on les enlève
-                for elt in ["*", self.__abstract, "article history"]:
+                for elt in ["*", self.__abstract.get_abstract(), "article history"]:
                     if elt.lower() in value.lower():
                         value = value[:value.lower().find(elt)]
                 ######################################################################
@@ -420,8 +422,8 @@ class Author:
         """
         if not self.__auteurs and self.__dico_nom_mail == {}:
             # Position des éléments dans le texte
-            pos_titre = self.__text.find(self.__titre)
-            pos_abstract = self.__text.find(self.__abstract[:20])
+            pos_titre = self.__text.find(self.__titre.get_title())
+            pos_abstract = self.__text.find(self.__abstract.get_abstract()[:20])
             pos_resume = max(self.__text.find("ésumé") - 1, self.__text.find("esume") - 1)
 
             if 0 < pos_resume < pos_abstract:
