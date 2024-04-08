@@ -4,8 +4,14 @@ from src.content_pdf import Content
 class Section:
 
     def __init__(self, content: Content, pos_title_keywords: dict):
+        """
+        Constructeur
 
-        self.__content = content
+        :param content: contenue du pdf
+        :param pos_title_keywords: position des mots clefs dans le pdf
+        """
+
+        self.__texte = content.get_text()
         self.__position_title_keywords = pos_title_keywords
 
         self.__conclusion = self._get_section("onclusion")
@@ -50,7 +56,7 @@ class Section:
             pos_word_after = self.get_pos_word_after(nom_section, self.__position_title_keywords)
 
             # Récupération du texte
-            texte = self.__content.get_text()[pos_mot_section + len(nom_section):pos_word_after].strip()
+            texte = self.__texte[pos_mot_section + len(nom_section):pos_word_after].strip()
 
             if nom_section != "eferences":
                 # Si présence d'un "and", on le retire

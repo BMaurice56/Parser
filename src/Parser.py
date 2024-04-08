@@ -77,13 +77,15 @@ class Parser:
         """
         self.__pdf_file_obj.close()
 
-    def __localisation_keywords(self, content: Content) -> None:
+    def __localisation_keywords(self, content: Content) -> dict:
         """
         Localise la position des mots clefs
 
-        :return: None
+        :return: dict résultat
         """
         pos_word = -2
+
+        dict_result = {}
 
         texte = content.get_text()
         texte_lower = content.get_text_lower()
@@ -104,21 +106,23 @@ class Parser:
                                           content_around_word[pos_word_in_content_around - 1].isspace())
 
                     if check_title and content_around_word.find(first_letter) != -1:
-                        self.__position_title_keywords[word] = pos_word
+                        dict_result[word] = pos_word
                         pos_word = -2
                         break
                     else:
                         pos_word -= 5
                     ######################################################################
                 else:
-                    self.__position_title_keywords[word] = -1
+                    dict_result[word] = -1
                     pos_word = -2
                     break
 
         # On ne garde que les mots clefs ayant été trouvé
-        self.__position_title_keywords = {k: v for k, v in
-                                          sorted(self.__position_title_keywords.items(), key=lambda item: item[1])}
+        dict_result = {k: v for k, v in
+                       sorted(dict_result.items(), key=lambda item: item[1])}
         ######################################################################
+
+        return dict_result
 
     def _call_function(self) -> None:
         """
@@ -129,7 +133,7 @@ class Parser:
         # !!! ORDRE A CONSERVER
         content = Content(self.__pdfReader)
         self.__index_first_page = content.get_index_first_page()
-        self.__localisation_keywords(content)
+        self.__position_title_keywords = self.__localisation_keywords(content)
 
         # Titre
         titre = Title(self.__pdfReader, self.__index_first_page)
