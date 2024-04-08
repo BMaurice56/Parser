@@ -78,7 +78,10 @@ class TextComparer:
                 texte1 = solution[pos_element_solution[elt]:pos_element_solution[elements[i + 1]]]
                 texte2 = file_content[pos_element_file_content[elt]: pos_element_file_content[elements[i + 1]]]
 
-                results[elt] = self.levenshtein_distance_percentage(texte1, texte2)
+                if "N/A" in texte1 or "N/A" in texte2:
+                    results[elt] = -1
+                else:
+                    results[elt] = self.levenshtein_distance_percentage(texte1, texte2)
 
         return results
 
