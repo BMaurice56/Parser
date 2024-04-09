@@ -16,6 +16,7 @@ class Author:
         self.__abstract = abstract
         self.__school_words = school_word
         self.__auteurs = []
+        self.__auteurs_with_numbers = []
         self.__emails = []
         self.__dico_nom_mail = {}
         self.__dico_nom_univ = {}
@@ -104,10 +105,10 @@ class Author:
 
             # Si auteurs sur deux lignes, on ressaute une ligne
             if self.__auteurs_deux_lignes:
-                first_new_line = section_auteurs[first_new_line + 1:].find("\n") + first_new_line
+                first_new_line = section_auteurs.find("\n", first_new_line + 1)
             ######################################################################
 
-            # Si présence d'un @, on récupère la position du dernier \n
+            # Si présence d'un @, on récupère la position du premier @
             first_at = section_auteurs.find("@")
             ######################################################################
 
@@ -126,8 +127,38 @@ class Author:
             school = section_auteurs[first_new_line:second_new_line].strip()
             ######################################################################
 
-            for key in self.__dico_nom_mail.keys():
-                self.__dico_nom_univ[key] = school
+            # Si on a des auteurs avec des numéros, on les associe à la bonne école
+            if self.__auteurs_with_numbers:
+
+                # On sépare les différentes universités
+                school = school.split("\n")
+                ######################################################################
+
+                # Dictionnaire contenant le numéro et l'université correspondante
+                dico_school_number = {}
+
+                for element in school:
+                    dico_school_number[element[0]] = element[1:]
+                ######################################################################
+
+                # On trie les auteurs par ordre croissant
+                self.__auteurs.sort()
+                self.__auteurs_with_numbers.sort()
+                ######################################################################
+
+                for nom, nom_number in zip(self.__auteurs, self.__auteurs_with_numbers):
+                    number = re.findall("[0-9]+", nom_number)
+
+                    school = ""
+                    for nombre in number:
+                        school += dico_school_number[nombre] + " "
+
+                    self.__dico_nom_univ[nom] = school.strip()
+            ######################################################################
+
+            else:
+                for key in self.__dico_nom_mail.keys():
+                    self.__dico_nom_univ[key] = school
 
         else:
             section_auteurs_separate = section_auteurs.split("\n")
@@ -219,13 +250,21 @@ class Author:
             # On regarde si on a des séparateurs dans les noms des auteurs
             if any(element in auteur for auteur in self.__auteurs for element in separate_element):
                 # On sépare les auteurs selon les séparateurs connus
-                for split in separate_element:
+                for i, split in enumerate(separate_element):
                     for auth in self.__auteurs:
+                        # On garde les auteurs avec des numéros pour les associés à la bonne école
+                        if i >= 2 and len(auth) > 1 and any(
+                                re.findall("[0-9]+", auth)) and auth not in self.__auteurs_with_numbers:
+                            self.__auteurs_with_numbers.append(auth.strip())
+                        ######################################################################
+
+                        # Si séparateur présent dans l'auteur, on les sépare
                         if split in auth:
                             auteurs_separer = auth.split(split)
 
                             self.__auteurs.remove(auth)
                             self.__auteurs += auteurs_separer
+                        ######################################################################
                 ######################################################################
 
                 taille_auteurs = len(self.__auteurs)
@@ -561,6 +600,7 @@ class Author:
 
             # Si présence d'une virgule à la fin, on rajoute la deuxième ligne des auteurs
             if auteurs[0][-1] == ",":
+                self.__auteurs_deux_lignes = True
                 self.__auteurs.append(auteurs[1].strip())
             ######################################################################
 
