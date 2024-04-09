@@ -615,7 +615,18 @@ class Author:
                 self.__type_pdf = 1
 
             elif self.__type_mail == 2:
-                self.__type_pdf = 0
+                if len(self.__emails) >= 2:
+                    pos_first_mail = self.__text.find(self.__emails[0])
+                    pos_second_mail = self.__text.find(self.__emails[1])
+
+                    content = self.__text[pos_first_mail:pos_second_mail].strip()
+
+                    if any([x in content for x in self.__school_words]):
+                        self.__type_pdf = 0
+                    else:
+                        self.__type_pdf = 1
+                else:
+                    self.__type_pdf = 0
 
             auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract].split("\n")
 
