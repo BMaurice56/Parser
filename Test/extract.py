@@ -112,6 +112,8 @@ class TextComparer:
             # Ouvre un fichier contenu dans analyse_pdf que s'il est au format xml
             xml_files = [f for f in os.listdir(directory_path) if f.endswith('.xml')]
 
+            liste_moyenne_corpus = []
+
             for xml_file in xml_files:
                 print(f"Analyse du fichier : {xml_file}")
                 # Chemin du fichier
@@ -131,12 +133,17 @@ class TextComparer:
                     # Dictionnaire des pourcentages
                     percentage_dict_element = self.percentage_difference_each_section_xml(found_text, file_content)
 
+                    [liste_moyenne_corpus.append(x) for x in percentage_dict_element.values() if x > 0]
+
                     if found_text is not None:
                         affichage.afficher_barre_pourcentage(percentage_dict_element)
                     else:
                         print(f"Ignorer {xml_file} car le mot-clé n'a pas été trouvé.")
 
                     print()
+
+            print("Moyenne du corpus : ")
+            affichage.afficher_barre_pourcentage({"corpus": sum(liste_moyenne_corpus) / len(liste_moyenne_corpus)})
 
         except Exception as e:
             raise Exception(f"Erreur lors de la lecture des fichiers : {e}")
