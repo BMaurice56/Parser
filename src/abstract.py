@@ -81,7 +81,8 @@ class Abstract:
             pos_romain_number_title_point = texte.find("\nI.")
 
             # On vient récupérer la position du premier titre de section
-            if 0 < pos_classique_number_title < pos_romain_number_title and pos_abstract < pos_romain_number_title < 5000:
+            if (0 < pos_classique_number_title < pos_romain_number_title and
+                    pos_abstract < pos_romain_number_title < 5000):
                 pos_classique_number_title = pos_romain_number_title
 
             if (0 < pos_classique_number_title < pos_romain_number_title_point and
