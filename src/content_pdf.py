@@ -10,6 +10,7 @@ class Content:
         self.__pdfReader = pdf_reader
         self.__index_first_page = 0
         self.__pos_last_character_first_page = -1
+        self.__first_page_without_foot = ""
 
         self.__load_text_attribut()
 
@@ -25,13 +26,26 @@ class Content:
             self.__index_first_page += 1
             premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
 
+        # On remplace les accents de la première page
+        premiere_page = Utils.replace_accent(premiere_page)
+        ######################################################################
+
         self.__pos_last_character_first_page = len(premiere_page) - 1
 
-        self.__text = premiere_page + "".join(
+        # Si on a des éléments en bas de la page qui peuvent poser un problème, on les enlève
+        pos_element_end_page = premiere_page.rfind("⇑")
+
+        if pos_element_end_page != -1 and any(Mail.find_emails(premiere_page[pos_element_end_page:])[0]):
+            self.__first_page_without_foot = premiere_page[:pos_element_end_page]
+        else:
+            self.__first_page_without_foot = premiere_page
+        ######################################################################
+
+        self.__text = "".join(
             self.__pdfReader.pages[x].extract_text() for x in
             range(self.__index_first_page + 1, len(self.__pdfReader.pages)))
 
-        self.__text = Utils.replace_accent(self.__text)
+        self.__text = premiere_page + Utils.replace_accent(self.__text)
 
         # Filtre les caractères pour ne conserver que les caractères ASCII
         chaine_normalisee = unicodedata.normalize('NFD', self.__text.lower())
@@ -74,3 +88,11 @@ class Content:
         :return: int valeur
         """
         return self.__index_first_page
+
+    def get_first_page_without_foot(self) -> str:
+        """
+        Renvoi la première page sans le pied
+
+        :return: string valeur
+        """
+        return self.__first_page_without_foot

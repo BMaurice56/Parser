@@ -1,3 +1,4 @@
+from src.Utils import Utils
 import PyPDF2
 
 
@@ -9,6 +10,7 @@ class Title:
         self.__index_first_page = index_first_page
 
         self._get_title()
+        self.__titre = Utils.replace_accent(self.__titre)
 
     def _get_title(self, minimum_y: int = 640, maximum_y: int = 770) -> None:
         """
@@ -32,7 +34,7 @@ class Title:
         # Extraction des premières lignes
         page.extract_text(visitor_text=visitor_body)
 
-        word_to_avoid = ["letter", "communicated by", "article", "published", "/"]
+        word_to_avoid = ["letter", "communicated by", "article", "published"]
 
         for elt in parties:
             value = elt.lower().strip()

@@ -16,6 +16,8 @@ class Author:
         self.__abstract = abstract
         self.__school_words = school_word
         self.__auteurs = []
+        self.__auteurs_with_numbers_or_symbol = []
+        self.__regex_symbol_auteurs = "[^A-Za-zÀ-ÖØ-öø-ÿ 0-9-;.,/]*"
         self.__emails = []
         self.__dico_nom_mail = {}
         self.__dico_nom_univ = {}
@@ -104,10 +106,10 @@ class Author:
 
             # Si auteurs sur deux lignes, on ressaute une ligne
             if self.__auteurs_deux_lignes:
-                first_new_line = section_auteurs[first_new_line + 1:].find("\n") + first_new_line
+                first_new_line = section_auteurs.find("\n", first_new_line + 1)
             ######################################################################
 
-            # Si présence d'un @, on récupère la position du dernier \n
+            # Si présence d'un @, on récupère la position du premier @
             first_at = section_auteurs.find("@")
             ######################################################################
 
@@ -126,8 +128,97 @@ class Author:
             school = section_auteurs[first_new_line:second_new_line].strip()
             ######################################################################
 
-            for key in self.__dico_nom_mail.keys():
-                self.__dico_nom_univ[key] = school
+            # Retrait du mot article info si présent
+            if "article info" in school:
+                school = school[:school.find("article info")].strip()
+            ######################################################################
+
+            # Si présence de lien entre auteurs et école via des lettres en minuscule, on change en symbole
+            school_split = school.split("\n")
+
+            if len([x for x in school_split if x[0].islower()]) >= 2:
+
+                liste_symbole = ["@", "#", "$", "%", "&", ">", "<", "(", ")", "[", "]", "°"]
+                index = 0
+
+                for i, element in enumerate(school_split):
+                    # On récupère les auteurs avec la même lettre
+                    auteurs = [x for x in self.__auteurs if x[-1] == element[0]]
+                    ######################################################################
+
+                    # On change de lettre à symbole dans la liste des auteurs
+                    for elt in auteurs:
+                        self.__auteurs_with_numbers_or_symbol.append(f"{elt[:-1]}{liste_symbole[index]}")
+                    ######################################################################
+
+                    # On change de lettre à symbole dans les écoles
+                    school_split[i] = f"{liste_symbole[index]}{element[1:]}"
+                    ######################################################################
+
+                    index += 1
+
+                # On modifie le nom dans les mails suite au retrait de la lettre qui servait pour l'affiliation
+                for auth in self.__auteurs:
+                    self.__dico_nom_mail[auth[:-1]] = self.__dico_nom_mail[auth]
+                    del self.__dico_nom_mail[auth]
+                ######################################################################
+
+                # Puis, on enlève cette lettre des auteurs
+                self.__auteurs = [x[:-1] for x in self.__auteurs]
+                ######################################################################
+
+                # Enfin, on fusionne les écoles
+                school = "".join([f"{x}\n" for x in school_split])
+                ######################################################################
+
+            # Si on a des auteurs avec des numéros, on les associe à la bonne école
+            if self.__auteurs_with_numbers_or_symbol:
+                # On sépare les différentes universités
+                school = [x for x in school.split("\n") if x != ""]
+                ######################################################################
+
+                # Dictionnaire contenant le numéro et l'université correspondante
+                dico_school_number = {}
+                school_for_all = ""
+
+                for element in school:
+                    if element[0].isdigit() or (any(re.findall(self.__regex_symbol_auteurs, element))):
+                        dico_school_number[element[0]] = element[1:]
+                    else:
+                        school_for_all += element
+                ######################################################################
+
+                # On trie les auteurs par ordre croissant
+                self.__auteurs.sort()
+                self.__auteurs_with_numbers_or_symbol.sort()
+                ######################################################################
+
+                # Pour chaque auteur, on l'associe à la bonne école selon les marqueurs présents (chiffre ou symbole)
+                for nom, nom_number_symbol in zip(self.__auteurs, self.__auteurs_with_numbers_or_symbol):
+                    number = re.findall("[0-9]+", nom_number_symbol)
+                    symbol = [x for x in re.findall(self.__regex_symbol_auteurs, nom_number_symbol) if x != ""]
+
+                    if not number and symbol:
+                        number = symbol
+
+                    school = ""
+                    for nombre in number:
+                        school += dico_school_number[nombre] + " "
+
+                    school += f"\n{school_for_all}"
+
+                    self.__dico_nom_univ[nom] = school.strip()
+                ######################################################################
+                ######################################################################
+
+            else:
+                for aut in self.__auteurs:
+                    pos_name = school.find(aut)
+                    if pos_name != -1:
+                        school = school[pos_name + len(aut):].strip()
+
+                for key in self.__dico_nom_mail.keys():
+                    self.__dico_nom_univ[key] = school
 
         else:
             section_auteurs_separate = section_auteurs.split("\n")
@@ -214,18 +305,33 @@ class Author:
         def wrapper(self):
             f(self)
 
-            separate_element = [",", " and ", "1;2", "1", "2", "3"]
+            separate_element = [",", " and ", "1;2", "1", "2", "3", "∗", "†", "†"]
 
             # On regarde si on a des séparateurs dans les noms des auteurs
             if any(element in auteur for auteur in self.__auteurs for element in separate_element):
                 # On sépare les auteurs selon les séparateurs connus
-                for split in separate_element:
+                for i, split in enumerate(separate_element):
                     for auth in self.__auteurs:
+                        # On garde les auteurs avec des numéros ou symbol pour les associés à la bonne école
+                        symbol = [x for x in re.findall(self.__regex_symbol_auteurs, auth)]
+
+                        # Si trop peu de symbol, on ne garde pas
+                        if len(symbol) <= 1:
+                            symbol = []
+                        ######################################################################
+
+                        if i >= 2 and len(auth) > 1 and (any(re.findall("[0-9]+", auth)) or any(
+                                symbol)) and auth.strip() not in self.__auteurs_with_numbers_or_symbol:
+                            self.__auteurs_with_numbers_or_symbol.append(auth.strip())
+                        ######################################################################
+
+                        # Si séparateur présent dans l'auteur, on les sépare
                         if split in auth:
                             auteurs_separer = auth.split(split)
 
                             self.__auteurs.remove(auth)
                             self.__auteurs += auteurs_separer
+                        ######################################################################
                 ######################################################################
 
                 taille_auteurs = len(self.__auteurs)
@@ -419,7 +525,6 @@ class Author:
 
         :return: None
         """
-
         # Position des éléments dans le texte
         pos_titre = self.__text.find(self.__titre.get_title())
         pos_abstract = self.__text.find(self.__abstract.get_abstract()[:20])
@@ -440,9 +545,13 @@ class Author:
 
         # Enlèvement des caractères spéciaux
         for string in ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)",
-                       "  "]:
+                       "*", "  "]:
             if string in section_auteurs:
                 section_auteurs = section_auteurs.replace(string, " ")
+        ######################################################################
+
+        # Retrait des espaces de début et de fin
+        section_auteurs = section_auteurs.strip()
         ######################################################################
 
         # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
@@ -542,14 +651,25 @@ class Author:
                 self.__type_pdf = 1
         ######################################################################
 
-        # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
+        # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé. On parcourt le texte en
         # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
         if not self.__auteurs:
             if self.__type_mail == 1:
                 self.__type_pdf = 1
 
             elif self.__type_mail == 2:
-                self.__type_pdf = 0
+                if len(self.__emails) >= 2:
+                    pos_first_mail = self.__text.find(self.__emails[0])
+                    pos_second_mail = self.__text.find(self.__emails[1])
+
+                    content = self.__text[pos_first_mail:pos_second_mail].strip()
+
+                    if any([x in content for x in self.__school_words]):
+                        self.__type_pdf = 0
+                    else:
+                        self.__type_pdf = 1
+                else:
+                    self.__type_pdf = 0
 
             auteurs = self.__text[pos_titre + len(self.__titre): pos_abstract].split("\n")
 
@@ -561,6 +681,7 @@ class Author:
 
             # Si présence d'une virgule à la fin, on rajoute la deuxième ligne des auteurs
             if auteurs[0][-1] == ",":
+                self.__auteurs_deux_lignes = True
                 self.__auteurs.append(auteurs[1].strip())
             ######################################################################
 

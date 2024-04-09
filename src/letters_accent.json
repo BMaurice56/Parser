@@ -86,11 +86,12 @@
   "c ¸": "ç",
   "c¸": "ç",
   " ˆı": "î",
-  "\f" : "fi",
+  "\f": "fi",
   "\u000E": "ffi",
-  "\u000B" : "ff",
+  "\u000B": "ff",
   "\u0013": "é",
   "\u0003": "",
   "V o": "Vo",
-  "Author's personal copy": ""
+  "Author's personal copy": "",
+  "ﬁ": "fi"
 }

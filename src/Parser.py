@@ -43,7 +43,8 @@ class Parser:
                                  "ppendix": "A",
                                  "cknowledgment": "A",
                                  "eferences": "R",
-                                 "ollow-up work": "F"}
+                                 "ollow-up work": "F",
+                                 "ibliographical references": "B"}
 
         self.__position_title_keywords = {}
 
@@ -116,6 +117,11 @@ class Parser:
                     dict_result[word] = -1
                     pos_word = -2
                     break
+
+        if dict_result["eferences"] < dict_result["ibliographical references"]:
+            dict_result["eferences"] = dict_result["ibliographical references"] + len("bibliographical ")
+
+        del dict_result["ibliographical references"]
 
         # On ne garde que les mots clefs ayant été trouvé
         dict_result = {k: v for k, v in

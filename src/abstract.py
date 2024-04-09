@@ -76,10 +76,22 @@ class Abstract:
         elif pos_abstract != -1 and pos_introduction == -1:
             self.__no_introduction = True
 
-            pos_first_title = max(texte.find("\n1 "), texte.find("\nI."), texte.find("\nI "))
+            pos_classique_number_title = texte.find("\n1 ")
+            pos_romain_number_title = texte.find("\nI ")
+            pos_romain_number_title_point = texte.find("\nI.")
 
-            if pos_first_title != -1:
-                self.__abstract = texte[pos_abstract + len("abstract"):pos_first_title].strip()
+            # On vient récupérer la position du premier titre de section
+            if (0 < pos_classique_number_title < pos_romain_number_title and
+                    pos_abstract < pos_romain_number_title < 5000):
+                pos_classique_number_title = pos_romain_number_title
+
+            if (0 < pos_classique_number_title < pos_romain_number_title_point and
+                    pos_abstract < pos_romain_number_title_point < 5000):
+                pos_classique_number_title = pos_romain_number_title_point
+            ######################################################################
+
+            if pos_classique_number_title != -1:
+                self.__abstract = texte[pos_abstract + len("abstract"):pos_classique_number_title].strip()
         ######################################################################
 
         # Si présence du 1 de l'introduction, on l'enlève
@@ -91,7 +103,7 @@ class Abstract:
 
         # Permet d'enlever les espaces et retour à la ligne à la fin pour vérifier la présence du point
         if self.__abstract != "":
-            while self.__abstract[-1] in ["\n", " ", "I"]:
+            while self.__abstract[-1] in ["\n", " ", "I", "1"]:
                 self.__abstract = self.__abstract[:-1]
 
             if self.__abstract[-1] != ".":

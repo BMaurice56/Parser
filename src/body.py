@@ -89,11 +89,20 @@ class Body:
                     if texte[pos_second_title_word + len(type_indices) + 2].isdigit():
                         pos_second_title_word += 2
                     else:
-                        newline_in_texte = "\n" in texte[pos_second_title_word - 2:pos_second_title_word]
+                        # Soit il y a un \n, soit un lien devant le titre, soit le numéro de la page
+                        texte_around = texte[pos_second_title_word - 2:pos_second_title_word]
+                        newline_in_texte = "\n" in texte_around
                         domaine_name = any(
                             re.findall("[.][a-zA-Z]+", texte[pos_second_title_word - 5: pos_second_title_word]))
+                        number_page = any(
+                            re.findall("[.][0-9]+", texte[pos_second_title_word - 5: pos_second_title_word]))
+                        ######################################################################
 
-                        if newline_in_texte or domaine_name:
+                        # On vérifie que le numéro ne se trouve pas dans une liste d'élément
+                        number_in_liste = texte[texte.find("\n", pos_second_title_word) + 1:].startswith("3.")
+                        ######################################################################
+
+                        if (newline_in_texte or domaine_name or number_page) and not number_in_liste:
                             break
                         else:
                             pos_second_title_word += 2
@@ -104,6 +113,16 @@ class Body:
                                   pos_introduction + len(
                                       "ntroduction") + add_margin_cause_space: pos_second_title_word]
             ######################################################################
+
+            # fpwf = first page without foot
+            len_fpwf = len(self.__content.get_first_page_without_foot())
+            difference_page = self.__content.get_pos_last_character_first_page() - len_fpwf
+
+            if difference_page >= 50:
+                pos_character = self.__introduction.find("⇑")
+
+                self.__introduction = (self.__introduction[:pos_character].strip() +
+                                       self.__introduction[pos_character + difference_page:].strip())
 
         else:
             pos_second_title_word = -2
