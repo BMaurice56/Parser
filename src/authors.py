@@ -169,6 +169,11 @@ class Author:
             ######################################################################
 
             else:
+                for aut in self.__auteurs:
+                    pos_name = school.find(aut)
+                    if pos_name != -1:
+                        school = school[pos_name + len(aut):].strip()
+
                 for key in self.__dico_nom_mail.keys():
                     self.__dico_nom_univ[key] = school
 
@@ -497,9 +502,13 @@ class Author:
 
         # Enlèvement des caractères spéciaux
         for string in ["/natural", "/flat", "1st", "2nd", "3rd", "4rd", "5rd", "6rd", "7rd", "8rd", "1,2", "(B)",
-                       "  "]:
+                       "*", "  "]:
             if string in section_auteurs:
                 section_auteurs = section_auteurs.replace(string, " ")
+        ######################################################################
+
+        # Retrait des espaces de début et de fin
+        section_auteurs = section_auteurs.strip()
         ######################################################################
 
         # Recherche dans la section auteurs et si non trouvé, recherche dans toute la page
