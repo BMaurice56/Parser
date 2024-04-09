@@ -102,7 +102,7 @@ class Abstract:
 
         # Permet d'enlever les espaces et retour à la ligne à la fin pour vérifier la présence du point
         if self.__abstract != "":
-            while self.__abstract[-1] in ["\n", " ", "I"]:
+            while self.__abstract[-1] in ["\n", " ", "I", "1"]:
                 self.__abstract = self.__abstract[:-1]
 
             if self.__abstract[-1] != ".":
