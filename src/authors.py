@@ -17,6 +17,7 @@ class Author:
         self.__school_words = school_word
         self.__auteurs = []
         self.__auteurs_with_numbers_or_symbol = []
+        self.__auteurs_order = []
         self.__regex_symbol_auteurs = "[^A-Za-zÀ-ÖØ-öø-ÿ 0-9-;.,/]*"
         self.__emails = []
         self.__dico_nom_mail = {}
@@ -329,8 +330,14 @@ class Author:
                         if split in auth:
                             auteurs_separer = auth.split(split)
 
+                            index = self.__auteurs.index(auth)
+
                             self.__auteurs.remove(auth)
-                            self.__auteurs += auteurs_separer
+
+                            if index == 0:
+                                self.__auteurs = auteurs_separer + self.__auteurs
+                            else:
+                                self.__auteurs += auteurs_separer
                         ######################################################################
                 ######################################################################
 
