@@ -16,7 +16,8 @@ class Author:
         self.__abstract = abstract
         self.__school_words = school_word
         self.__auteurs = []
-        self.__auteurs_with_numbers = []
+        self.__auteurs_with_numbers_or_symbol = []
+        self.__regex_symbol_auteurs = "[^A-Za-zÀ-ÖØ-öø-ÿ 0-9-;.,/]*"
         self.__emails = []
         self.__dico_nom_mail = {}
         self.__dico_nom_univ = {}
@@ -128,32 +129,43 @@ class Author:
             ######################################################################
 
             # Si on a des auteurs avec des numéros, on les associe à la bonne école
-            if self.__auteurs_with_numbers:
-
+            if self.__auteurs_with_numbers_or_symbol:
                 # On sépare les différentes universités
                 school = school.split("\n")
                 ######################################################################
 
                 # Dictionnaire contenant le numéro et l'université correspondante
                 dico_school_number = {}
+                school_for_all = ""
 
                 for element in school:
-                    dico_school_number[element[0]] = element[1:]
+                    if element[0].isdigit() or (any(re.findall(self.__regex_symbol_auteurs, element))):
+                        dico_school_number[element[0]] = element[1:]
+                    else:
+                        school_for_all += element
                 ######################################################################
 
                 # On trie les auteurs par ordre croissant
                 self.__auteurs.sort()
-                self.__auteurs_with_numbers.sort()
+                self.__auteurs_with_numbers_or_symbol.sort()
                 ######################################################################
 
-                for nom, nom_number in zip(self.__auteurs, self.__auteurs_with_numbers):
-                    number = re.findall("[0-9]+", nom_number)
+                # Pour chaque auteur, on l'associe à la bonne école selon les marqueurs présents (chiffre ou symbole)
+                for nom, nom_number_symbol in zip(self.__auteurs, self.__auteurs_with_numbers_or_symbol):
+                    number = re.findall("[0-9]+", nom_number_symbol)
+                    symbol = [x for x in re.findall(self.__regex_symbol_auteurs, nom_number_symbol) if x != ""]
+
+                    if not number and symbol:
+                        number = symbol
 
                     school = ""
                     for nombre in number:
                         school += dico_school_number[nombre] + " "
 
+                    school += f"\n{school_for_all}"
+
                     self.__dico_nom_univ[nom] = school.strip()
+                ######################################################################
             ######################################################################
 
             else:
@@ -245,17 +257,24 @@ class Author:
         def wrapper(self):
             f(self)
 
-            separate_element = [",", " and ", "1;2", "1", "2", "3"]
+            separate_element = [",", " and ", "1;2", "1", "2", "3", "∗", "†", "†"]
 
             # On regarde si on a des séparateurs dans les noms des auteurs
             if any(element in auteur for auteur in self.__auteurs for element in separate_element):
                 # On sépare les auteurs selon les séparateurs connus
                 for i, split in enumerate(separate_element):
                     for auth in self.__auteurs:
-                        # On garde les auteurs avec des numéros pour les associés à la bonne école
-                        if i >= 2 and len(auth) > 1 and any(
-                                re.findall("[0-9]+", auth)) and auth not in self.__auteurs_with_numbers:
-                            self.__auteurs_with_numbers.append(auth.strip())
+                        # On garde les auteurs avec des numéros ou symbol pour les associés à la bonne école
+                        symbol = [x for x in re.findall(self.__regex_symbol_auteurs, auth)]
+
+                        # Si trop peu de symbol, on ne garde pas
+                        if len(symbol) <= 1:
+                            symbol = []
+                        ######################################################################
+
+                        if i >= 2 and len(auth) > 1 and (any(re.findall("[0-9]+", auth)) or any(
+                                symbol)) and auth.strip() not in self.__auteurs_with_numbers_or_symbol:
+                            self.__auteurs_with_numbers_or_symbol.append(auth.strip())
                         ######################################################################
 
                         # Si séparateur présent dans l'auteur, on les sépare
@@ -458,7 +477,6 @@ class Author:
 
         :return: None
         """
-
         # Position des éléments dans le texte
         pos_titre = self.__text.find(self.__titre.get_title())
         pos_abstract = self.__text.find(self.__abstract.get_abstract()[:20])
