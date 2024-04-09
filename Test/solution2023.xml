@@ -2327,7 +2327,7 @@ University of Sussex,
 Brighton, UK</affiliation>
     </auteur>
     <auteur>
-      <name>Jeremy Refﬁn</name>
+      <name>Jeremy Reffin</name>
       <mail>J.P.Reffin@sussex.ac.uk</mail>
       <affiliation>Department of Informatics,
 University of Sussex,
@@ -2846,17 +2846,17 @@ Skills from Job Description</titre>
     <auteur>
       <name>Le Van-Duyet</name>
       <mail>me@duyet.net</mail>
-      <affiliation />
+      <affiliation>N/A</affiliation>
     </auteur>
     <auteur>
       <name>Vo Minh Quan</name>
       <mail>95.vominhquan@gmail.com</mail>
-      <affiliation />
+      <affiliation>N/A</affiliation>
     </auteur>
     <auteur>
       <name>Dang Quang An</name>
       <mail>an.dang1390@gmail.com</mail>
-      <affiliation />
+      <affiliation>N/A</affiliation>
     </auteur>
   </auteurs>
   <abstract> Unsupervise learned word embeddings have seen
@@ -4021,19 +4021,19 @@ language ir evaluation ,The First International Workshop on Evaluating Informati
 Compression Task</titre>
   <auteurs>
     <auteur>
-      <name>Stéphane Huet</name>
-      <mail>stephane.huet@univ-avignon.fr</mail>
+      <name>Elvys Linhares Pontes</name>
+      <mail>elvys.linhares-pontes@univ-avignon.fr</mail>
       <affiliation>CERI/LIA, Université d’Avignon et des Pays de Vaucluse, Avignon, France</affiliation>
     </auteur>
-    <auteur>
+      <auteur>
       <name>Juan-Manuel Torres-Moreno</name>
       <mail>juan-manuel.torres@univ-avignon.fr</mail>
       <affiliation>CERI/LIA, Université d’Avignon et des Pays de Vaucluse, Avignon, France
 École Polytechnique de Montréal, Montréal, Canada</affiliation>
     </auteur>
-    <auteur>
-      <name>Elvys Linhares Pontes</name>
-      <mail>elvys.linhares-pontes@univ-avignon.fr</mail>
+      <auteur>
+      <name>Stéphane Huet</name>
+      <mail>stephane.huet@univ-avignon.fr</mail>
       <affiliation>CERI/LIA, Université d’Avignon et des Pays de Vaucluse, Avignon, France</affiliation>
     </auteur>
     <auteur>
@@ -6319,11 +6319,6 @@ TREC-5.  TREC Web Site:  http://trec.nist.gov/pubs /trec5/t5_proceedings.htm</bi
 </titre>
   <auteurs>
     <auteur>
-      <name>Marc El-Bèze</name>
-      <mail>marc.elbeze@univ-avignon.fr</mail>
-      <affiliation>LIA/Université d’Avignon et des Pays de Vaucluse, 339 chemin des Meinajariès, 84911 Avignon, France</affiliation>
-    </auteur>
-    <auteur>
       <name>Rémy Kessler</name>
       <mail>remy.kessler@univ-avignon.fr</mail>
       <affiliation>LIA/Université d’Avignon et des Pays de Vaucluse, 339 chemin des Meinajariès, 84911 Avignon, France</affiliation>
@@ -6343,6 +6338,11 @@ TREC-5.  TREC Web Site:  http://trec.nist.gov/pubs /trec5/t5_proceedings.htm</bi
       <mail>uan-manuel.tor-
 res@univ-avignon.fr</mail>
       <affiliation>École Polytechnique de Montréal, CP 6079, succ. Centre-ville, Montréal (Québec) Canada H3C 3A7</affiliation>
+        <auteur>
+      <name>Marc El-Bèze</name>
+      <mail>marc.elbeze@univ-avignon.fr</mail>
+      <affiliation>LIA/Université d’Avignon et des Pays de Vaucluse, 339 chemin des Meinajariès, 84911 Avignon, France</affiliation>
+    </auteur>
     </auteur>
   </auteurs>
   <abstract>The evolution of the job market has resulted in traditional methods of recruitment becom-
