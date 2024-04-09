@@ -128,10 +128,53 @@ class Author:
             school = section_auteurs[first_new_line:second_new_line].strip()
             ######################################################################
 
+            # Retrait du mot article info si présent
+            if "article info" in school:
+                school = school[:school.find("article info")].strip()
+            ######################################################################
+
+            # Si présence de lien entre auteurs et école via des lettres en minuscule, on change en symbole
+            school_split = school.split("\n")
+
+            if len([x for x in school_split if x[0].islower()]) >= 2:
+
+                liste_symbole = ["@", "#", "$", "%", "&", ">", "<", "(", ")", "[", "]", "°"]
+                index = 0
+
+                for i, element in enumerate(school_split):
+                    # On récupère les auteurs avec la même lettre
+                    auteurs = [x for x in self.__auteurs if x[-1] == element[0]]
+                    ######################################################################
+
+                    # On change de lettre à symbole dans la liste des auteurs
+                    for elt in auteurs:
+                        self.__auteurs_with_numbers_or_symbol.append(f"{elt[:-1]}{liste_symbole[index]}")
+                    ######################################################################
+
+                    # On change de lettre à symbole dans les écoles
+                    school_split[i] = f"{liste_symbole[index]}{element[1:]}"
+                    ######################################################################
+
+                    index += 1
+
+                # On modifie le nom dans les mails suite au retrait de la lettre qui servait pour l'affiliation
+                for auth in self.__auteurs:
+                    self.__dico_nom_mail[auth[:-1]] = self.__dico_nom_mail[auth]
+                    del self.__dico_nom_mail[auth]
+                ######################################################################
+
+                # Puis, on enlève cette lettre des auteurs
+                self.__auteurs = [x[:-1] for x in self.__auteurs]
+                ######################################################################
+
+                # Enfin, on fusionne les écoles
+                school = "".join([f"{x}\n" for x in school_split])
+                ######################################################################
+
             # Si on a des auteurs avec des numéros, on les associe à la bonne école
             if self.__auteurs_with_numbers_or_symbol:
                 # On sépare les différentes universités
-                school = school.split("\n")
+                school = [x for x in school.split("\n") if x != ""]
                 ######################################################################
 
                 # Dictionnaire contenant le numéro et l'université correspondante
@@ -166,7 +209,7 @@ class Author:
 
                     self.__dico_nom_univ[nom] = school.strip()
                 ######################################################################
-            ######################################################################
+                ######################################################################
 
             else:
                 for aut in self.__auteurs:
@@ -608,7 +651,7 @@ class Author:
                 self.__type_pdf = 1
         ######################################################################
 
-        # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé On parcourt le texte en
+        # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé. On parcourt le texte en
         # enlevant les caractères vides et on garde le seul auteur (ou les seuls s'ils sont sur une seule ligne)
         if not self.__auteurs:
             if self.__type_mail == 1:
