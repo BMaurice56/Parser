@@ -213,10 +213,12 @@ class Author:
                 ######################################################################
 
             else:
+                # Si on a des auteurs au début, on les enlève
                 for aut in self.__auteurs:
                     pos_name = school.find(aut)
                     if pos_name != -1:
                         school = school[pos_name + len(aut):].strip()
+                ######################################################################
 
                 for key in self.__dico_nom_mail.keys():
                     self.__dico_nom_univ[key] = school
@@ -230,8 +232,11 @@ class Author:
                 name_in_element = any(element.find(nom) != -1 for nom in self.__auteurs)
                 mail_in_element = any(element.find(nom) != -1 for nom in self.__emails)
                 link_in_element = any(element.find(link) != -1 for link in ["http", "www"])
+                date_in_element = any(element.find(date) != -1 for date in
+                                      ["January", "February", "March", "April", "May", "June", "July", "August",
+                                       "September", "October", "November", "December"])
 
-                if not name_in_element and not mail_in_element and not link_in_element:
+                if not name_in_element and not mail_in_element and not link_in_element and not date_in_element:
                     # Si présence d'un chiffre devant, on le remplace
                     if element[0].isdigit() and not element[1].isdigit():
                         element = f"\n{element[1:]}"
