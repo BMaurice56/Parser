@@ -4506,8 +4506,7 @@ conceptual and practical principles and guidelines for ML research and deploymen
 actions that can be taken by practitioners to pursue a more ethical and moral practice of ML aimed at
 using AI for social good.</abstract>
   <introduction>N/A</introduction>
-  <body>
-Progress in ML in the last decade has been extraordinary and has rekindled the notion that AI systems could
+  <body>Progress in ML in the last decade has been extraordinary and has rekindled the notion that AI systems could
 eventually reach human levels of performance, which was abandoned for several decades. Even if we are
 still currently far from this achievement, technological progress in ML has passed a threshold which enables
 it to have a huge economic impact, estimated to be close to 16 trillion US dollars by 2030 [Szczepa ´nski,
