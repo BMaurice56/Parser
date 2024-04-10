@@ -125,7 +125,7 @@ class Body:
                                        self.__introduction[pos_character + difference_page:].strip())
 
         else:
-            pos_second_title_word = -2
+            pos_second_title_word = texte.find("\n")
 
             self.__introduction = "N/A"
 
