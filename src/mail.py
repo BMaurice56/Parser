@@ -19,6 +19,7 @@ class Mail:
         emails3 = [x.strip() for x in re.findall(r"[({a-zA-Z0-9., \-+_})]+@[a-z0-9.\n\- +_]+\.[a-z]+", texte)]
         emails4 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+\n@[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
         emails5 = [x.strip() for x in re.findall(r"[({a-z0-9., \-+_})]+Q[a-z0-9.\n\-+_]+\.[a-z]+", texte)]
+        emails6 = [x.strip() for x in re.findall(r"[({a-zA-Z0-9., \n\-+_})]+@[a-z0-9.\- +_]+\.[a-z]+", texte)]
         ######################################################################
 
         # Dictionnaire qui permet de retrouver l'ordre après tri
@@ -113,6 +114,41 @@ class Mail:
                     emails.append(f"{elt.strip()}@{nom_domaine}")
 
                 emails.append(f"{dernier_mail}@{nom_domaine}")
+        ######################################################################
+
+        # Contient peut-être des mails avec -\n
+        if emails6:
+            # Copy de la liste
+            emails6_copy = []
+            emails6_copy[:] = emails6[:]
+            ######################################################################
+
+            # On supprime d'abord les éléments déja connu de la liste
+            for mail6 in emails6_copy:
+                if mail6 in emails:
+                    emails6.remove(mail6)
+            ######################################################################
+
+            # Nouvelle copie
+            emails6_copy[:] = emails6[:]
+            ######################################################################
+
+            # On retire les éléments qui sont bons dans la liste principale
+            # Et sinon on modifie les éléments dans la liste principale et qui demande plus d'informations
+            # (partie du mail manquant)
+            for elt in emails:
+                for mail6 in emails6_copy:
+                    pos_element = mail6.find(elt)
+
+                    # Si présence d'un mail comme tor-\nres@example.com, on le remplace dans la liste principale
+                    if pos_element != -1 and mail6[pos_element - 2: pos_element] == "-\n":
+                        index = emails.index(elt)
+
+                        mail = mail6.split(",")[-1].replace("-\n", "")
+
+                        emails[index] = mail
+                    ######################################################################
+            ######################################################################
         ######################################################################
 
         # Pour chaque mail, on enlève différents caractères
