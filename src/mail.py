@@ -66,6 +66,13 @@ class Mail:
                 emails3_separer = emails3[0].split(",")
                 dernier_mail, nom_domaine = emails3_separer[-1].split("@")
 
+                # Si présence d'un \n dans le nom de domaine, on le retire
+                pos_newline = nom_domaine.find("\n")
+
+                if pos_newline != -1:
+                    nom_domaine = nom_domaine[:pos_newline]
+                ######################################################################
+
                 for elt in emails3_separer[:-1]:
                     emails.append(f"{elt.strip()}@{nom_domaine}")
 
