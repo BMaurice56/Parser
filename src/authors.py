@@ -336,8 +336,15 @@ class Author:
 
                             if index == 0:
                                 self.__auteurs = auteurs_separer + self.__auteurs
+
                             else:
-                                self.__auteurs += auteurs_separer
+                                if len(auteurs_separer) == 1:
+                                    self.__auteurs.insert(index, auteurs_separer[0])
+                                else:
+                                    for element in auteurs_separer:
+                                        self.__auteurs.insert(index, element)
+                                        index += 1
+
                         ######################################################################
                 ######################################################################
 
@@ -437,9 +444,12 @@ class Author:
             ######################################################################
 
             # On retire les caractères inutiles
+            auteurs_copy = []
             for elt in self.__auteurs:
-                if len(elt) <= 1:
-                    self.__auteurs.remove(elt)
+                if len(elt) >= 2:
+                    auteurs_copy.append(elt)
+
+            self.__auteurs[:] = auteurs_copy[:]
             ######################################################################
 
             return
