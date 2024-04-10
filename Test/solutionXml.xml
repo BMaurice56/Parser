@@ -4,13 +4,6 @@
 for Multi-Document Update Summarization</titre>
   <auteurs>
     <auteur>
-      <name>Juan-Manuel Torres-Moreno</name>
-      <mail>juan-manuel.torres@univ-avignon.fr</mail>
-      <affiliation>École Polytechnique de Montréal
-CP 6079 Succ. Centre Ville H3C 3A7
-Montréal (Québec), Canada.</affiliation>
-    </auteur>
-    <auteur>
       <name>Florian Boudin</name>
       <mail>florian.boudin@univ-avignon.fr</mail>
       <affiliation>Laboratoire Informatique d’Avignon
@@ -23,6 +16,13 @@ Montréal (Québec), Canada.</affiliation>
       <affiliation>Laboratoire Informatique d’Avignon
 339 chemin des Meinajaries, BP1228,
 84911 Avignon Cedex 9, France.</affiliation>
+    </auteur>
+    <auteur>
+      <name>Juan-Manuel Torres-Moreno</name>
+      <mail>juan-manuel.torres@univ-avignon.fr</mail>
+      <affiliation>École Polytechnique de Montréal
+CP 6079 Succ. Centre Ville H3C 3A7
+Montréal (Québec), Canada.</affiliation>
     </auteur>
   </auteurs>
   <abstract>We present S MMR , a scalable sentence
@@ -7168,7 +7168,7 @@ Summary Evaluation with and without References
 </bibliographie>
 
   <preamble>Torres-moreno1998.pdf</preamble>
-  <titre>Efﬁcient Adaptive Learning for Classiﬁcation Tasks with
+  <titre>Efﬁcient Adaptive Learning for Classification Tasks with
 Binary Units
 </titre>
   <auteurs>
