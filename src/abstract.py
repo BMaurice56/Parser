@@ -112,6 +112,10 @@ class Abstract:
             raise ValueError("Abstract non trouvé")
         ######################################################################
 
+        # Retrait espace début et fin
+        self.__abstract = self.__abstract.strip()
+        ######################################################################
+
     def get_abstract(self) -> str:
         """
         Renvoi l'abstract du pdf
