@@ -78,7 +78,7 @@ class TextComparer:
                 texte1 = solution[pos_element_solution[elt]:pos_element_solution[elements[i + 1]]]
                 texte2 = file_content[pos_element_file_content[elt]: pos_element_file_content[elements[i + 1]]]
 
-                if "N/A" in texte1 and "<mail>N/A</mail>" not in texte1:
+                if "N/A" in texte1 and "<mail>N/A</mail>" and "<afliation>N/A</afliation>" not in texte1:
                     results[elt] = -1
                 else:
                     results[elt] = self.levenshtein_distance_percentage(texte1, texte2)
