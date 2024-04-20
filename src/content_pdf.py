@@ -40,12 +40,50 @@ class Content:
         else:
             self.__first_page_without_foot = premiere_page
         ######################################################################
+        liste_parties = []
+        parties_page = {}
+        self.__previous_value = 10_000
 
-        self.__text = "".join(
-            self.__pdfReader.pages[x].extract_text() for x in
-            range(self.__index_first_page + 1, len(self.__pdfReader.pages)))
+        def visitor_body(text: str, _cm, tm, _font_dict, _font_size):
+            if text not in ["", " "] and text != "\n":
+                # Permet de connaitre l'emplacement des éléments dans la hauteur
+                # Dès que la valeur est dépassée, c'est qu'on a changé de page
+                # print(text, len(text), tm)
+                if len(text) < 500:
+                    if text.endswith("\n") or len(text) <= 5:
+                        parties_page[text] = float(tm[5])
+                    else:
+                        parties_page[text + "\n"] = float(tm[5])
+                ######################################################################
 
-        self.__text = premiere_page + Utils.replace_accent(self.__text)
+        self.__text = ""
+
+        for i in range(self.__index_first_page + 1, len(self.__pdfReader.pages)):
+            self.__text += self.__pdfReader.pages[i].extract_text(visitor_text=visitor_body)
+            liste_parties.append(parties_page.copy())
+            parties_page.clear()
+
+        # Tri des dictionnaires par leurs valeurs (coordonnées du texte dans la page)
+        liste_parties_copy = []
+        for i, elt in enumerate(liste_parties):
+            if len(elt) >= 2:
+                liste_parties_copy.append(
+                    {k: v for k, v in sorted(elt.items(), key=lambda item: item[1], reverse=True)})
+
+        # liste_parties_copy[:] = liste_parties[:]
+        ######################################################################
+
+        texte_copy_test = ""
+
+        for elt in liste_parties_copy:
+            # print(elt)
+            texte_copy_test += "".join(elt.keys())
+
+        # print(texte_copy_test)
+
+        # self.__text = premiere_page + Utils.replace_accent(self.__text)
+
+        self.__text = premiere_page + Utils.replace_accent(texte_copy_test.replace("\n\n", "\n"))
 
         # Filtre les caractères pour ne conserver que les caractères ASCII
         chaine_normalisee = unicodedata.normalize('NFD', self.__text.lower())

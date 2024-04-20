@@ -297,6 +297,11 @@ class Author:
 
                     result = f"{result}\n{element}"
 
+            # Si aucune affiliation -> on met N/A
+            if result == "":
+                result = "N/A"
+            ######################################################################
+
             self.__dico_nom_univ[key] = result.strip()
         ######################################################################
 
