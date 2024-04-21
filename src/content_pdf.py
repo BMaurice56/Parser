@@ -71,18 +71,17 @@ class Content:
 
         # Tri des dictionnaires par leurs valeurs (coordonnées du texte dans la page)
         liste_parties_copy = []
-        for i, elt in enumerate(liste_parties):
+        for elt in liste_parties:
             liste_parties_copy.append(
                 {k: v for k, v in sorted(elt.items(), key=lambda item: item[1], reverse=True)})
-
         ######################################################################
 
-        texte_copy_test = ""
+        texte_new_order = ""
 
         for elt in liste_parties_copy:
-            texte_copy_test += "".join(elt.keys())
+            texte_new_order += "".join(elt.keys())
 
-        self.__text = premiere_page + Utils.replace_accent(texte_copy_test.replace("\n\n", "\n"))
+        self.__text = premiere_page + Utils.replace_accent(texte_new_order.replace("\n\n", "\n"))
 
         # Filtre les caractères pour ne conserver que les caractères ASCII
         chaine_normalisee = unicodedata.normalize('NFD', self.__text.lower())
