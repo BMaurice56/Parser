@@ -11,6 +11,7 @@ class Title:
 
         self._get_title()
         self.__titre = Utils.replace_accent(self.__titre)
+        self.__titre = self.__titre.strip()
 
     def _get_title(self, minimum_y: int = 640, maximum_y: int = 770) -> None:
         """
