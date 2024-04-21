@@ -14,9 +14,9 @@ class Section:
         self.__texte = content.get_text()
         self.__position_title_keywords = pos_title_keywords
 
-        self.__conclusion = self._get_section("onclusion")
-        self.__discussion = self._get_section("iscussion")
-        self.__references = self._get_section("eferences")
+        self.__conclusion = self._get_section("onclusion").strip()
+        self.__discussion = self._get_section("iscussion").strip()
+        self.__references = self._get_section("eferences").strip()
 
     @staticmethod
     def get_pos_word_after(mot: str, position_title_keywords: dict) -> int:
