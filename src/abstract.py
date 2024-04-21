@@ -10,6 +10,8 @@ class Abstract:
 
         self._get_abstract()
 
+        self.__abstract = self.__abstract.strip()
+
     def _get_abstract(self) -> None:
         """
         Renvoie l'abstract du pdf
