@@ -505,26 +505,31 @@ class Author:
 
             # Si les tailles sont équivalentes, on associe les mails aux noms
             if taille_auteurs == taille_mails:
-                # D'abord, on calcule les distances
-                for nom in self.__auteurs:
-                    for mail in self.__emails:
-                        levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
-                ######################################################################
+                if self.__type_pdf == 0 and self.__type_mail == 0:
+                    for nom, mail in zip(self.__auteurs, self.__emails):
+                        self.__dico_nom_mail[nom] = mail
 
-                # Puis, on ne garde que les distances les plus faibles
-                for nom, mail, distance in levenshtein_distance:
-                    distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
-
-                    # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
-                    if distance_in_dict[1] > distance and not mail_in_dict(mail, dico_nom_mail_distance):
-                        dico_nom_mail_distance[nom] = [mail, distance]
+                else:
+                    # D'abord, on calcule les distances
+                    for nom in self.__auteurs:
+                        for mail in self.__emails:
+                            levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
                     ######################################################################
-                ######################################################################
 
-                # Enfin, on passe les noms et mails dans le dictionnaire final
-                for key, value in dico_nom_mail_distance.items():
-                    self.__dico_nom_mail[key] = value[0]
-                ######################################################################
+                    # Puis, on ne garde que les distances les plus faibles
+                    for nom, mail, distance in levenshtein_distance:
+                        distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
+
+                        # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
+                        if distance_in_dict[1] > distance and not mail_in_dict(mail, dico_nom_mail_distance):
+                            dico_nom_mail_distance[nom] = [mail, distance]
+                        ######################################################################
+                    ######################################################################
+
+                    # Enfin, on passe les noms et mails dans le dictionnaire final
+                    for key, value in dico_nom_mail_distance.items():
+                        self.__dico_nom_mail[key] = value[0]
+                    ######################################################################
 
             # Soit il y a qu'un seul mail → mail de l'équipe
             # Soit on n'en a pas trouvé
