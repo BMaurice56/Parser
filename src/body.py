@@ -13,6 +13,8 @@ class Body:
         self.__position_title_keywords = position_title_keywords
 
         self._get_introduction_and_corps()
+        self.__introduction = self.__introduction.strip()
+        self.__corps = self.__corps.strip()
 
     def _get_introduction_and_corps(self) -> None:
         """
