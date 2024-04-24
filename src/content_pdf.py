@@ -28,9 +28,10 @@ class Content:
         self.__previous_value = 10_000
 
         def visitor_first_page(text: str, _cm, tm, _font_dict, _font_size):
-            if text not in ["", " ", "\n"] and len(text) < 500:
+            if text not in ["", " ", "\n"] and len(text) < 700:
+                # print(text, tm)
                 pos_abstract = text.lower().find("bstract")
-                if pos_abstract != -1 and len(text) - 1 <= 8:
+                if not self.__find_abstract and pos_abstract != -1 and len(text) - 1 <= 8:
                     self.__find_abstract = True
 
                 if self.__find_abstract:
@@ -60,8 +61,28 @@ class Content:
         ######################################################################
 
         # Retrait du dictionnaire contenant le mot abstract
-        parties_intro.pop(0)
+        # parties_intro.pop(0)
         ######################################################################
+
+        # On trie l'ensemble des dictionnaires
+        liste_first_page = []
+
+        for elt in parties_intro:
+            liste_first_page.append({k: v for k, v in sorted(elt.items(), key=lambda item: item[1], reverse=True)})
+
+        ######################################################################
+
+        # On met à la suite l'ensemble des lignes de la première page
+        texte_first_page = ""
+
+        for elt in liste_first_page:
+            texte_first_page += "".join(elt.keys())
+
+        # print(texte_first_page)
+        ######################################################################
+
+        # Création de la première page
+        premiere_page = premiere_page[:premiere_page.find(list(parties_intro[0].keys())[0][:10])] + texte_first_page
         ######################################################################
 
         # On remplace les accents de la première page
@@ -89,7 +110,7 @@ class Content:
                 # Dès que la valeur est dépassée, c'est qu'on a changé de page
                 value = float(tm[5])
 
-                if self.__previous_value > value:
+                if self.__previous_value < value:
                     liste_parties.append(parties_page.copy())
                     parties_page.clear()
                     self.__previous_value = 10_000
