@@ -20,11 +20,28 @@ class Content:
 
         :return: None
         """
-        premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
+
+        self.__find_abstract = False
+        self.__find_introduction = False
+
+        parties = []
+
+        def visitor_first_page(text: str, _cm, tm, _font_dict, _font_size):
+            if text not in ["", " ", "\n"] and len(text) < 500:
+                pos_abstract = text.lower().find("bstract")
+                if pos_abstract != -1 and len(text) - 1 <= 8:
+                    self.__find_abstract = True
+
+                if self.__find_abstract:
+                    parties.append(text + "\n")
+
+        premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text(visitor_text=visitor_first_page)
 
         if premiere_page.startswith("This article") and not Mail.find_emails(premiere_page)[0]:
             self.__index_first_page += 1
-            premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
+            parties.clear()
+            premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text(
+                visitor_text=visitor_first_page)
 
         # On remplace les accents de la première page
         premiere_page = Utils.replace_accent(premiere_page)
@@ -46,21 +63,19 @@ class Content:
         self.__previous_value = 10_000
 
         def visitor_body(text: str, _cm, tm, _font_dict, _font_size):
-            if text not in ["", " "] and text != "\n":
+            if text not in ["", " ", "\n"] and len(text) < 500:
                 # Permet de connaitre l'emplacement des éléments dans la hauteur
                 # Dès que la valeur est dépassée, c'est qu'on a changé de page
-                # print(text, len(text), tm)
-                if len(text) < 500:
-                    value = float(tm[5])
+                value = float(tm[5])
 
-                    if self.__previous_value > value:
-                        liste_parties.append(parties_page.copy())
-                        parties_page.clear()
-                        self.__previous_value = 10_000
-                    else:
-                        self.__previous_value = value
+                if self.__previous_value > value:
+                    liste_parties.append(parties_page.copy())
+                    parties_page.clear()
+                    self.__previous_value = 10_000
+                else:
+                    self.__previous_value = value
 
-                    parties_page[text + "\n"] = value
+                parties_page[text + "\n"] = value
 
                 ######################################################################
 
