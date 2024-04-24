@@ -20,11 +20,12 @@ class Content:
 
         :return: None
         """
-
+        # Extraction des informations de la première page dans l'ordre
         self.__find_abstract = False
-        self.__find_introduction = False
 
-        parties = []
+        parties_intro = []
+        parties_intro_dico = {}
+        self.__previous_value = 10_000
 
         def visitor_first_page(text: str, _cm, tm, _font_dict, _font_size):
             if text not in ["", " ", "\n"] and len(text) < 500:
@@ -33,15 +34,35 @@ class Content:
                     self.__find_abstract = True
 
                 if self.__find_abstract:
-                    parties.append(text + "\n")
+                    value = float(tm[5])
+
+                    if self.__previous_value > value:
+                        parties_intro.append(parties_intro_dico.copy())
+                        parties_intro_dico.clear()
+                        self.__previous_value = 10_000
+                    else:
+                        self.__previous_value = value
+
+                    parties_intro_dico[text + "\n"] = value
 
         premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text(visitor_text=visitor_first_page)
 
         if premiere_page.startswith("This article") and not Mail.find_emails(premiere_page)[0]:
             self.__index_first_page += 1
-            parties.clear()
+            parties_intro.clear()
+            parties_intro_dico.clear()
             premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text(
                 visitor_text=visitor_first_page)
+
+        # Retrait des dictionnaires vide
+        while {} in parties_intro:
+            parties_intro.remove({})
+        ######################################################################
+
+        # Retrait du dictionnaire contenant le mot abstract
+        parties_intro.pop(0)
+        ######################################################################
+        ######################################################################
 
         # On remplace les accents de la première page
         premiere_page = Utils.replace_accent(premiere_page)
