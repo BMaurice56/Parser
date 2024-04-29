@@ -81,7 +81,7 @@ class Content:
         for elt in liste_parties_copy:
             texte_new_order += "".join(elt.keys())
 
-        self.__text = premiere_page + Utils.replace_accent(texte_new_order.replace("\n\n", "\n"))
+        self.__text = premiere_page + Utils.replace_accent(texte_new_order)
 
         # Filtre les caractères pour ne conserver que les caractères ASCII
         chaine_normalisee = unicodedata.normalize('NFD', self.__text.lower())
