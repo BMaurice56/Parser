@@ -103,6 +103,7 @@ class Content:
         liste_parties = []
         parties_page = {}
         self.__previous_value = 10_000
+        self.__number_page_visitor = -1
 
         def visitor_body(text: str, _cm, tm, _font_dict, _font_size):
             if text not in ["", " ", "\n"] and len(text) < 500:
@@ -110,11 +111,12 @@ class Content:
                 # Dès que la valeur est dépassée, c'est qu'on a changé de page
                 value = float(tm[5])
 
-                if self.__previous_value < value:
+                if self.__previous_value < value and self.__number_page != self.__number_page_visitor:
                     liste_parties.append(parties_page.copy())
                     parties_page.clear()
                     self.__previous_value = 10_000
                 else:
+                    self.__number_page_visitor = self.__number_page
                     self.__previous_value = value
 
                 parties_page[text + "\n"] = value
@@ -122,6 +124,7 @@ class Content:
                 ######################################################################
 
         for i in range(self.__index_first_page + 1, len(self.__pdfReader.pages)):
+            self.__number_page = i
             self.__pdfReader.pages[i].extract_text(visitor_text=visitor_body)
             liste_parties.append(parties_page.copy())
             parties_page.clear()
@@ -132,6 +135,10 @@ class Content:
             liste_parties_copy.append(
                 {k: v for k, v in sorted(elt.items(), key=lambda item: item[1], reverse=True)})
         ######################################################################
+
+        for et in liste_parties_copy:
+            # print(et)
+            ""
 
         texte_new_order = ""
 
