@@ -143,12 +143,12 @@ class Parser:
 
         # Titre
         titre = Title(self.__pdfReader, self.__index_first_page)
-        self.__titre = titre.get_title().replace("\n", " ")
+        self.__titre = Utils.replace_accent(titre.get_title())
         ######################################################################
 
         # Abstract
         abstract = Abstract(content)
-        self.__abstract = abstract.get_abstract().replace("\n", " ")
+        self.__abstract = Utils.replace_accent(abstract.get_abstract().replace("\n", " "))
         ######################################################################
 
         # Auteurs
@@ -158,15 +158,15 @@ class Parser:
 
         # Introduction et corps
         body = Body(content, abstract, self.__position_title_keywords)
-        self.__introduction = body.get_introduction().replace("\n", " ")
-        self.__corps = body.get_corps().replace("\n", " ")
+        self.__introduction = Utils.replace_accent(body.get_introduction().replace("\n", " "))
+        self.__corps = Utils.replace_accent(body.get_corps().replace("\n", " "))
         ######################################################################
 
         # Sections du pdf
         section = Section(content, self.__position_title_keywords)
-        self.__conclusion = section.get_conclusion().replace("\n", " ")
-        self.__discussion = section.get_discussion().replace("\n", " ")
-        self.__references = section.get_references().replace("\n", " ")
+        self.__conclusion = Utils.replace_accent(section.get_conclusion().replace("\n", " "))
+        self.__discussion = Utils.replace_accent(section.get_discussion().replace("\n", " "))
+        self.__references = Utils.replace_accent(section.get_references().replace("\n", " "))
 
     def pdf_to_file(self, type_output_file: str) -> None:
         """
