@@ -46,7 +46,7 @@ class Content:
         self.__previous_value = 10_000
 
         def visitor_body(text: str, _cm, tm, _font_dict, _font_size):
-            if text not in ["", " "] and text != "\n":
+            if text not in ["", " ", "\n"]:
                 # Permet de connaitre l'emplacement des éléments dans la hauteur
                 # Dès que la valeur est dépassée, c'est qu'on a changé de page
                 # print(text, len(text), tm)
