@@ -10,6 +10,8 @@ class Abstract:
 
         self._get_abstract()
 
+        self.__abstract = self.__abstract.strip()
+
     def _get_abstract(self) -> None:
         """
         Renvoie l'abstract du pdf
@@ -110,6 +112,10 @@ class Abstract:
                 self.__abstract += "."
         else:
             raise ValueError("Abstract non trouvé")
+        ######################################################################
+
+        # Retrait espace début et fin
+        self.__abstract = self.__abstract.strip()
         ######################################################################
 
     def get_abstract(self) -> str:

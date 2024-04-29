@@ -52,7 +52,7 @@ class TextComparer:
         :param file_content: contenu généré par le parser
         :return: dictionnaire des pourcentages
         """
-        elements = ["titre", "auteurs", "abstract", "introduction", "body", "conclusion", "discussion",
+        elements = ["titre", "auteurs", "abstract", "introduction", "conclusion", "discussion",
                     "biblio", "/biblio"]
 
         # Dictionnaire contenant la position de chaque titre de section
@@ -78,7 +78,7 @@ class TextComparer:
                 texte1 = solution[pos_element_solution[elt]:pos_element_solution[elements[i + 1]]]
                 texte2 = file_content[pos_element_file_content[elt]: pos_element_file_content[elements[i + 1]]]
 
-                if "N/A" in texte1 and "<mail>N/A</mail>" not in texte1:
+                if "N/A" in texte1 and "<mail>N/A</mail>" not in texte1 and "<afliation>N/A</afliation>" not in texte1:
                     results[elt] = -1
                 else:
                     results[elt] = self.levenshtein_distance_percentage(texte1, texte2)

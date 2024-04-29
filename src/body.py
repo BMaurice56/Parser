@@ -13,6 +13,8 @@ class Body:
         self.__position_title_keywords = position_title_keywords
 
         self._get_introduction_and_corps()
+        self.__introduction = self.__introduction.strip()
+        self.__corps = self.__corps.strip()
 
     def _get_introduction_and_corps(self) -> None:
         """
@@ -125,7 +127,7 @@ class Body:
                                        self.__introduction[pos_character + difference_page:].strip())
 
         else:
-            pos_second_title_word = -2
+            pos_second_title_word = texte.find("\n")
 
             self.__introduction = "N/A"
 

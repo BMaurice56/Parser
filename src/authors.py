@@ -17,6 +17,7 @@ class Author:
         self.__school_words = school_word
         self.__auteurs = []
         self.__auteurs_with_numbers_or_symbol = []
+        self.__auteurs_order = []
         self.__regex_symbol_auteurs = "[^A-Za-zÀ-ÖØ-öø-ÿ 0-9-;.,/]*"
         self.__emails = []
         self.__dico_nom_mail = {}
@@ -212,10 +213,12 @@ class Author:
                 ######################################################################
 
             else:
+                # Si on a des auteurs au début, on les enlève
                 for aut in self.__auteurs:
                     pos_name = school.find(aut)
                     if pos_name != -1:
                         school = school[pos_name + len(aut):].strip()
+                ######################################################################
 
                 for key in self.__dico_nom_mail.keys():
                     self.__dico_nom_univ[key] = school
@@ -229,8 +232,11 @@ class Author:
                 name_in_element = any(element.find(nom) != -1 for nom in self.__auteurs)
                 mail_in_element = any(element.find(nom) != -1 for nom in self.__emails)
                 link_in_element = any(element.find(link) != -1 for link in ["http", "www"])
+                date_in_element = any(element.find(date) != -1 for date in
+                                      ["January", "February", "March", "April", "May", "June", "July", "August",
+                                       "September", "October", "November", "December"])
 
-                if not name_in_element and not mail_in_element and not link_in_element:
+                if not name_in_element and not mail_in_element and not link_in_element and not date_in_element:
                     # Si présence d'un chiffre devant, on le remplace
                     if element[0].isdigit() and not element[1].isdigit():
                         element = f"\n{element[1:]}"
@@ -291,6 +297,11 @@ class Author:
 
                     result = f"{result}\n{element}"
 
+            # Si aucune affiliation -> on met N/A
+            if result == "":
+                result = "N/A"
+            ######################################################################
+
             self.__dico_nom_univ[key] = result.strip()
         ######################################################################
 
@@ -329,8 +340,21 @@ class Author:
                         if split in auth:
                             auteurs_separer = auth.split(split)
 
+                            index = self.__auteurs.index(auth)
+
                             self.__auteurs.remove(auth)
-                            self.__auteurs += auteurs_separer
+
+                            if index == 0:
+                                self.__auteurs = auteurs_separer + self.__auteurs
+
+                            else:
+                                if len(auteurs_separer) == 1:
+                                    self.__auteurs.insert(index, auteurs_separer[0])
+                                else:
+                                    for element in auteurs_separer:
+                                        self.__auteurs.insert(index, element)
+                                        index += 1
+
                         ######################################################################
                 ######################################################################
 
@@ -430,9 +454,12 @@ class Author:
             ######################################################################
 
             # On retire les caractères inutiles
+            auteurs_copy = []
             for elt in self.__auteurs:
-                if len(elt) <= 1:
-                    self.__auteurs.remove(elt)
+                if len(elt) >= 2:
+                    auteurs_copy.append(elt)
+
+            self.__auteurs[:] = auteurs_copy[:]
             ######################################################################
 
             return
@@ -478,26 +505,31 @@ class Author:
 
             # Si les tailles sont équivalentes, on associe les mails aux noms
             if taille_auteurs == taille_mails:
-                # D'abord, on calcule les distances
-                for nom in self.__auteurs:
-                    for mail in self.__emails:
-                        levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
-                ######################################################################
+                if self.__type_pdf == 0 and self.__type_mail == 0:
+                    for nom, mail in zip(self.__auteurs, self.__emails):
+                        self.__dico_nom_mail[nom] = mail
 
-                # Puis, on ne garde que les distances les plus faibles
-                for nom, mail, distance in levenshtein_distance:
-                    distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
-
-                    # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
-                    if distance_in_dict[1] > distance and not mail_in_dict(mail, dico_nom_mail_distance):
-                        dico_nom_mail_distance[nom] = [mail, distance]
+                else:
+                    # D'abord, on calcule les distances
+                    for nom in self.__auteurs:
+                        for mail in self.__emails:
+                            levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
                     ######################################################################
-                ######################################################################
 
-                # Enfin, on passe les noms et mails dans le dictionnaire final
-                for key, value in dico_nom_mail_distance.items():
-                    self.__dico_nom_mail[key] = value[0]
-                ######################################################################
+                    # Puis, on ne garde que les distances les plus faibles
+                    for nom, mail, distance in levenshtein_distance:
+                        distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
+
+                        # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
+                        if distance_in_dict[1] > distance and not mail_in_dict(mail, dico_nom_mail_distance):
+                            dico_nom_mail_distance[nom] = [mail, distance]
+                        ######################################################################
+                    ######################################################################
+
+                    # Enfin, on passe les noms et mails dans le dictionnaire final
+                    for key, value in dico_nom_mail_distance.items():
+                        self.__dico_nom_mail[key] = value[0]
+                    ######################################################################
 
             # Soit il y a qu'un seul mail → mail de l'équipe
             # Soit on n'en a pas trouvé

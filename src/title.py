@@ -10,7 +10,7 @@ class Title:
         self.__index_first_page = index_first_page
 
         self._get_title()
-        self.__titre = Utils.replace_accent(self.__titre)
+        self.__titre = Utils.replace_accent(self.__titre.strip())
 
     def _get_title(self, minimum_y: int = 640, maximum_y: int = 770) -> None:
         """

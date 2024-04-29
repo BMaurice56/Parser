@@ -5,14 +5,12 @@ def selectcouleur(pourcentage: float):
     """
 
     :param pourcentage:
-    :return: la couleur relié au pourcentage
+    :return: la couleur reliée au pourcentage
     """
-    if pourcentage >= 90:
+    if pourcentage >= 95:
         return Fore.GREEN
     elif pourcentage >= 70:
         return Fore.LIGHTYELLOW_EX
-    elif pourcentage >= 50:
-        return Fore.LIGHTMAGENTA_EX
     else:
         return Fore.RED
 
