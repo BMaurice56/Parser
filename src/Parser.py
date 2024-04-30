@@ -154,6 +154,31 @@ class Parser:
         # Auteurs
         auteurs = Author(content, titre, abstract, self.__school_words)
         self.__auteurs, self.__dico_nom_mail, self.__dico_nom_univ = auteurs.get_authors()
+
+        for i, auteur in enumerate(self.__auteurs):
+            new_auteur = Utils.replace_accent(auteur.replace("\n", " "))
+
+            # Si l'auteur est différent, alors on le met à jour
+            if new_auteur != auteur:
+                # On remplace le nom dans les dictionnaires
+                if auteur in self.__dico_nom_univ:
+                    self.__dico_nom_univ[new_auteur] = self.__dico_nom_univ[auteur]
+                    del self.__dico_nom_univ[auteur]
+
+                if auteur in self.__dico_nom_mail:
+                    self.__dico_nom_mail[new_auteur] = self.__dico_nom_mail[auteur]
+                    del self.__dico_nom_mail[auteur]
+                ######################################################################
+
+                self.__auteurs[i] = new_auteur
+            ######################################################################
+
+        for key, value in self.__dico_nom_univ.items():
+            self.__dico_nom_univ[key] = Utils.replace_accent(value.replace("\n", " "))
+
+        for key, value in self.__dico_nom_mail.items():
+            self.__dico_nom_mail[key] = Utils.replace_accent(value.replace("\n", " "))
+
         ######################################################################
 
         # Introduction et corps
