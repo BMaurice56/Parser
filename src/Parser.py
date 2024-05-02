@@ -143,7 +143,7 @@ class Parser:
 
         # Titre
         titre = Title(self.__pdfReader, self.__index_first_page)
-        self.__titre = Utils.replace_accent(titre.get_title())
+        self.__titre = Utils.replace_accent(titre.get_title().replace("\n", " "))
         ######################################################################
 
         # Abstract
