@@ -92,6 +92,9 @@
   "\r": "fl",
   "\u000E": "ffi",
   "\u000B": "ff",
+  "/angbracketleft ": "h",
+  " /angbracketright": "i",
+  "Author's personal copy": "",
   "\u0013": "é",
   "\u0003": "",
   "V o": "Vo",
@@ -122,6 +125,5 @@
   "& ": ";",
   "ﬂ": "fl",
   " RF0 RF1 RF2 RF3 RF4 RF5 RF60,400,450,500,550,600,650,700,750,800,85 AUC score Relevance Feeback size 34861 RF 34861 RFC 31274 RF 31274 RFC 31702 RF 31702 RFC Fig. 6. Comparison of detailed results for 3 jobs with and without summaries of CL. For each job, RFC means AUC scores with CORTEX and RF without CORTEX.1134 ": "",
-  "/angbracketleft ": "h",
-  " /angbracketright": "i"
+  "/C2112012 Elsevier Ltd. All rights reserved": ""
 }
