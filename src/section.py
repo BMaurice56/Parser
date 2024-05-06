@@ -72,6 +72,11 @@ class Section:
                 texte = texte[:texte.rfind("\n")].strip()
                 ######################################################################
 
+                # On enlève tout élément inutile à la fin de chaque section
+                while texte[-1] != ".":
+                    texte = texte[:-1]
+                ######################################################################
+
             return texte
 
         else:
