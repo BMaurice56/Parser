@@ -30,9 +30,6 @@ class Utils:
                 for key, value in dictionnaire_lettre.items():
                     texte = texte.replace(key, value)
 
-                for elt in re.findall(r"\.[A-Z]", texte):
-                    texte = texte.replace(elt, f". {elt[1]}")
-
                 return texte
 
             else:
