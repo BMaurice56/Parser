@@ -6,37 +6,41 @@ import re
 
 
 class Utils:
-    @staticmethod
-    def replace_accent(texte: list | dict | str) -> None | str:
-        """
-        Remplace tous les accents mal lus dans les noms
 
-        :param: texte string à checker
-        :return: texte corrigé
+    def __init__(self):
+        """
+        Constructeur
         """
         path = str(pathlib.Path(__file__).parent.resolve())
         path_dir = path[:path.rfind('/')]
 
-        with open(f"{path_dir}/src/letters_accent.json", "r") as f:
-            dictionnaire_lettre = json.load(f)
+        with open(f"{path_dir}/src/letters_accent_uppercase.json", "r") as f:
+            self.__dictionnaire_lettre = json.load(f)
 
-            if type(texte) is list:
-                for key, value in dictionnaire_lettre.items():
-                    for i in range(len(texte)):
-                        texte[i] = texte[i].replace(key, value)
-                return
+        with open(f"{path_dir}/src/letters_accent_lowercase.json", "r") as f:
+            self.__dictionnaire_lettre = self.__dictionnaire_lettre | json.load(f)
 
-            elif type(texte) is str:
-                for key, value in dictionnaire_lettre.items():
-                    texte = texte.replace(key, value)
+        with open(f"{path_dir}/src/letters_accent_others.json", "r") as f:
+            self.__dictionnaire_lettre = self.__dictionnaire_lettre | json.load(f)
 
-                for elt in re.findall(r"\.[A-Z]", texte):
-                    texte = texte.replace(elt, f". {elt[1]}")
+    def replace_accent(self, texte: str) -> None | str:
+        """
+        Remplace certains éléments du texte passé en argument
 
-                return texte
+        :param texte: string
+        :return: str nouveau texte
+        """
+        if type(texte) is str:
+            for key, value in self.__dictionnaire_lettre.items():
+                texte = texte.replace(key, value)
 
-            else:
-                raise TypeError("Type non reconnue")
+            for elt in re.findall(r"\.[A-Z]", texte):
+                texte = texte.replace(elt, f". {elt[1]}")
+
+            return texte
+
+        else:
+            raise TypeError("Type non reconnue")
 
     @staticmethod
     def retrieve_previous_order(liste: list, dico_ordre: dict) -> None:

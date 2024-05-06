@@ -56,6 +56,7 @@ class Parser:
             raise FileNotFoundError("Le fichier fourni n'est pas un pdf ou n'a pas été trouvé")
 
         self.__pdfReader = self.__open_pdf()
+        self.__utils = Utils()
 
         if directory_txt_file is not None:
             self.__directoryTxtFile = directory_txt_file
@@ -137,18 +138,18 @@ class Parser:
         :return: None
         """
         # !!! ORDRE A CONSERVER
-        content = Content(self.__pdfReader)
+        content = Content(self.__pdfReader, self.__utils)
         self.__index_first_page = content.get_index_first_page()
         self.__position_title_keywords = self.__localisation_keywords(content)
 
         # Titre
-        titre = Title(self.__pdfReader, self.__index_first_page)
-        self.__titre = Utils.replace_accent(titre.get_title().replace("\n", " "))
+        titre = Title(self.__pdfReader, self.__utils, self.__index_first_page)
+        self.__titre = self.__utils.replace_accent(titre.get_title().replace("\n", " "))
         ######################################################################
 
         # Abstract
         abstract = Abstract(content)
-        self.__abstract = Utils.replace_accent(abstract.get_abstract().replace("\n", " "))
+        self.__abstract = self.__utils.replace_accent(abstract.get_abstract().replace("\n", " "))
         ######################################################################
 
         # Auteurs
@@ -156,7 +157,7 @@ class Parser:
         self.__auteurs, self.__dico_nom_mail, self.__dico_nom_univ = auteurs.get_authors()
 
         for i, auteur in enumerate(self.__auteurs):
-            new_auteur = Utils.replace_accent(auteur.replace("\n", " "))
+            new_auteur = self.__utils.replace_accent(auteur.replace("\n", " "))
 
             # Si l'auteur est différent, alors on le met à jour
             if new_auteur != auteur:
@@ -174,24 +175,24 @@ class Parser:
             ######################################################################
 
         for key, value in self.__dico_nom_univ.items():
-            self.__dico_nom_univ[key] = Utils.replace_accent(value.replace("\n", " "))
+            self.__dico_nom_univ[key] = self.__utils.replace_accent(value.replace("\n", " "))
 
         for key, value in self.__dico_nom_mail.items():
-            self.__dico_nom_mail[key] = Utils.replace_accent(value.replace("\n", " "))
+            self.__dico_nom_mail[key] = self.__utils.replace_accent(value.replace("\n", " ")).replace(" ", "")
 
         ######################################################################
 
         # Introduction et corps
         body = Body(content, abstract, self.__position_title_keywords)
-        self.__introduction = Utils.replace_accent(body.get_introduction().replace("\n", " "))
-        self.__corps = Utils.replace_accent(body.get_corps().replace("\n", " "))
+        self.__introduction = self.__utils.replace_accent(body.get_introduction().replace("\n", " "))
+        self.__corps = self.__utils.replace_accent(body.get_corps().replace("\n", " "))
         ######################################################################
 
         # Sections du pdf
         section = Section(content, self.__position_title_keywords)
-        self.__conclusion = Utils.replace_accent(section.get_conclusion().replace("\n", " "))
-        self.__discussion = Utils.replace_accent(section.get_discussion().replace("\n", " "))
-        self.__references = Utils.replace_accent(section.get_references().replace("\n", " "))
+        self.__conclusion = self.__utils.replace_accent(section.get_conclusion().replace("\n", " "))
+        self.__discussion = self.__utils.replace_accent(section.get_discussion().replace("\n", " "))
+        self.__references = self.__utils.replace_accent(section.get_references().replace("\n", " "))
 
     def pdf_to_file(self, type_output_file: str) -> None:
         """

@@ -4,13 +4,13 @@ import PyPDF2
 
 class Title:
 
-    def __init__(self, pdf_reader: PyPDF2.PdfReader, index_first_page: int):
+    def __init__(self, pdf_reader: PyPDF2.PdfReader, utils: Utils, index_first_page: int):
         self.__pdfReader = pdf_reader
         self.__titre = ""
         self.__index_first_page = index_first_page
 
         self._get_title()
-        self.__titre = Utils.replace_accent(self.__titre.strip())
+        self.__titre = utils.replace_accent(self.__titre.strip())
 
     def _get_title(self, minimum_y: int = 640, maximum_y: int = 770) -> None:
         """
