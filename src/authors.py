@@ -137,7 +137,7 @@ class Author:
             # Si présence de lien entre auteurs et école via des lettres en minuscule, on change en symbole
             school_split = school.split("\n")
 
-            if len([x for x in school_split if x[0].islower()]) >= 2:
+            if len([x for x in school_split if x[0].islower()]) >= 1:
 
                 liste_symbole = ["@", "#", "$", "%", "&", ">", "<", "(", ")", "[", "]", "°"]
                 index = 0
@@ -459,6 +459,13 @@ class Author:
                 if len(elt) >= 2:
                     auteurs_copy.append(elt)
 
+            # Il peut y avoir le "and" collé à un auteur
+            for i, elt in enumerate(auteurs_copy):
+                if elt.endswith("and"):
+                    auteurs_copy[i] = elt[:-3]
+            ######################################################################
+
+            # Copy de la liste
             self.__auteurs[:] = auteurs_copy[:]
             ######################################################################
 

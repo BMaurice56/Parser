@@ -20,70 +20,11 @@ class Content:
 
         :return: None
         """
-        # Extraction des informations de la première page dans l'ordre
-        self.__find_abstract = False
-
-        parties_intro = []
-        parties_intro_dico = {}
-        self.__previous_value = 10_000
-
-        def visitor_first_page(text: str, _cm, tm, _font_dict, _font_size):
-            if text not in ["", " ", "\n"] and len(text) < 700:
-                # print(text, tm)
-                pos_abstract = text.lower().find("bstract")
-                if not self.__find_abstract and pos_abstract != -1 and len(text) - 1 <= 8:
-                    self.__find_abstract = True
-
-                if self.__find_abstract:
-                    value = float(tm[5])
-
-                    if self.__previous_value > value:
-                        parties_intro.append(parties_intro_dico.copy())
-                        parties_intro_dico.clear()
-                        self.__previous_value = 10_000
-                    else:
-                        self.__previous_value = value
-
-                    parties_intro_dico[text + "\n"] = value
-
-        premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text(visitor_text=visitor_first_page)
+        premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
 
         if premiere_page.startswith("This article") and not Mail.find_emails(premiere_page)[0]:
             self.__index_first_page += 1
-            parties_intro.clear()
-            parties_intro_dico.clear()
-            premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text(
-                visitor_text=visitor_first_page)
-
-        # Retrait des dictionnaires vide
-        while {} in parties_intro:
-            parties_intro.remove({})
-        ######################################################################
-
-        # Retrait du dictionnaire contenant le mot abstract
-        # parties_intro.pop(0)
-        ######################################################################
-
-        # On trie l'ensemble des dictionnaires
-        liste_first_page = []
-
-        for elt in parties_intro:
-            liste_first_page.append({k: v for k, v in sorted(elt.items(), key=lambda item: item[1], reverse=True)})
-
-        ######################################################################
-
-        # On met à la suite l'ensemble des lignes de la première page
-        texte_first_page = ""
-
-        for elt in liste_first_page:
-            texte_first_page += "".join(elt.keys())
-
-        # print(texte_first_page)
-        ######################################################################
-
-        # Création de la première page
-        premiere_page = premiere_page[:premiere_page.find(list(parties_intro[0].keys())[0][:10])] + texte_first_page
-        ######################################################################
+            premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
 
         # On remplace les accents de la première page
         premiere_page = Utils.replace_accent(premiere_page)
@@ -103,28 +44,27 @@ class Content:
         liste_parties = []
         parties_page = {}
         self.__previous_value = 10_000
-        self.__number_page_visitor = -1
 
         def visitor_body(text: str, _cm, tm, _font_dict, _font_size):
-            if text not in ["", " ", "\n"] and len(text) < 500:
+            if text not in ["", " ", "\n"]:
                 # Permet de connaitre l'emplacement des éléments dans la hauteur
                 # Dès que la valeur est dépassée, c'est qu'on a changé de page
-                value = float(tm[5])
+                # print(text, len(text), tm)
+                if len(text) < 500:
+                    value = float(tm[5])
 
-                if self.__previous_value < value and self.__number_page != self.__number_page_visitor:
-                    liste_parties.append(parties_page.copy())
-                    parties_page.clear()
-                    self.__previous_value = 10_000
-                else:
-                    self.__number_page_visitor = self.__number_page
-                    self.__previous_value = value
+                    if self.__previous_value > value:
+                        liste_parties.append(parties_page.copy())
+                        parties_page.clear()
+                        self.__previous_value = 10_000
+                    else:
+                        self.__previous_value = value
 
-                parties_page[text + "\n"] = value
+                    parties_page[text + "\n"] = value
 
                 ######################################################################
 
         for i in range(self.__index_first_page + 1, len(self.__pdfReader.pages)):
-            self.__number_page = i
             self.__pdfReader.pages[i].extract_text(visitor_text=visitor_body)
             liste_parties.append(parties_page.copy())
             parties_page.clear()
@@ -135,10 +75,6 @@ class Content:
             liste_parties_copy.append(
                 {k: v for k, v in sorted(elt.items(), key=lambda item: item[1], reverse=True)})
         ######################################################################
-
-        for et in liste_parties_copy:
-            # print(et)
-            ""
 
         texte_new_order = ""
 

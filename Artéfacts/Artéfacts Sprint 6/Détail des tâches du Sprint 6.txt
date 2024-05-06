@@ -2,10 +2,15 @@ Négociation : (1 tâche)
 
 - Uniformisation des balises XML avec le client
 
+Ajout : (1 tâche)
+
+- Ajout du nouveau Corpus
+
 Amélioration : (2 tâches)
 
 - Amélioration du code
 - Ajout d'un fichier "solution" en XML pour le nouveau Corpus
+- Amélioration des fichiers références avec le client
 
 Rendu et artéfacts : (4 tâches)
 
@@ -13,4 +18,4 @@ Rendu et artéfacts : (4 tâches)
 
 - Faire le tableau Excel et le détail des tâches du Sprint 6
 - Faire un document sur les scores de l'ensemble du Corpus
-- Faire un rapport de fin de Sprint
+- Faire un rapport sur l'ensemble du projet

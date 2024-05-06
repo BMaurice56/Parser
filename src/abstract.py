@@ -108,6 +108,9 @@ class Abstract:
             while self.__abstract[-1] in ["\n", " ", "I", "1"]:
                 self.__abstract = self.__abstract[:-1]
 
+            if self.__abstract.endswith("\n."):
+                self.__abstract = self.__abstract[:-2]
+
             if self.__abstract[-1] != ".":
                 self.__abstract += "."
         else:
