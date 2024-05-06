@@ -6,11 +6,12 @@ import PyPDF2
 
 class Content:
 
-    def __init__(self, pdf_reader: PyPDF2.PdfReader):
+    def __init__(self, pdf_reader: PyPDF2.PdfReader, utils: Utils):
         self.__pdfReader = pdf_reader
         self.__index_first_page = 0
         self.__pos_last_character_first_page = -1
         self.__first_page_without_foot = ""
+        self.__utils = utils
 
         self.__load_text_attribut()
 
@@ -27,7 +28,7 @@ class Content:
             premiere_page = self.__pdfReader.pages[self.__index_first_page].extract_text()
 
         # On remplace les accents de la première page
-        premiere_page = Utils.replace_accent(premiere_page)
+        premiere_page = self.__utils.replace_accent(premiere_page)
         ######################################################################
 
         self.__pos_last_character_first_page = len(premiere_page) - 1
@@ -81,7 +82,7 @@ class Content:
         for elt in liste_parties_copy:
             texte_new_order += "".join(elt.keys())
 
-        self.__text = premiere_page + Utils.replace_accent(texte_new_order)
+        self.__text = premiere_page + self.__utils.replace_accent(texte_new_order)
 
         # Filtre les caractères pour ne conserver que les caractères ASCII
         chaine_normalisee = unicodedata.normalize('NFD', self.__text.lower())
