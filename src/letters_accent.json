@@ -99,6 +99,7 @@
   "\u0003": "",
   "V o": "Vo",
   "ﬁ": "fi",
+  "-\n\n": "",
   "-\n": "",
   "- ": "",
   "\u0001": "",
@@ -122,9 +123,11 @@
   " ]": "]",
   " ”": "”",
   "“ ": "“",
-  "& ": ";",
+  "& ": "; ",
   "ﬂ": "fl",
+  " :": ":",
   " RF0 RF1 RF2 RF3 RF4 RF5 RF60,400,450,500,550,600,650,700,750,800,85 AUC score Relevance Feeback size 34861 RF 34861 RFC 31274 RF 31274 RFC 31702 RF 31702 RFC Fig. 6. Comparison of detailed results for 3 jobs with and without summaries of CL. For each job, RFC means AUC scores with CORTEX and RF without CORTEX.1134 ": "",
   "/C2112012 Elsevier Ltd. All rights reserved": "",
-  "Table 4 Comparison of AUC score for each size of Relevance Feedback with CORTEX summarization system. Size of Relevance Feedback ISMIS result Full CV and CL summary 30% compression rate Random distribution 0.500 0.500 RF0 0.642 0.653RF1 0.654 0.658 RF2 0.657 0.659 RF3 0.659 0.661RF4 0.659 0.659RF5 0.660 0.662RF6 0.661 0.663 Fig. 5. Results of Relevance Feedback with and without summaries of CL.": ""
+  "Table 4 Comparison of AUC score for each size of Relevance Feedback with CORTEX summarization system. Size of Relevance Feedback ISMIS result Full CV and CL summary 30% compression rate Random distribution 0.500 0.500 RF0 0.642 0.653RF1 0.654 0.658 RF2 0.657 0.659 RF3 0.659 0.661RF4 0.659 0.659RF5 0.660 0.662RF6 0.661 0.663 Fig. 5. Results of Relevance Feedback with and without summaries of CL.": "",
+  " R. Kessler et al. / Information Processing and Management 48 (2012) 1124–1135 1135": ""
 }

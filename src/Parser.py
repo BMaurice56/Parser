@@ -177,7 +177,7 @@ class Parser:
             self.__dico_nom_univ[key] = Utils.replace_accent(value.replace("\n", " "))
 
         for key, value in self.__dico_nom_mail.items():
-            self.__dico_nom_mail[key] = Utils.replace_accent(value.replace("\n", " "))
+            self.__dico_nom_mail[key] = Utils.replace_accent(value.replace("\n", " ")).replace(" ", "")
 
         ######################################################################
 
