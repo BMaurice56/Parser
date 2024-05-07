@@ -331,6 +331,9 @@ class Author:
                             symbol = []
                         ######################################################################
 
+                        # Si on itère sur des symboles autres que les séparateurs classiques
+                        # et que l'on trouve un numéro ou un symbol, alors on ajoute l'auteur
+                        # à la liste des auteurs avec symboles pour ensuite les lier avec la bonne affiliation
                         if i >= 2 and len(auth) > 1 and (any(re.findall("[0-9]+", auth)) or any(
                                 symbol)) and auth.strip() not in self.__auteurs_with_numbers_or_symbol:
                             self.__auteurs_with_numbers_or_symbol.append(auth.strip())
