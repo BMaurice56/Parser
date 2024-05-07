@@ -77,6 +77,11 @@ class Section:
                     texte = texte[:-1]
                 ######################################################################
 
+            else:
+                pos = texte.find("RF0 RF1 RF2 RF3")
+                if pos != -1:
+                    texte = f"{texte[:pos]}{texte[pos + 325:]}"
+
             return texte
 
         else:
