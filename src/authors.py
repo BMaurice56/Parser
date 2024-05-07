@@ -685,9 +685,8 @@ class Author:
         ######################################################################
 
         # Si on a moins d'auteurs que de mails, il est probable que les noms soient sur une seule ligne
-        if len(self.__auteurs) == 1 and len(self.__auteurs) < len(self.__emails):
-            if self.__type_mail != 2:
-                self.__type_pdf = 1
+        if len(self.__auteurs) == 1 and len(self.__auteurs) < len(self.__emails) and self.__type_mail != 2:
+            self.__type_pdf = 1
         ######################################################################
 
         # Si la liste des auteurs est vide, cela veut dire qu'aucun mail a été trouvé. On parcourt le texte en
