@@ -34,6 +34,9 @@ class Utils:
             for key, value in self.__dictionnaire_lettre.items():
                 texte = texte.replace(key, value)
 
+            for elt in re.findall(r"\.[A-Z][a-z]", texte):
+                texte = texte.replace(elt, f". {elt[1:3]}")
+
             return texte
 
         else:
