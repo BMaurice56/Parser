@@ -1,0 +1,10 @@
+Prise de note de la réunion du 29 Avril :
+
+Le rapport final doit être sous la forme d'un article scientifique. 1 point bonus sera accordé aux équipes le faisant en Latex.
+Le rapport final ne concerne pas le Sprint 6, il se porte sur l'ensemble du projet. On ne doit donc pas faire de rapport sur le dernier Sprint.
+
+Le rapport doit répondre à plusieurs questions tels que : "Qu'avons-nous fait ?", "Comment avons-nous procédé pour analyser les articles ?", etc. Nous devrons au minimum, donner la moyenne des moyennes des résultats obtenus dans cet article. Il doit faire 3 à 4 pages de texte pur (on ne doit pas compter dans les 3 à 4 pages les pages suivantes : La page de garde, le sommaire et les références si elles y sont).
+
+Il n'y aura pas de soutenance.
+
+Date de rendu du Sprint 6 (et donc du projet final) fixé au 17 MAI à 23H59.
