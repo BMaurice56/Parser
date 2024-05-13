@@ -135,10 +135,10 @@ class Author:
             ######################################################################
 
             # Si présence de lien entre auteurs et école via des lettres en minuscule, on change en symbole
+            # Cela permet de pouvoir récupérer l'affiliation avec des expressions régulières plus simplement
             school_split = school.split("\n")
 
             if len([x for x in school_split if x[0].islower()]) >= 1:
-
                 liste_symbole = ["@", "#", "$", "%", "&", ">", "<", "(", ")", "[", "]", "°"]
                 index = 0
 
@@ -174,8 +174,9 @@ class Author:
 
             # Si on a des auteurs avec des numéros, on les associe à la bonne école
             if self.__auteurs_with_numbers_or_symbol:
+
                 # On sépare les différentes universités
-                school = [x for x in school.split("\n") if x != ""]
+                school = [x for x in school_split if x != ""]
                 ######################################################################
 
                 # Dictionnaire contenant le numéro et l'université correspondante
@@ -237,11 +238,6 @@ class Author:
                                        "September", "October", "November", "December"])
 
                 if not name_in_element and not mail_in_element and not link_in_element and not date_in_element:
-                    # Si présence d'un chiffre devant, on le remplace
-                    if element[0].isdigit() and not element[1].isdigit():
-                        element = f"\n{element[1:]}"
-                    ######################################################################
-
                     school = f"{school}{element}"
 
             for key in self.__dico_nom_mail.keys():
