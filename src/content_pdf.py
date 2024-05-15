@@ -7,6 +7,12 @@ import PyPDF2
 class Content:
 
     def __init__(self, pdf_reader: PyPDF2.PdfReader, utils: Utils):
+        """
+        Constructeur
+
+        :param pdf_reader: objet lecture du contenu de pdf
+        :param utils: Classe fonction utiles
+        """
         self.__pdfReader = pdf_reader
         self.__index_first_page = 0
         self.__pos_last_character_first_page = -1
