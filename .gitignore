@@ -8,7 +8,6 @@ Corpus_2022/analyse_pdf/*.xml
 Corpus_2022/analyse_pdf/*.txt
 Corpus_2023_FINAL/*.xml
 Corpus_2023_FINAL/*.txt
-Corpus_2023_FINAL/analyse_pdf/*.xml
-Corpus_2023_FINAL/analyse_pdf/*.txt
 Test/__pycache__/*
 src/__pychache__/*
+!Corpus_2023_FINAL/Correction/*
