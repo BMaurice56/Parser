@@ -1,5 +1,4 @@
 from src.content_pdf import Content
-from functools import wraps
 from src.title import Title
 from src.mail import Mail
 from src.abstract import Abstract
