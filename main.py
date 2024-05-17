@@ -23,8 +23,8 @@ def my_process(parser_object: Parser, argument: str, name_file: str):
 
 if __name__ == '__main__':
     try:
-        if len(sys.argv) > 4:
-            raise ValueError("Erreur nombre argument")
+        if len(sys.argv) > 4 or len(sys.argv) < 3:
+            raise Exception("Erreur nombre argument")
 
         argv = sys.argv[1]
         pathToFile = sys.argv[2]
@@ -34,13 +34,16 @@ if __name__ == '__main__':
 
         # Sécurité
         if argv != "-t" and argv != "-x":
-            raise ValueError("Erreur argument rentré")
+            raise Exception("Erreur argument rentré")
 
         if not os.path.exists(pathToFile):
             raise FileNotFoundError("Le fichier ou dossier fourni n'existe pas.")
 
         if choix != "--all" and choix != "":
-            raise ValueError("Erreur argument numéro 3 ne peut avoir que --all")
+            raise Exception("Erreur argument numéro 3 ne peut avoir que --all")
+
+        if len(pathToFile) > 4 and pathToFile[:-4] != ".pdf" and not os.path.isdir(pathToFile):
+            raise Exception("Erreur fichier : le fichier doit être un pdf")
         ######################################################################
 
         # Vérifie si c'est un dossier
@@ -75,7 +78,7 @@ if __name__ == '__main__':
             element_in_dir = os.listdir(pathToFile)
 
             if not any([elt for elt in element_in_dir if len(elt) > 4 and elt[-4:] == ".pdf"]):
-                raise Exception("Le dossier fourni est vide ou ne contient aucun pdf.")
+                raise Exception("Le dossier fourni ne contient aucun pdf.")
 
             # Création du dossier
             os.makedirs(nomDossier)
