@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
         # Sécurité
         if argv != "-t" and argv != "-x":
-            raise Exception("Erreur argument rentré")
+            raise Exception("Erreur option de sortie inconnu : -t -> txt file ; -x -> xml file")
 
         if not os.path.exists(pathToFile):
             raise FileNotFoundError("Le fichier ou dossier fourni n'existe pas.")
