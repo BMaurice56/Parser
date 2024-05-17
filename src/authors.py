@@ -41,6 +41,8 @@ class Author:
         """
 
         self._get_author()
+        self.__separate_authors()
+        self.__make_pair_mail_name()
         self._get_affiliation()
 
     def _get_affiliation(self) -> None:
@@ -301,178 +303,172 @@ class Author:
             self.__dico_nom_univ[key] = result.strip()
         ######################################################################
 
-    def __separate_authors(f):
+    def __separate_authors(self):
         """
         Sépare les auteurs selon certains marqueurs
 
         :return: None
         """
 
-        @wraps(f)
-        def wrapper(self):
-            f(self)
+        separate_element = [",", " and ", "1;2", "1", "2", "3", "∗", "†", "†"]
 
-            separate_element = [",", " and ", "1;2", "1", "2", "3", "∗", "†", "†"]
-
-            # On regarde si on a des séparateurs dans les noms des auteurs
-            if any(element in auteur for auteur in self.__auteurs for element in separate_element):
-                # On sépare les auteurs selon les séparateurs connus
-                for i, split in enumerate(separate_element):
-                    for auth in self.__auteurs:
-                        # On garde les auteurs avec des numéros ou symbol pour les associés à la bonne école
-                        symbol = [x for x in re.findall(self.__regex_symbol_auteurs, auth)]
-
-                        # Si trop peu de symbol, on ne garde pas
-                        if len(symbol) <= 1:
-                            symbol = []
-                        ######################################################################
-
-                        # Si on itère sur des symboles autres que les séparateurs classiques
-                        # et que l'on trouve un numéro ou un symbol, alors on ajoute l'auteur
-                        # à la liste des auteurs avec symboles pour ensuite les lier avec la bonne affiliation
-                        if i >= 2 and len(auth) > 1 and (any(re.findall("[0-9]+", auth)) or any(
-                                symbol)) and auth.strip() not in self.__auteurs_with_numbers_or_symbol:
-                            self.__auteurs_with_numbers_or_symbol.append(auth.strip())
-                        ######################################################################
-
-                        # Si séparateur présent dans l'auteur, on les sépare
-                        if split in auth:
-                            auteurs_separer = auth.split(split)
-
-                            index = self.__auteurs.index(auth)
-
-                            self.__auteurs.remove(auth)
-
-                            if index == 0:
-                                self.__auteurs = auteurs_separer + self.__auteurs
-
-                            else:
-                                if len(auteurs_separer) == 1:
-                                    self.__auteurs.insert(index, auteurs_separer[0])
-                                else:
-                                    for element in auteurs_separer:
-                                        self.__auteurs.insert(index, element)
-                                        index += 1
-
-                        ######################################################################
-                ######################################################################
-
-                taille_auteurs = len(self.__auteurs)
-
-                # On enlève les espaces de début et de fin
-                for i in range(taille_auteurs):
-                    self.__auteurs[i] = self.__auteurs[i].strip()
-                ######################################################################
-
-                # On enlève les potentiels chiffres à la fin
-                for i in range(taille_auteurs):
-                    value = self.__auteurs[i]
-                    if value != "" and value[-1].isnumeric():
-                        self.__auteurs[i] = value[:-1]
-                ######################################################################
-            ######################################################################
-
-            else:
-                # On vérifie qu'on n'a pas les auteurs sur une seule ligne
-                if len(self.__auteurs) == 1:
-                    taille_mails = len(self.__emails)
-
-                    # On enlève les lettres uniques
-                    auteurs = self.__auteurs[0]
-                    for i in range(1, len(auteurs) - 1):
-                        if auteurs[i - 1] == " " and auteurs[i + 1] == " ":
-                            auteurs = auteurs[:i] + auteurs[i + 1:]
-                    ######################################################################
-
-                    auteurs = auteurs.replace("  ", " ")
-                    noms = auteurs.split()
-                    liste_noms = []
-
-                    # On assemble les noms ensemble
-                    i = 0
-                    for nom in noms:
-                        if i == 0:
-                            liste_noms.append(nom)
-
-                        elif i == 1:
-                            # Si nom longueur de deux → particule
-                            if len(nom) == 2:
-                                i -= 1
-
-                            liste_noms[-1] += f" {nom}"
-
-                        elif i >= 2:
-                            liste_noms.append(nom)
-                            i = 0
-
-                        i += 1
-                    ######################################################################
-
-                    # Si on a plus de noms que de mails, on assemble les derniers noms
-                    if len(liste_noms) > taille_mails:
-                        difference = len(liste_noms) - taille_mails
-
-                        for _ in range(difference):
-                            value = liste_noms.pop()
-
-                            liste_noms[-1] = liste_noms[-1] + " " + value
-                    ######################################################################
-
-                    # On repasse les noms dans l'attribut de la classe
-                    self.__auteurs = liste_noms
-                    ######################################################################
-                ######################################################################
-
-            presence_star = False
-
-            # Si présence de chiffre, on les enlève
-            for aut in self.__auteurs:
-                if any(char.isdigit() for char in aut):
-                    aut_split = re.findall("[^0-9]+", aut)
-
-                    aut_split = [x for x in aut_split if len(x) > 2]
-
-                    self.__auteurs.remove(aut)
-                    self.__auteurs += aut_split
-                if "*" in aut:
-                    presence_star = True
-            ######################################################################
-
-            # Si présence d'une étoile dans le nom, on l'enlève
-            if presence_star:
+        # On regarde si on a des séparateurs dans les noms des auteurs
+        if any(element in auteur for auteur in self.__auteurs for element in separate_element):
+            # On sépare les auteurs selon les séparateurs connus
+            for i, split in enumerate(separate_element):
                 for auth in self.__auteurs:
-                    if "*" in auth:
+                    # On garde les auteurs avec des numéros ou symbol pour les associés à la bonne école
+                    symbol = [x for x in re.findall(self.__regex_symbol_auteurs, auth)]
+
+                    # Si trop peu de symbol, on ne garde pas
+                    if len(symbol) <= 1:
+                        symbol = []
+                    ######################################################################
+
+                    # Si on itère sur des symboles autres que les séparateurs classiques
+                    # et que l'on trouve un numéro ou un symbol, alors on ajoute l'auteur
+                    # à la liste des auteurs avec symboles pour ensuite les lier avec la bonne affiliation
+                    if i >= 2 and len(auth) > 1 and (any(re.findall("[0-9]+", auth)) or any(
+                            symbol)) and auth.strip() not in self.__auteurs_with_numbers_or_symbol:
+                        self.__auteurs_with_numbers_or_symbol.append(auth.strip())
+                    ######################################################################
+
+                    # Si séparateur présent dans l'auteur, on les sépare
+                    if split in auth:
+                        auteurs_separer = auth.split(split)
+
                         index = self.__auteurs.index(auth)
-                        self.__auteurs[index] = self.__auteurs[index][:-1]
+
+                        self.__auteurs.remove(auth)
+
+                        if index == 0:
+                            self.__auteurs = auteurs_separer + self.__auteurs
+
+                        else:
+                            if len(auteurs_separer) == 1:
+                                self.__auteurs.insert(index, auteurs_separer[0])
+                            else:
+                                for element in auteurs_separer:
+                                    self.__auteurs.insert(index, element)
+                                    index += 1
+
+                    ######################################################################
             ######################################################################
 
-            # On enlève les espaces et string vide
-            for elt in ["", " ", "  ", ",", ";", ".", '', ' ', '  ', ',', ';', '.']:
-                if elt in self.__auteurs:
-                    self.__auteurs.remove(elt)
+            taille_auteurs = len(self.__auteurs)
+
+            # On enlève les espaces de début et de fin
+            for i in range(taille_auteurs):
+                self.__auteurs[i] = self.__auteurs[i].strip()
             ######################################################################
 
-            # On retire les caractères inutiles
-            auteurs_copy = []
-            for elt in self.__auteurs:
-                if len(elt) >= 2:
-                    auteurs_copy.append(elt)
+            # On enlève les potentiels chiffres à la fin
+            for i in range(taille_auteurs):
+                value = self.__auteurs[i]
+                if value != "" and value[-1].isnumeric():
+                    self.__auteurs[i] = value[:-1]
+            ######################################################################
+        ######################################################################
 
-            # Il peut y avoir le "and" collé à un auteur
-            for i, elt in enumerate(auteurs_copy):
-                if elt.endswith("and"):
-                    auteurs_copy[i] = elt[:-3]
+        else:
+            # On vérifie qu'on n'a pas les auteurs sur une seule ligne
+            if len(self.__auteurs) == 1:
+                taille_mails = len(self.__emails)
+
+                # On enlève les lettres uniques
+                auteurs = self.__auteurs[0]
+                for i in range(1, len(auteurs) - 1):
+                    if auteurs[i - 1] == " " and auteurs[i + 1] == " ":
+                        auteurs = auteurs[:i] + auteurs[i + 1:]
+                ######################################################################
+
+                auteurs = auteurs.replace("  ", " ")
+                noms = auteurs.split()
+                liste_noms = []
+
+                # On assemble les noms ensemble
+                i = 0
+                for nom in noms:
+                    if i == 0:
+                        liste_noms.append(nom)
+
+                    elif i == 1:
+                        # Si nom longueur de deux → particule
+                        if len(nom) == 2:
+                            i -= 1
+
+                        liste_noms[-1] += f" {nom}"
+
+                    elif i >= 2:
+                        liste_noms.append(nom)
+                        i = 0
+
+                    i += 1
+                ######################################################################
+
+                # Si on a plus de noms que de mails, on assemble les derniers noms
+                if len(liste_noms) > taille_mails:
+                    difference = len(liste_noms) - taille_mails
+
+                    for _ in range(difference):
+                        value = liste_noms.pop()
+
+                        liste_noms[-1] = liste_noms[-1] + " " + value
+                ######################################################################
+
+                # On repasse les noms dans l'attribut de la classe
+                self.__auteurs = liste_noms
+                ######################################################################
             ######################################################################
 
-            # Copy de la liste
-            self.__auteurs[:] = auteurs_copy[:]
-            ######################################################################
+        presence_star = False
 
-            return
+        # Si présence de chiffre, on les enlève
+        for aut in self.__auteurs:
+            if any(char.isdigit() for char in aut):
+                aut_split = re.findall("[^0-9]+", aut)
 
-        return wrapper
+                aut_split = [x for x in aut_split if len(x) > 2]
 
-    def __make_pair_mail_name(f):
+                self.__auteurs.remove(aut)
+                self.__auteurs += aut_split
+            if "*" in aut:
+                presence_star = True
+        ######################################################################
+
+        # Si présence d'une étoile dans le nom, on l'enlève
+        if presence_star:
+            for auth in self.__auteurs:
+                if "*" in auth:
+                    index = self.__auteurs.index(auth)
+                    self.__auteurs[index] = self.__auteurs[index][:-1]
+        ######################################################################
+
+        # On enlève les espaces et string vide
+        for elt in ["", " ", "  ", ",", ";", ".", '', ' ', '  ', ',', ';', '.']:
+            if elt in self.__auteurs:
+                self.__auteurs.remove(elt)
+        ######################################################################
+
+        # On retire les caractères inutiles
+        auteurs_copy = []
+        for elt in self.__auteurs:
+            if len(elt) >= 2:
+                auteurs_copy.append(elt)
+
+        # Il peut y avoir le "and" collé à un auteur
+        for i, elt in enumerate(auteurs_copy):
+            if elt.endswith("and"):
+                auteurs_copy[i] = elt[:-3]
+        ######################################################################
+
+        # Copy de la liste
+        self.__auteurs[:] = auteurs_copy[:]
+        ######################################################################
+
+        return
+
+    def __make_pair_mail_name(self):
         """
         Effectue la paire mail et nom des auteurs
 
@@ -494,69 +490,58 @@ class Author:
 
             return False
 
-        @wraps(f)
-        def wrapper(self):
-            f(self)
+        taille_auteurs = len(self.__auteurs)
+        taille_mails = len(self.__emails)
+        levenshtein_distance = []
+        dico_nom_mail_distance = {}
 
-            taille_auteurs = len(self.__auteurs)
-            taille_mails = len(self.__emails)
-            levenshtein_distance = []
-            dico_nom_mail_distance = {}
+        # On enlève les caractères de retour à la ligne
+        for i in range(len(self.__auteurs)):
+            if "\n" in self.__auteurs[i]:
+                self.__auteurs[i] = self.__auteurs[i].replace("\n", "")
+        ######################################################################
 
-            # On enlève les caractères de retour à la ligne
-            for i in range(len(self.__auteurs)):
-                if "\n" in self.__auteurs[i]:
-                    self.__auteurs[i] = self.__auteurs[i].replace("\n", "")
-            ######################################################################
+        # Si les tailles sont équivalentes, on associe les mails aux noms
+        if taille_auteurs == taille_mails:
+            if self.__type_pdf == 0 and self.__type_mail == 0:
+                for nom, mail in zip(self.__auteurs, self.__emails):
+                    self.__dico_nom_mail[nom] = mail
 
-            # Si les tailles sont équivalentes, on associe les mails aux noms
-            if taille_auteurs == taille_mails:
-                if self.__type_pdf == 0 and self.__type_mail == 0:
-                    for nom, mail in zip(self.__auteurs, self.__emails):
-                        self.__dico_nom_mail[nom] = mail
-
-                else:
-                    # D'abord, on calcule les distances
-                    for nom in self.__auteurs:
-                        for mail in self.__emails:
-                            levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
-                    ######################################################################
-
-                    # Puis, on ne garde que les distances les plus faibles
-                    for nom, mail, distance in levenshtein_distance:
-                        distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
-
-                        # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
-                        if distance_in_dict[1] > distance and not mail_in_dict(mail, dico_nom_mail_distance):
-                            dico_nom_mail_distance[nom] = [mail, distance]
-                        ######################################################################
-                    ######################################################################
-
-                    # Enfin, on passe les noms et mails dans le dictionnaire final
-                    for key, value in dico_nom_mail_distance.items():
-                        self.__dico_nom_mail[key] = value[0]
-                    ######################################################################
-
-            # Soit il y a qu'un seul mail → mail de l'équipe
-            # Soit on n'en a pas trouvé
             else:
-                mention = "N/A"
-                if len(self.__emails) == 1:
-                    mention = self.__emails[0]
-
+                # D'abord, on calcule les distances
                 for nom in self.__auteurs:
-                    self.__dico_nom_mail[nom] = mention
-            ######################################################################
+                    for mail in self.__emails:
+                        levenshtein_distance.append([nom, mail, Levenshtein.distance(nom, mail.split("@")[0])])
+                ######################################################################
 
-            return
+                # Puis, on ne garde que les distances les plus faibles
+                for nom, mail, distance in levenshtein_distance:
+                    distance_in_dict = dico_nom_mail_distance.get(nom, ["", 10 ** 6])
 
-        return wrapper
+                    # Si la distance est inférieur et le mail non pris, alors on sauvegarde la paire
+                    if distance_in_dict[1] > distance and not mail_in_dict(mail, dico_nom_mail_distance):
+                        dico_nom_mail_distance[nom] = [mail, distance]
+                    ######################################################################
+                ######################################################################
 
-    __separate_authors = staticmethod(__separate_authors)
-    __make_pair_mail_name = staticmethod(__make_pair_mail_name)
+                # Enfin, on passe les noms et mails dans le dictionnaire final
+                for key, value in dico_nom_mail_distance.items():
+                    self.__dico_nom_mail[key] = value[0]
+                ######################################################################
 
-    @__make_pair_mail_name
-    @__separate_authors
+        # Soit il y a qu'un seul mail → mail de l'équipe
+        # Soit on n'en a pas trouvé
+        else:
+            mention = "N/A"
+            if len(self.__emails) == 1:
+                mention = self.__emails[0]
+
+            for nom in self.__auteurs:
+                self.__dico_nom_mail[nom] = mention
+        ######################################################################
+
+        return
+
     def _get_author(self) -> None:
         """
         Renvoi la liste des auteurs (Nom, mail)
