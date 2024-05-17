@@ -17,6 +17,8 @@ def my_process(parser_object: Parser, argument: str, name_file: str):
         print(f"Analyse effectué sur : {name_file}")
         
     except Exception:
+        print(traceback.format_exc())
+
         print(f"Impossible d'analyser le pdf : {name_file}")
         print("Les causes possibles sont un mauvais encoder utilisé pour créer le pdf.\n")
 
